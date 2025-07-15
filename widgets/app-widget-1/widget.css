@@ -1,0 +1,860 @@
+body {
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f7f9fc;
+    color: #333;
+    height: 100vh;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.toast {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #323232;
+    color: #fff;
+    padding: 14px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.toast.success {
+    background-color: #28a745;
+}
+
+.toast.error {
+    background-color: #dc3545;
+}
+
+.toast.warning {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.toast.hidden {
+    display: none;
+}
+
+.widget-container {
+    padding: 15px;
+    width: 100%;
+    max-width: none;
+    margin: 0;
+    box-sizing: border-box;
+}
+
+
+.top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: #ffffff;
+    padding: 10px 15px;
+    border-bottom: 1px solid #e1e4e8;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.06);
+    margin-bottom: 15px;
+}
+
+.branding {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.logo {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.company-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.contact-info {
+    display: none;
+    /* Hide contact info in compact mode */
+}
+
+.close-btn {
+    padding: 8px;
+    color: #5f6368;
+    background: transparent;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.close-btn:hover {
+    background: rgba(95, 99, 104, 0.1);
+    color: #202124;
+}
+
+.form-section {
+    background: #fff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin-bottom: 15px;
+}
+
+.left-form {
+    width: 100%;
+    max-width: none;
+}
+
+h1,
+h2,
+h3 {
+    color: #1a1a1a;
+    margin-bottom: 15px;
+}
+
+h2 {
+    font-size: 18px;
+    margin-bottom: 15px;
+}
+
+h3 {
+    font-size: 16px;
+    margin-bottom: 12px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+input,
+select {
+    padding: 8px;
+    width: 100%;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    box-sizing: border-box;
+}
+
+textarea {
+    padding: 10px;
+    width: 100%;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    resize: vertical;
+}
+
+.field-group {
+    margin-bottom: 15px;
+}
+
+/* Required field styling */
+.field-group.required label::after {
+    content: '*';
+    color: #dc3545;
+    margin-left: 4px;
+}
+
+.field-group.required.error input,
+.field-group.required.error select {
+    border-color: #dc3545;
+    background-color: #fff8f8;
+}
+
+.field-group.required.error label {
+    color: #dc3545;
+}
+
+.error-message {
+    color: #dc3545;
+    font-size: 12px;
+    margin-top: 4px;
+    display: none;
+}
+
+.field-group.required.error .error-message {
+    display: block;
+}
+
+/* Add subtle shake animation for validation errors */
+@keyframes shake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-4px);
+    }
+
+    75% {
+        transform: translateX(4px);
+    }
+}
+
+.field-group.required.error input,
+.field-group.required.error select {
+    animation: shake 0.4s ease-in-out;
+}
+
+.table-container {
+    overflow-x: auto;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+    max-width: 100%;
+}
+
+#lineItemsTable {
+    width: 100%;
+    min-width: unset;
+}
+
+/* Column width adjustments */
+#lineItemsTable th:nth-child(1) {
+    width: 18px;
+    /* Drag handle */
+    min-width: 16px;
+    max-width: 22px;
+}
+
+#lineItemsTable th:nth-child(2) {
+    width: 22%;
+    /* Service/Product */
+    min-width: 100px;
+}
+
+#lineItemsTable th:nth-child(3) {
+    width: 37%;
+    /* Description */
+    min-width: 100px;
+}
+
+#lineItemsTable th:nth-child(4),
+#lineItemsTable th:nth-child(5),
+#lineItemsTable th:nth-child(6),
+#lineItemsTable th:nth-child(7) {
+    width: 10%;
+    /* Quantity, Unit Price, Task Req., Accrual */
+    min-width: 50px;
+    max-width: 50px;
+}
+
+#lineItemsTable th:nth-child(8) {
+    width: 20px;
+    /* Trash icon */
+    min-width: 20px;
+    max-width: 20px;
+}
+
+/* Description field styling */
+.service-description {
+    min-height: 60px;
+    max-height: 200px;
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: all 0.2s ease;
+    background-color: #fff;
+    box-sizing: border-box;
+}
+
+.service-description:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.service-description:hover:not(:focus) {
+    border-color: #80868b;
+}
+
+/* Service name input styling */
+.service-name {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+}
+
+.service-name:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.service-name:hover:not(:focus) {
+    border-color: #80868b;
+}
+
+/* Table cell padding and alignment */
+#lineItemsTable th,
+#lineItemsTable td {
+    padding: 4px 6px;
+    vertical-align: middle;
+}
+
+#lineItemsTable input,
+#lineItemsTable select,
+#lineItemsTable textarea {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    font-size: 14px;
+    border-radius: 3px;
+    border: 1px solid #ccc;
+    background: #fff;
+    margin: 0;
+    height: 32px;
+}
+
+#lineItemsTable textarea {
+    min-height: 32px;
+    max-height: 120px;
+    resize: vertical;
+    line-height: 1.4;
+}
+
+/* Remove extra margin from selects in Firefox */
+#lineItemsTable select {
+    -moz-appearance: none;
+    appearance: none;
+}
+
+/* Quantity and Unit Price inputs */
+.quantity,
+.unit-price {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-size: 14px;
+    line-height: 1.5;
+    transition: all 0.2s ease;
+}
+
+.quantity:focus,
+.unit-price:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+.quantity:hover:not(:focus),
+.unit-price:hover:not(:focus) {
+    border-color: #80868b;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+    #lineItemsTable th:nth-child(2) {
+        width: 35%;
+    }
+}
+
+@media (max-width: 992px) {
+    #lineItemsTable th:nth-child(2) {
+        width: 30%;
+    }
+}
+
+/* Add subtle border to table cells */
+#lineItemsTable td {
+    border: 1px solid #e8eaed;
+}
+
+/* Improve table row hover effect */
+#lineItemsTable tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+/* Add transition for smoother hover effects */
+#lineItemsTable tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.address-section {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin: 20px 0;
+}
+
+@media (max-width: 768px) {
+    .address-section {
+        grid-template-columns: 1fr;
+    }
+}
+
+.address-group {
+    flex: 1;
+}
+
+.address-group input {
+    margin-bottom: 10px;
+}
+
+.btn {
+    font-family: 'Roboto', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    min-height: 40px;
+}
+
+.btn-primary {
+    background: #1a73e8;
+    color: white;
+    box-shadow: 0 2px 4px rgba(26, 115, 232, 0.2);
+}
+
+.btn-primary:hover {
+    background: #1557b0;
+    box-shadow: 0 4px 8px rgba(26, 115, 232, 0.3);
+}
+
+.btn-secondary {
+    background: #f8f9fa;
+    color: #1a73e8;
+    border: 1px solid #dadce0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.btn-secondary:hover {
+    background: #f1f3f4;
+    border-color: #d2e3fc;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+}
+
+.btn-link {
+    color: #1a73e8;
+    background: transparent;
+    padding: 8px 12px;
+    font-weight: 500;
+}
+
+.btn-link:hover {
+    background: rgba(26, 115, 232, 0.05);
+    text-decoration: none;
+}
+
+.import-section {
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    border: 1px solid #dadce0;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.import-controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.import-icon {
+    font-size: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.import-status {
+    margin-top: 12px;
+    font-size: 14px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.import-status::before {
+    font-family: 'Material Icons';
+    font-size: 18px;
+}
+
+.import-status.success {
+    color: #188038;
+    background: #e6f4ea;
+}
+
+.import-status.success::before {
+    content: 'check_circle';
+}
+
+.import-status.error {
+    color: #d93025;
+    background: #fce8e6;
+}
+
+.import-status.error::before {
+    content: 'error';
+}
+
+.import-status.processing {
+    color: #1a73e8;
+    background: #e8f0fe;
+}
+
+.import-status.processing::before {
+    content: 'sync';
+    animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Add ripple effect for buttons */
+.btn::after {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    pointer-events: none;
+    background-image: radial-gradient(circle, #fff 10%, transparent 10.01%);
+    background-repeat: no-repeat;
+    background-position: 50%;
+    transform: scale(10, 10);
+    opacity: 0;
+    transition: transform .5s, opacity 1s;
+}
+
+.btn:active::after {
+    transform: scale(0, 0);
+    opacity: .3;
+    transition: 0s;
+}
+
+/* Improve table appearance */
+.table-container {
+    margin-top: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.btn-group {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    padding-left: 12px;
+    border-left: 1px solid #dadce0;
+}
+
+.material-icons {
+    font-size: 20px;
+    width: 20px;
+    height: 20px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    vertical-align: middle;
+    color: inherit;
+}
+
+.remove-btn {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: transparent;
+    color: #d93025;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    margin: 0 auto;
+}
+
+.remove-btn:hover {
+    background-color: rgba(217, 48, 37, 0.1);
+}
+
+.remove-btn .material-icons {
+    font-size: 18px;
+}
+
+/* Add forced colors mode support */
+@media (forced-colors: active) {
+
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-link,
+    .remove-btn {
+        forced-color-adjust: none;
+    }
+
+    .btn-primary {
+        background: ButtonText;
+        color: ButtonFace;
+    }
+
+    .btn-secondary {
+        background: ButtonFace;
+        color: ButtonText;
+        border-color: ButtonText;
+    }
+
+    .remove-btn {
+        color: ButtonText;
+    }
+
+    .import-status.success {
+        border: 1px solid ButtonText;
+    }
+
+    .import-status.error {
+        border: 1px solid ButtonText;
+    }
+
+    .import-status.processing {
+        border: 1px solid ButtonText;
+    }
+}
+
+.terms-notice {
+    font-size: 13px;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 4px;
+    background-color: #f8f9fa;
+    border: 1px solid #dadce0;
+    color: #5f6368;
+}
+
+.terms-notice.error {
+    background-color: #fce8e6;
+    border-color: #fadad9;
+    color: #d93025;
+}
+
+#terms {
+    width: 100%;
+    min-height: 100px;
+    padding: 12px;
+    border: 1px solid #dadce0;
+    border-radius: 4px;
+    font-family: inherit;
+    font-size: 14px;
+    line-height: 1.5;
+    resize: vertical;
+    transition: all 0.2s ease;
+}
+
+#terms:disabled {
+    background-color: #f8f9fa;
+    cursor: wait;
+}
+
+#terms:focus {
+    border-color: #1a73e8;
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(26, 115, 232, 0.2);
+}
+
+#terms:hover:not(:focus):not(:disabled) {
+    border-color: #80868b;
+}
+
+/* --- Horizontal Layout Enhancements --- */
+
+/* Wrap form sections in horizontal flex layout */
+.form-section {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 24px;
+    align-items: flex-start;
+    justify-content: space-between;
+}
+
+/* Flex layout for left and right containers */
+.left-form,
+.right-form {
+    flex: 1 1 45%;
+    min-width: 300px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+/* Allow fields to stack horizontally in larger viewports */
+.field-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.field-group label {
+    min-width: 130px;
+    margin-bottom: 0;
+    text-align: right;
+    flex: 0 0 auto;
+}
+
+.field-group input,
+.field-group select,
+.field-group textarea {
+    flex: 1;
+    min-width: 200px;
+}
+
+@media (max-width: 768px) {
+    .form-section {
+        flex-direction: column;
+    }
+
+    .field-group {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .field-group label {
+        text-align: left;
+        min-width: auto;
+    }
+}
+
+/* Make the last form-section for terms stretch full width */
+.form-section.full-width {
+    flex-direction: column;
+    align-items: stretch;
+}
+
+.form-section.full-width .field-group {
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.form-section.full-width .field-group label {
+    margin-bottom: 8px;
+    font-weight: 500;
+    min-width: unset;
+}
+
+.form-section.full-width textarea {
+    width: 100%;
+    min-height: 140px;
+    box-sizing: border-box;
+}
+
+.header-row td {
+    background: #f1f3f4;
+    font-weight: bold;
+    font-size: 15px;
+    color: #333;
+}
+
+.header-title {
+    border: none;
+    background: transparent;
+    font-weight: bold;
+    font-size: 15px;
+}
+
+#lineItemsTable th:nth-child(1),
+#lineItemsTable td:nth-child(1),
+.drag-handle-cell {
+    width: 18px;
+    min-width: 16px;
+    max-width: 22px;
+    text-align: center;
+    vertical-align: middle;
+    background: #f8f9fa;
+    border-right: 1px solid #e8eaed;
+    padding: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.drag-handle {
+    cursor: grab;
+    color: #bdbdbd;
+    font-size: 18px;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: color 0.2s, background 0.2s;
+    padding: 0;
+    margin: 0;
+}
+
+.drag-handle:hover {
+    color: #1976d2;
+    background: #e3f0fd;
+}
+
+.sortable-ghost {
+    opacity: 0.5;
+    background: #e3f0fd !important;
+}
+
+.input-error {
+    border: 2px solid #dc3545 !important;
+    background-color: #fff0f0 !important;
+    color: #b71c1c;
+}
