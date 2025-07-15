@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quote Builder</title>
+    <script src="https://live.zwidgets.com/js-sdk/1.4/ZohoEmbededAppSDK.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="widget.css" />
+    <link
+      href="https://fonts.googleapis.com/icon?family=Material+Icons"
+      rel="stylesheet"
+    />
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <style>
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="widget-container">
+      <div class="form-section">
+        <div class="left-form">
+          <div class="field-group">
+            <label for="quoteName">Quote Name</label>
+            <input type="text" id="quoteName" placeholder="Enter Quote Name" />
+          </div>
+          <div class="field-group">
+            <label for="subject">Subject</label>
+            <input type="text" id="subject" placeholder="Enter Subject" />
+          </div>
+          <!-- Hidden ID fields -->
+          <input type="hidden" id="contactId" />
+          <input type="hidden" id="accountId" />
+          <input type="hidden" id="dealId" />
+          <input type="hidden" id="ownerId" />
+
+          <div class="field-group">
+            <label for="currency">Currency</label>
+            <select id="currency">
+              <option value="ZAR">ZAR</option>
+              <option value="USD">USD</option>
+            </select>
+          </div>
+          <div class="field-group">
+            <label for="validUntil">Valid Until</label>
+            <input type="date" id="validUntil" />
+          </div>
+<div class="field-group required" id="quoteStageGroup">
+  <label for="quoteStage">Quote Stage</label>
+  <input type="text" id="quoteStage" value="Draft" readonly disabled />
+  <input type="hidden" name="quoteStage" value="Draft" />
+</div>
+
+
+      <div class="form-section">
+        <h3>Quote Line Items</h3>
+        <div class="import-section">
+          <div class="import-controls">
+            <label for="csvFile" class="btn btn-secondary">
+              <span class="material-icons">upload_file</span>
+              Import Items
+              <input
+                type="file"
+                id="csvFile"
+                accept=".csv,.xlsx,.xls"
+                style="display: none"
+              />
+            </label>
+            <div class="btn-group">
+              <a
+                href="#"
+                id="downloadTemplate"
+                class="btn btn-link"
+                data-format="csv"
+              >
+                <span class="material-icons">description</span>
+                CSV Template
+              </a>
+              <a
+                href="#"
+                id="downloadExcelTemplate"
+                class="btn btn-link"
+                data-format="xlsx"
+              >
+                <span class="material-icons">table_view</span>
+                Excel Template
+              </a>
+            </div>
+          </div>
+          <div id="importStatus" class="import-status"></div>
+        </div>
+        <div id="lineItemsCount" style="margin-bottom: 10px; font-weight: 500;">
+  Line Items: <span id="lineItemsCountValue">1</span>
+</div>
+        <div class="table-container">
+          <table id="lineItemsTable">
+            <thead>
+              <tr>
+                <th></th>
+                <th>Service/Product</th>
+                <th>Description</th>
+                <th>Quantity</th>
+                <th>Unit Price</th>
+                <th>Task Req.</th>
+                <th>Accrual</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="lineItemsBody"></tbody>
+          </table>
+        </div>
+        <div style="display: flex; gap: 10px;">
+  <button class="btn btn-secondary" onclick="addLineItem()">
+    <span class="material-icons">add_circle</span>
+    Add Line Item
+  </button>
+  <button class="btn btn-secondary" onclick="addHeaderRow()">
+    <span class="material-icons">title</span>
+    Add Header
+  </button>
+</div>
+      </div>
+
+      <div class="form-section">
+        <div class="address-section">
+          <div class="address-group">
+            <h4>Billing Address</h4>
+            <input type="text" id="billingStreet" placeholder="Street" />
+            <input type="text" id="billingCity" placeholder="City" />
+            <input type="text" id="billingState" placeholder="State" />
+            <input type="text" id="billingCode" placeholder="Postal Code" />
+            <input type="text" id="billingCountry" placeholder="Country" />
+          </div>
+
+          <div class="address-group">
+            <h4>Shipping Address</h4>
+            <input type="text" id="shippingStreet" placeholder="Street" />
+            <input type="text" id="shippingCity" placeholder="City" />
+            <input type="text" id="shippingState" placeholder="State" />
+            <input type="text" id="shippingCode" placeholder="Postal Code" />
+            <input type="text" id="shippingCountry" placeholder="Country" />
+          </div>
+        </div>
+      </div>
+
+<div class="form-section full-width">
+  <div class="field-group">
+    <label for="terms">Terms and Conditions</label>
+    <textarea
+      id="terms"
+      rows="4"
+      placeholder="Enter terms and conditions (optional)"
+    ></textarea>
+  </div>
+</div>
+
+      <div class="action-buttons">
+        <button class="btn btn-primary" onclick="submitQuote()">
+          <span class="material-icons">check_circle</span>
+          Create Quote
+        </button>
+      </div>
+    </div>
+
+    <div id="toast" class="toast hidden"></div>
+    <script src="widget.js"></script>
+  </body>
+</html>

@@ -6,82 +6,92 @@
     <title>Home Page</title>
     <link rel="stylesheet" href="styles.css" />
     <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
       rel="stylesheet"
     />
   </head>
   <body>
-    <header>
-      <div class="header-container">
-        <img
-          id="header-img"
-          src="assets/smallheader.gif"
-          alt="Header Image"
-          class="header-img"
-        />
-        <h1 class="header-title">Welcome</h1>
+    <div id="profile-banner">
+      <div class="profile-pic-container">
+        <!-- Placeholder for profile image -->
       </div>
-      <nav>
-        <ul>
-          <li><a href="#">projects</a></li>
-          <li><a href="#"></a></li>
-          <li><a href="#">education</a></li>
-          <li><a href="#"></a></li>
-          <li><a href="#">games</a></li>
-          <li><a href="#"></a></li>
-          <li><a href="#">published work</a></li>
-        </ul>
-      </nav>
-    </header>
-
+      <div class="profile-info">
+        <h3 class="profile-name">Nicholas Jansen van Rensburg</h3>
+        <p class="profile-bio">Web developer &amp; UI enthusiast. Crafting sleek digital experiences.</p>
+        <div class="profile-stats">
+          <span>LVL • 25</span>
+          <span>TYPE • DSGN</span>
+          <span>ROLE • DEV</span>
+        </div>
+      </div>
+    </div>
     <main>
-      <!-- Projects Section -->
-      <section class="sec1" id="sec1">
-        <h2>Enter the Machine</h2>
-        <p>Where design meets data and metal breathes.</p>
-        <img
-          src="your-image-path.jpg"
-          alt="cyber ribcage"
-          class="floating-img"
-        />
-      </section>
-
-      <!-- Education Section -->
-      <section class="education" id="education">
-        <h2>Education</h2>
-        <p>Where I’ve studied and what I’ve learned.</p>
-      </section>
-
-      <!-- Game Section -->
-      <section class="game-zone" id="games">
-        <h2>Mini Game Zone 🎮</h2>
-        <canvas
-          id="gameCanvas"
-          width="600"
-          height="400"
-          style="background: #111; border: 2px solid rgb(243, 12, 243)"
-        ></canvas>
-      </section>
-
-      <!-- Published Work Section -->
-      <section class="published-work" id="published-work">
-        <h2>Published Work</h2>
-        <p>Articles, blogs, or research I've done.</p>
-      </section>
-
-      <section class="hand-section">
-        <img
-          src="assets/DrippyHAND.png"
-          alt="Chrome Peace Hand"
-          class="scroll-animate"
-        />
+      <section class="timeline-nav">
+        <div class="timeline-3channel">
+          <div class="timeline-row top">
+            <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
+            <div class="timeline-event" data-id="1"></div>
+            <div class="timeline-event" data-id="3"></div>
+            <div class="timeline-event" data-id="5"></div>
+            <div class="timeline-event" data-id="5"></div>
+            <div class="timeline-event" data-id="5"></div>
+          </div>
+          <!---Seperator-------------------------------------------------->
+          <!--TO DO: ADD SLIDER FORM MOVEMENT-->
+          <div class="timeline-row middle">
+            <div class="timeline-track"></div>
+            <div class="timeline-scrollbar">
+              <div class="timeline-scrollbar-handle">
+                <span class="tooltip-text">Double-click to lock/unlock scroll</span>
+              </div>
+            </div>
+          </div>
+          <!---Seperator-------------------------------------------------->
+          <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN TOP CHANNEL timeline-row top-->
+          <div class="timeline-row bottom">
+            <div class="timeline-event" data-id="2"></div>
+            <div class="timeline-event" data-id="4"></div>
+            <div class="timeline-event" data-id="4"></div>
+            <div class="timeline-event" data-id="5"></div>
+            <div class="timeline-event" data-id="5"></div>
+          </div>
+        </div>
       </section>
     </main>
-
     <footer>
-      <p>&copy; 2025 My Website. All rights reserved.</p>
+      <p>&copy; 2025 mulletsrcool. All rights reserved bitch.</p>
     </footer>
-    <script src="script.js"></script>
+
+    <button id="testNotificationBtn" style="position: fixed; top: 20px; right: 20px; z-index: 10003;">Test Notification</button>
+    
+    <script src="scripts/script.js"></script>
     <div class="light-cursor"></div>
+
+    <!-- Widget Preview Modal -->
+    <div id="widgetModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">Widget Preview</h2>
+          <span class="close-button">&times;</span>
+        </div>
+        <div class="modal-body">
+          <iframe id="widgetFrame" src="" frameborder="0"></iframe>
+        </div>
+      </div>
+    </div>
+
+    <!-- Notification Modal -->
+    <div id="notificationModal" class="notification-modal">
+      <div class="notification-content">
+        <p id="notificationMessage">This is a notification!</p>
+        <button class="notification-close-btn">&times;</button>
+      </div>
+    </div>
+
+    </div>
   </body>
 </html>
