@@ -163,101 +163,108 @@ document.addEventListener("DOMContentLoaded", function () {
   // --- END Category Modal Logic ------
 
   // --- Timeline Track Scroll Carousel Feature ---
-  const timelineTrack = document.querySelector(".timeline-track");
-  const topRow = document.querySelector(".timeline-row.top");
-  const bottomRow = document.querySelector(".timeline-row.bottom");
-  const scrollbar = document.querySelector(".timeline-scrollbar");
-  const handle = document.querySelector(".timeline-scrollbar-handle");
+  const initTimelineScroll = () => {
+    if (window.innerWidth <= 768) return; // Don't run on mobile
 
-  if (timelineTrack && topRow && bottomRow && scrollbar && handle) {
-    let topOffset = 0;
-    let bottomOffset = 0;
-    let maxOffset = 0;
-    let isLocked = false;
-    let isDragging = false;
+    const timelineTrack = document.querySelector(".timeline-track");
+    const topRow = document.querySelector(".timeline-row.top");
+    const bottomRow = document.querySelector(".timeline-row.bottom");
+    const scrollbar = document.querySelector(".timeline-scrollbar");
+    const handle = document.querySelector(".timeline-scrollbar-handle");
 
-    const getScrollLimits = () => {
-      const containerWidth = topRow.parentElement.clientWidth;
-      const contentWidth = topRow.scrollWidth;
-      const maxScroll = Math.max(0, contentWidth - containerWidth);
-      maxOffset = maxScroll / 2; // Allow scrolling half left, half right from center
-    };
+    if (timelineTrack && topRow && bottomRow && scrollbar && handle) {
+      let topOffset = 0;
+      let bottomOffset = 0;
+      let maxOffset = 0;
+      let isLocked = false;
+      let isDragging = false;
 
-    const updatePositions = (smooth = false) => {
-      topRow.style.transition = smooth
-        ? "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-        : "none";
-      bottomRow.style.transition = smooth
-        ? "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
-        : "none";
+      const getScrollLimits = () => {
+        const containerWidth = topRow.parentElement.clientWidth;
+        const contentWidth = topRow.scrollWidth;
+        const maxScroll = Math.max(0, contentWidth - containerWidth);
+        maxOffset = maxScroll / 2; // Allow scrolling half left, half right from center
+      };
 
-      topOffset = Math.max(-maxOffset, Math.min(maxOffset, topOffset));
-      bottomOffset = -topOffset;
+      const updatePositions = (smooth = false) => {
+        topRow.style.transition = smooth
+          ? "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+          : "none";
+        bottomRow.style.transition = smooth
+          ? "transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94)"
+          : "none";
 
-      topRow.style.transform = `translateX(${topOffset}px)`;
-      bottomRow.style.transform = `translateX(${bottomOffset}px)`;
+        topOffset = Math.max(-maxOffset, Math.min(maxOffset, topOffset));
+        bottomOffset = -topOffset;
 
-      const scrollPercentage =
-        maxOffset > 0 ? (topOffset + maxOffset) / (2 * maxOffset) : 0.5;
-      const handleMaxMove = scrollbar.clientWidth - handle.clientWidth;
-      handle.style.left = `${scrollPercentage * handleMaxMove}px`;
-    };
+        topRow.style.transform = `translateX(${topOffset}px)`;
+        bottomRow.style.transform = `translateX(${bottomOffset}px)`;
 
-    // Initial calculation
-    getScrollLimits();
-    updatePositions();
+        const scrollPercentage =
+          maxOffset > 0 ? (topOffset + maxOffset) / (2 * maxOffset) : 0.5;
+        const handleMaxMove = scrollbar.clientWidth - handle.clientWidth;
+        handle.style.left = `${scrollPercentage * handleMaxMove}px`;
+      };
 
-    // Double-click to lock/unlock
-    handle.addEventListener("dblclick", () => {
-      isLocked = !isLocked;
-      handle.classList.toggle("locked", isLocked);
-      if (isLocked) {
-        showNotification("Timeline scroll is now LOCKED.");
-      } else {
-        showNotification("Timeline scroll is UNLOCKED.");
-      }
-    });
-
-    timelineTrack.addEventListener(
-      "wheel",
-      (e) => {
-        if (isLocked) return;
-        e.preventDefault();
-        const delta = e.deltaY || e.detail || e.wheelDelta;
-        topOffset -= delta > 0 ? 40 : -40;
-        updatePositions(true);
-      },
-      { passive: false }
-    );
-
-    handle.addEventListener("mousedown", () => {
-      if (isLocked) return;
-      isDragging = true;
-      handle.style.cursor = "grabbing";
-    });
-
-    window.addEventListener("mouseup", () => {
-      isDragging = false;
-      handle.style.cursor = "grab";
-    });
-
-    window.addEventListener("mousemove", (e) => {
-      if (!isDragging || isLocked) return;
-      const scrollbarRect = scrollbar.getBoundingClientRect();
-      const handleMaxMove = scrollbarRect.width - handle.clientWidth;
-      let newLeft = e.clientX - scrollbarRect.left - handle.clientWidth / 2;
-      newLeft = Math.max(0, Math.min(handleMaxMove, newLeft));
-
-      const scrollPercentage = newLeft / handleMaxMove;
-      topOffset = scrollPercentage * 2 * maxOffset - maxOffset;
-      updatePositions();
-    });
-
-    window.addEventListener("resize", () => {
+      // Initial calculation
       getScrollLimits();
       updatePositions();
-    });
-  }
+
+      // Double-click to lock/unlock
+      handle.addEventListener("dblclick", () => {
+        isLocked = !isLocked;
+        handle.classList.toggle("locked", isLocked);
+        if (isLocked) {
+          showNotification("Timeline scroll is now LOCKED.");
+        } else {
+          showNotification("Timeline scroll is UNLOCKED.");
+        }
+      });
+
+      timelineTrack.addEventListener(
+        "wheel",
+        (e) => {
+          if (isLocked) return;
+          e.preventDefault();
+          const delta = e.deltaY || e.detail || e.wheelDelta;
+          topOffset -= delta > 0 ? 40 : -40;
+          updatePositions(true);
+        },
+        { passive: false }
+      );
+
+      handle.addEventListener("mousedown", () => {
+        if (isLocked) return;
+        isDragging = true;
+        handle.style.cursor = "grabbing";
+      });
+
+      window.addEventListener("mouseup", () => {
+        isDragging = false;
+        handle.style.cursor = "grab";
+      });
+
+      window.addEventListener("mousemove", (e) => {
+        if (!isDragging || isLocked) return;
+        const scrollbarRect = scrollbar.getBoundingClientRect();
+        const handleMaxMove = scrollbarRect.width - handle.clientWidth;
+        let newLeft = e.clientX - scrollbarRect.left - handle.clientWidth / 2;
+        newLeft = Math.max(0, Math.min(handleMaxMove, newLeft));
+
+        const scrollPercentage = newLeft / handleMaxMove;
+        topOffset = scrollPercentage * 2 * maxOffset - maxOffset;
+        updatePositions();
+      });
+
+      window.addEventListener("resize", () => {
+        getScrollLimits();
+        updatePositions();
+      });
+    }
+  };
+
+  initTimelineScroll();
+  window.addEventListener("resize", initTimelineScroll);
 
   // --- Notification Modal Logic ---
   const notificationModal = document.getElementById("notificationModal");

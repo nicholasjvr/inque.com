@@ -15,83 +15,162 @@
     />
   </head>
   <body>
-    <div id="profile-banner">
-      <div class="profile-pic-container">
-        <!-- Placeholder for profile image -->
-      </div>
-      <div class="profile-info">
-        <h3 class="profile-name">Nicholas Jansen van Rensburg</h3>
-        <p class="profile-bio">Web developer &amp; UI enthusiast. Crafting sleek digital experiences.</p>
+    <header class="site-header">
+      <nav class="main-nav">
+        <a href="assets/users/users.html" id="findUsersBtn" class="nav-button">Find Users</a>
+        <button id="leaveNoteBtn" class="nav-button">Leave a Note</button>
+      </nav>
+      <div id="profile-banner">
+        <div class="profile-pic-container"></div>
+        <div class="profile-info">
+            <h3 class="profile-name">Welcome to inque</h3>
+            <p class="profile-bio">my name is Nicholas @nicholasjvr
+        </p>
         <div class="profile-stats">
-          <span>LVL • 25</span>
-          <span>TYPE • DSGN</span>
-          <span>ROLE • DEV</span>
+          <span id="profileLvl">LVL • 25</span>
+          <span id="profileType">TYPE • DSGN</span>
+          <span id="profileRole">ROLE • DEV</span>
+        </div>
+        <div class="profile-actions">
+            <button id="loginBtn" class="auth-button">Login</button>
+            <span id="userInfo" style="display: none;">
+                <span id="userEmail" class="user-email-display"></span>
+                <button id="editProfileBtn" class="auth-button">Edit</button>
+                <button id="logoutBtn" class="auth-button">Logout</button>
+            </span>
         </div>
       </div>
-    </div>
+      </div>
+    </header>
     <main>
       <section class="timeline-nav">
         <div class="timeline-3channel">
-          <div class="timeline-row top">
-            <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
-            <div class="timeline-event" data-id="1"></div>
-            <div class="timeline-event" data-id="3"></div>
-            <div class="timeline-event" data-id="5"></div>
-            <div class="timeline-event" data-id="5"></div>
-            <div class="timeline-event" data-id="5"></div>
-          </div>
-          <!---Seperator-------------------------------------------------->
-          <!--TO DO: ADD SLIDER FORM MOVEMENT-->
-          <div class="timeline-row middle">
-            <div class="timeline-track"></div>
-            <div class="timeline-scrollbar">
-              <div class="timeline-scrollbar-handle">
-                <span class="tooltip-text">Double-click to lock/unlock scroll</span>
+            <div class="timeline-row top">
+              <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
+              <div class="timeline-event" data-id="1"></div>
+              <div class="timeline-event" data-id="3"></div>
+              <div class="timeline-event" data-id="5"></div>
+              <div class="timeline-event" data-id="5"></div>
+              <div class="timeline-event" data-id="5"></div>
+            </div>
+            <!---Seperator-------------------------------------------------->
+            <!--TO DO: ADD SLIDER FORM MOVEMENT-->
+            <div class="timeline-row middle">
+              <div class="timeline-track"></div>
+              <div class="timeline-scrollbar">
+                <div class="timeline-scrollbar-handle">
+                  <span class="tooltip-text"
+                    >Double-click to lock/unlock scroll</span
+                  >
+                </div>
               </div>
             </div>
+            <!---Seperator-------------------------------------------------->
+            <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN TOP CHANNEL timeline-row top-->
+            <div class="timeline-row bottom">
+              <div class="timeline-event" data-id="2"></div>
+              <div class="timeline-event" data-id="4"></div>
+              <div class="timeline-event" data-id="4"></div>
+              <div class="timeline-event" data-id="5"></div>
+              <div class="timeline-event" data-id="5"></div>
+            </div>
           </div>
-          <!---Seperator-------------------------------------------------->
-          <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN TOP CHANNEL timeline-row top-->
-          <div class="timeline-row bottom">
-            <div class="timeline-event" data-id="2"></div>
-            <div class="timeline-event" data-id="4"></div>
-            <div class="timeline-event" data-id="4"></div>
-            <div class="timeline-event" data-id="5"></div>
-            <div class="timeline-event" data-id="5"></div>
+        </section>
+      </main>
+      <footer>
+        <p>&copy; 2025 My Website. All rights reserved.</p>
+      </footer>
+
+      <button
+        id="testNotificationBtn"
+        style="position: fixed; top: 20px; right: 20px; z-index: 10003"
+      >
+        Test Notification
+      </button>
+
+      <script type="module" src="script.js"></script>
+      <script src="scripts/script.js"></script>
+      <script type="module" src="scripts/canvas.js"></script>
+      <script type="module" src="scripts/auth.js"></script>
+      <div class="light-cursor"></div>
+
+      <!-- Widget Preview Modal -->
+      <div id="widgetModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Widget Preview</h2>
+            <span class="close-button">&times;</span>
+          </div>
+          <div class="modal-body">
+            <iframe id="widgetFrame" src="" frameborder="0"></iframe>
           </div>
         </div>
-      </section>
-    </main>
-    <footer>
-      <p>&copy; 2025 mulletsrcool. All rights reserved bitch.</p>
-    </footer>
+      </div>
 
-    <button id="testNotificationBtn" style="position: fixed; top: 20px; right: 20px; z-index: 10003;">Test Notification</button>
-    
-    <script src="scripts/script.js"></script>
-    <div class="light-cursor"></div>
+      <!-- Notification Modal -->
+      <div id="notificationModal" class="notification-modal">
+        <div class="notification-content">
+          <p id="notificationMessage">This is a notification!</p>
+          <button class="notification-close-btn">&times;</button>
+        </div>
+      </div>
 
-    <!-- Widget Preview Modal -->
-    <div id="widgetModal" class="modal">
-      <div class="modal-content">
+      <!-- Collaborative Canvas Modal -->
+      <div id="canvasModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Collaborative Canvas</h2>
+            <span class="close-button canvas-close-button">&times;</span>
+          </div>
+          <div class="modal-body">
+            <canvas id="collabCanvas"></canvas>
+            <span class="canvas-tooltip-text"></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auth Modal -->
+    <div id="authModal" class="modal">
+      <div class="modal-content auth-modal-content">
         <div class="modal-header">
-          <h2 class="modal-title">Widget Preview</h2>
-          <span class="close-button">&times;</span>
+          <h2 id="authModalTitle" class="modal-title">Login</h2>
+          <span class="close-button auth-close-button">&times;</span>
         </div>
         <div class="modal-body">
-          <iframe id="widgetFrame" src="" frameborder="0"></iframe>
+          <form id="loginForm">
+            <input type="email" id="loginEmail" placeholder="Email" required>
+            <input type="password" id="loginPassword" placeholder="Password" required>
+            <button type="submit">Login</button>
+            <p>Don't have an account? <a href="#" id="showSignUp">Sign Up</a></p>
+          </form>
+          <form id="signUpForm" style="display: none;">
+            <input type="email" id="signUpEmail" placeholder="Email" required>
+            <input type="password" id="signUpPassword" placeholder="Password" required>
+            <button type="submit">Sign Up</button>
+            <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+          </form>
         </div>
       </div>
     </div>
 
-    <!-- Notification Modal -->
-    <div id="notificationModal" class="notification-modal">
-      <div class="notification-content">
-        <p id="notificationMessage">This is a notification!</p>
-        <button class="notification-close-btn">&times;</button>
-      </div>
-    </div>
-
+    <!-- Edit Profile Modal -->
+    <div id="editProfileModal" class="modal">
+        <div class="modal-content auth-modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Edit Profile</h2>
+                <span class="close-button edit-profile-close-button">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="editProfileForm">
+                    <input type="text" id="editName" placeholder="Name" required>
+                    <textarea id="editBio" placeholder="Bio" rows="3"></textarea>
+                    <label for="editPhoto" class="file-upload-label">Change Photo</label>
+                    <input type="file" id="editPhoto" accept="image/*" style="display: none;">
+                    <button type="submit">Save Changes</button>
+                </form>
+            </div>
+        </div>
     </div>
   </body>
 </html>
