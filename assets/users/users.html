@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Find Users</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="../../styles.css" />
     <link rel="stylesheet" href="users.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
@@ -17,14 +17,35 @@
   </head>
   <body>
     <header class="page-header">
-      <h1>Find Users</h1>
-      <a href="index.html" class="back-link">Back to Home</a>
+      <h1>Find Other Creations by Users</h1>
+      <a href="../../index.html" class="back-link">Back to Home</a>
     </header>
 
     <main id="users-container">
       <!-- User list will be populated here by JavaScript -->
     </main>
 
-    <script type="module" src="scripts/users.js"></script>
+    <!-- Chat Modal -->
+    <div id="chatModal" class="modal" style="display: none">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="chat-with-user">Chat with...</h2>
+          <span class="close-button" id="closeChat">&times;</span>
+        </div>
+        <div class="modal-body" id="chat-messages">
+          <!-- Messages will be loaded here -->
+        </div>
+        <div class="modal-footer">
+          <input
+            type="text"
+            id="chat-message-input"
+            placeholder="Type a message..."
+          />
+          <button id="chat-send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/assets/users/scripts/users.js"></script>
   </body>
 </html>

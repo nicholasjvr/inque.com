@@ -33,6 +33,12 @@ document.addEventListener("DOMContentLoaded", function () {
       hasWidget: false,
       placeholder: "assets/imgs/portal_placeholder.gif",
     },
+    { hasWidget: false },
+    { hasWidget: false },
+    { hasWidget: false },
+    { hasWidget: false },
+    { hasWidget: false },
+    { hasWidget: false },
   ];
 
   // Inject cards into each timeline-event
@@ -66,6 +72,13 @@ document.addEventListener("DOMContentLoaded", function () {
         <button class="widget-preview-btn" data-widget-path="${widgetData.iframe}">
           Open Full View
         </button>
+      `;
+    } else {
+      // Placeholder for an empty slot
+      card.innerHTML = `
+        <div class="empty-widget-slot">
+          <button class="add-widget-btn">+</button>
+        </div>
       `;
     }
 
@@ -300,4 +313,35 @@ document.addEventListener("DOMContentLoaded", function () {
       showNotification("This is a test notification!");
     });
   }
+
+  // Attach event listener for the 'Find Users' link if you want custom behavior
+  const findUsersBtn = document.getElementById("findUsersBtn");
+  if (findUsersBtn) {
+    findUsersBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("findUsers button clicked");
+      // You can navigate or perform any custom action here:
+      window.location.href = findUsersBtn.href;
+    });
+  }
+
+  // Event for the other nav buttons using the common class "nav-action"
+  const navActions = document.querySelectorAll(".nav-action");
+  navActions.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-action");
+      console.log(`${action} button clicked`);
+      // Perform actions based on the button clicked
+      if (action === "leaveNote") {
+        // Open Leave Note modal or page
+        alert("Opening Leave Note modal...");
+      } else if (action === "explore") {
+        // Navigate or reveal Explore section
+        alert("Navigating to Explore section...");
+      } else if (action === "tutorial") {
+        // Open Tutorial modal or navigate accordingly
+        alert("Opening Tutorial content...");
+      }
+    });
+  });
 });

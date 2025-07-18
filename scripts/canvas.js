@@ -10,9 +10,10 @@ import {
 
 document.addEventListener("DOMContentLoaded", () => {
   const leaveNoteBtn = document.getElementById("leaveNoteBtn");
+  const leaveNoteActionBtn = document.getElementById("leaveNoteActionBtn");
   const canvasModal = document.getElementById("canvasModal");
 
-  if (leaveNoteBtn && canvasModal) {
+  if (canvasModal) {
     const canvasCloseBtn = canvasModal.querySelector(".canvas-close-button");
     const canvas = document.getElementById("collabCanvas");
     const tooltip = canvasModal.querySelector(".canvas-tooltip-text");
@@ -158,12 +159,19 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mouseout", stopDrawing);
     canvas.addEventListener("click", handleCanvasClick);
 
-    leaveNoteBtn.addEventListener("click", () => {
+    const openCanvas = () => {
       canvasModal.style.display = "block";
       resizeCanvas();
       fetchAndDrawLines();
       showTooltip("Double-click to erase. Triple-click to save.");
-    });
+    };
+
+    if (leaveNoteBtn) {
+      leaveNoteBtn.addEventListener("click", openCanvas);
+    }
+    if (leaveNoteActionBtn) {
+      leaveNoteActionBtn.addEventListener("click", openCanvas);
+    }
 
     if (canvasCloseBtn) {
       canvasCloseBtn.addEventListener("click", () => {

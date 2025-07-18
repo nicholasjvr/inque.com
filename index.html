@@ -13,36 +13,104 @@
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
   </head>
   <body>
-    <header class="site-header">
-      <nav class="main-nav">
-        <a href="assets/users/users.html" id="findUsersBtn" class="nav-button">Find Users</a>
-        <button id="leaveNoteBtn" class="nav-button">Leave a Note</button>
-      </nav>
-      <div id="profile-banner">
-        <div class="profile-pic-container"></div>
-        <div class="profile-info">
-            <h3 class="profile-name">Welcome to inque</h3>
-            <p class="profile-bio">my name is Nicholas @nicholasjvr
-        </p>
+<!-- Sidebar and overlay -->
+<div class="sidebar-overlay"></div>
+<nav class="sidebar-nav">
+  <div class="sidebar-user-info">
+    <div class="sidebar-avatar"></div>
+    <div class="sidebar-user-details">
+      <span class="sidebar-user-name">Guest</span>
+      <span class="sidebar-user-email" style="display: none;">guest@example.com</span>
+      <span class="sidebar-user-status"><span class="status-dot guest"></span> Not logged in</span>
+    </div>
+    <button id="sidebarLoginBtn" class="sidebar-auth-btn">Login</button>
+    <span id="sidebarUserActions" style="display:none;">
+      <button id="sidebarEditProfileBtn" class="sidebar-auth-btn">Edit Profile</button>
+      <button id="sidebarLogoutBtn" class="sidebar-auth-btn">Logout</button>
+    </span>
+  </div>
+  
+  <!-- Profile Stats Section -->
+  <div class="sidebar-stats" style="display: none;">
+    <div class="sidebar-stat-item">
+      <span class="stat-label">Level</span>
+      <span class="stat-value" id="sidebarLvl">?</span>
+    </div>
+    <div class="sidebar-stat-item">
+      <span class="stat-label">Type</span>
+      <span class="stat-value" id="sidebarType">?</span>
+    </div>
+    <div class="sidebar-stat-item">
+      <span class="stat-label">Role</span>
+      <span class="stat-value" id="sidebarRole">GUEST</span>
+    </div>
+  </div>
+
+  <!-- Quick Actions Section -->
+  <div class="sidebar-quick-actions">
+    <h4 class="sidebar-section-title">Quick Actions</h4>
+    <button class="quick-action-btn" data-action="newWidget">
+      <span class="quick-action-icon">+</span>
+      <span class="quick-action-text">Add Project to Showcase</span>
+    </button>
+    <button class="quick-action-btn" data-action="shareProfile">
+      <span class="quick-action-icon">📤</span>
+      <span class="quick-action-text">Share Profile</span>
+    </button>
+    <button class="quick-action-btn" data-action="settings">
+      <span class="quick-action-icon">⚙️</span>
+      <span class="quick-action-text">Settings</span>
+    </button>
+    <button class="quick-action-btn" data-action="testNotifications">
+      <span class="quick-action-icon">🧪</span>
+      <span class="quick-action-text">Test Notifications</span>
+    </button>
+  </div>
+
+  <!-- Notifications Section -->
+  <div class="sidebar-notifications">
+    <h4 class="sidebar-section-title">
+      Notifications
+      <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
+      <button id="markAllReadBtn" class="mark-all-read-btn" style="display: none;" title="Mark all as read">✓</button>
+    </h4>
+    <div class="notification-list" id="notificationList">
+      <div class="notification-item empty-notification">
+        <span class="notification-text">No new notifications</span>
+      </div>
+    </div>
+  </div>
+
+  <button class="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
+  <a href="assets/users/users.html" class="sidebar-nav-btn">Users</a>
+  <button class="sidebar-nav-btn" data-action="leaveNote">Note</button>
+  <button class="sidebar-nav-btn" data-action="explore">Explore</button>
+  <button class="sidebar-nav-btn" data-action="tutorial">Items</button>
+</nav>
+<header class="site-header">
+  <button class="hamburger-menu" aria-label="Open sidebar">&#9776;</button>
+  <div id="profile-banner">
+    <div class="profile-pic-container"></div>
+    <button id="collapseProfileBtn" class="collapse-profile-btn" aria-label="Collapse profile">▼</button>
+    <button id="tutorialBtn" class="tutorial-btn" aria-label="Tutorial">ℹ</button>
+    <div class="collapsible-profile-content">
+      <div class="profile-info">
+        <h3 class="profile-name">Welcome</h3>
+        <p class="profile-bio">Explore the world of inque</p>
         <div class="profile-stats">
-          <span id="profileLvl">LVL • 25</span>
-          <span id="profileType">TYPE • DSGN</span>
-          <span id="profileRole">ROLE • DEV</span>
-        </div>
-        <div class="profile-actions">
-            <button id="loginBtn" class="auth-button">Login</button>
-            <span id="userInfo" style="display: none;">
-                <span id="userEmail" class="user-email-display"></span>
-                <button id="editProfileBtn" class="auth-button">Edit</button>
-                <button id="logoutBtn" class="auth-button">Logout</button>
-            </span>
+          <button class="profile-nav-btn" data-page="about">THE LORE</button>
+          <button class="profile-nav-btn" data-page="explore">EXPLORE</button>
+          <button class="profile-nav-btn" data-page="inventory">INVENTORY</button>
         </div>
       </div>
-      </div>
-    </header>
-    <main>
+      <!-- Removed profile-actions from here -->
+    </div>
+  </div>
+</header>
+  <main>
       <section class="timeline-nav">
         <div class="timeline-3channel">
             <div class="timeline-row top">
@@ -78,15 +146,8 @@
         </section>
       </main>
       <footer>
-        <p>&copy; 2025 My Website. All rights reserved.</p>
+        <p style="color: #aaa; font-size: 0.8rem;">&copy; 2025 inque by nicholas. All rights reserved.</p>
       </footer>
-
-      <button
-        id="testNotificationBtn"
-        style="position: fixed; top: 20px; right: 20px; z-index: 10003"
-      >
-        Test Notification
-      </button>
 
       <script type="module" src="script.js"></script>
       <script src="scripts/script.js"></script>
@@ -134,21 +195,94 @@
     <div id="authModal" class="modal">
       <div class="modal-content auth-modal-content">
         <div class="modal-header">
-          <h2 id="authModalTitle" class="modal-title">Login</h2>
+          <h2 id="authModalTitle" class="modal-title">Welcome to inque</h2>
           <span class="close-button auth-close-button">&times;</span>
         </div>
         <div class="modal-body">
-          <form id="loginForm">
-            <input type="email" id="loginEmail" placeholder="Email" required>
-            <input type="password" id="loginPassword" placeholder="Password" required>
-            <button type="submit">Login</button>
-            <p>Don't have an account? <a href="#" id="showSignUp">Sign Up</a></p>
+          <!-- Login Form -->
+          <form id="loginForm" class="auth-form">
+            <div class="form-group">
+              <label for="loginEmail">Email Address</label>
+              <input type="email" id="loginEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+              <label for="loginPassword">Password</label>
+              <input type="password" id="loginPassword" placeholder="Enter your password" required>
+            </div>
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="rememberMe">
+                <span class="checkmark"></span>
+                Remember me
+              </label>
+              <a href="#" class="forgot-password">Forgot password?</a>
+            </div>
+            <button type="submit" class="auth-submit-btn">Sign In</button>
+            
+            <div class="social-login">
+              <div class="divider">
+                <span>or continue with</span>
+              </div>
+              <div class="social-buttons">
+                <button type="button" class="social-btn google-btn" id="googleLoginBtn">
+                  <span class="social-icon">🔍</span>
+                  Google
+                </button>
+                <button type="button" class="social-btn github-btn" id="githubLoginBtn">
+                  <span class="social-icon">🐙</span>
+                  GitHub
+                </button>
+              </div>
+            </div>
+            
+            <p class="auth-switch">
+              Don't have an account? <a href="#" id="showSignUp">Create one</a>
+            </p>
           </form>
-          <form id="signUpForm" style="display: none;">
-            <input type="email" id="signUpEmail" placeholder="Email" required>
-            <input type="password" id="signUpPassword" placeholder="Password" required>
-            <button type="submit">Sign Up</button>
-            <p>Already have an account? <a href="#" id="showLogin">Login</a></p>
+
+          <!-- Sign Up Form -->
+          <form id="signUpForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+              <label for="signUpEmail">Email Address</label>
+              <input type="email" id="signUpEmail" placeholder="Enter your email" required>
+            </div>
+            <div class="form-group">
+              <label for="signUpPassword">Password</label>
+              <input type="password" id="signUpPassword" placeholder="Create a password" required>
+              <div class="password-strength" id="passwordStrength"></div>
+            </div>
+            <div class="form-group">
+              <label for="confirmPassword">Confirm Password</label>
+              <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+            </div>
+            <div class="form-options">
+              <label class="checkbox-label">
+                <input type="checkbox" id="agreeTerms" required>
+                <span class="checkmark"></span>
+                I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
+              </label>
+            </div>
+            <button type="submit" class="auth-submit-btn">Create Account</button>
+            
+            <div class="social-login">
+              <div class="divider">
+                <span>or sign up with</span>
+              </div>
+              <div class="social-buttons">
+                <button type="button" class="social-btn google-btn" id="googleSignUpBtn">
+                  <span class="social-icon">🔍</span>
+                  Google
+                </button>
+                <button type="button" class="social-btn github-btn" id="githubSignUpBtn">
+                  <span class="social-icon">🐙</span>
+                  GitHub
+                </button>
+              </div>
+            </div>
+            
+            <p class="auth-switch">
+              Already have an account? <a href="#" id="showLogin">Sign in</a>
+            </p>
           </form>
         </div>
       </div>
@@ -156,21 +290,279 @@
 
     <!-- Edit Profile Modal -->
     <div id="editProfileModal" class="modal">
-        <div class="modal-content auth-modal-content">
+        <div class="modal-content edit-profile-modal-content">
             <div class="modal-header">
                 <h2 class="modal-title">Edit Profile</h2>
                 <span class="close-button edit-profile-close-button">&times;</span>
             </div>
             <div class="modal-body">
                 <form id="editProfileForm">
-                    <input type="text" id="editName" placeholder="Name" required>
-                    <textarea id="editBio" placeholder="Bio" rows="3"></textarea>
-                    <label for="editPhoto" class="file-upload-label">Change Photo</label>
-                    <input type="file" id="editPhoto" accept="image/*" style="display: none;">
-                    <button type="submit">Save Changes</button>
+                    <!-- Profile Information Section -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Profile Information</h3>
+                        <div class="form-group">
+                            <label for="editName">Display Name</label>
+                            <input type="text" id="editName" placeholder="Your display name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="editBio">Bio</label>
+                            <textarea id="editBio" placeholder="Tell us about yourself..." rows="3"></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label for="editPhoto" class="file-upload-label">
+                                <span class="upload-icon">📷</span>
+                                Change Profile Photo
+                            </label>
+                            <input type="file" id="editPhoto" accept="image/*" style="display: none;">
+                            <div class="photo-preview" id="photoPreview"></div>
+                        </div>
+                    </div>
+
+                    <!-- Widget Management Section -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Widget Management</h3>
+                        <div class="widget-stats">
+                            <div class="stat-card">
+                                <span class="stat-number" id="widgetSlotsOccupied">0</span>
+                                <span class="stat-label">Widgets Active</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number" id="widgetSlotsTotal">10</span>
+                                <span class="stat-label">Total Slots</span>
+                            </div>
+                            <div class="stat-card">
+                                <span class="stat-number" id="widgetSlotsAvailable">10</span>
+                                <span class="stat-label">Available</span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editWidgetLayout">Widget Layout</label>
+                            <select id="editWidgetLayout">
+                                <option value="grid">Grid Layout</option>
+                                <option value="timeline">Timeline Layout</option>
+                                <option value="masonry">Masonry Layout</option>
+                                <option value="carousel">Carousel Layout</option>
+                            </select>
+                        </div>
+                        <button type="button" class="secondary-btn" id="manageWidgetsBtn">Manage Widgets</button>
+                    </div>
+
+                    <!-- Appearance Settings Section -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Appearance</h3>
+                        <div class="form-group">
+                            <label for="editTheme">Theme</label>
+                            <select id="editTheme">
+                                <option value="dark">Dark Theme</option>
+                                <option value="light">Light Theme</option>
+                                <option value="cyberpunk">Cyberpunk</option>
+                                <option value="minimal">Minimal</option>
+                                <option value="neon">Neon</option>
+                                <option value="custom">Custom</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editFontFamily">Font Family</label>
+                            <select id="editFontFamily">
+                                <option value="Inter">Inter (Default)</option>
+                                <option value="Orbitron">Orbitron</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Open Sans">Open Sans</option>
+                                <option value="Montserrat">Montserrat</option>
+                                <option value="Poppins">Poppins</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editFontSize">Font Size</label>
+                            <select id="editFontSize">
+                                <option value="small">Small</option>
+                                <option value="medium">Medium (Default)</option>
+                                <option value="large">Large</option>
+                                <option value="xl">Extra Large</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAccentColor">Accent Color</label>
+                            <div class="color-picker-container">
+                                <input type="color" id="editAccentColor" value="#00f0ff">
+                                <span class="color-preview" id="accentColorPreview"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Advanced Settings Section -->
+                    <div class="edit-section">
+                        <h3 class="edit-section-title">Advanced Settings</h3>
+                        <div class="form-group">
+                            <label for="editProfileVisibility">Profile Visibility</label>
+                            <select id="editProfileVisibility">
+                                <option value="public">Public</option>
+                                <option value="private">Private</option>
+                                <option value="friends">Friends Only</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="editShowStats">Show Profile Stats</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="editShowStats" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editShowNotifications">Show Notifications</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="editShowNotifications" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="editAutoSave">Auto-save Changes</label>
+                            <div class="toggle-switch">
+                                <input type="checkbox" id="editAutoSave" checked>
+                                <span class="toggle-slider"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="edit-actions">
+                        <button type="button" class="secondary-btn" id="resetToDefaultsBtn">Reset to Defaults</button>
+                        <button type="button" class="secondary-btn" id="previewProfileBtn">Preview</button>
+                        <button type="submit" class="primary-btn">Save Changes</button>
+                    </div>
                 </form>
             </div>
         </div>
     </div>
   </body>
 </html>
+
+<div id="error-toast" class="error-toast">
+  <span id="error-toast-message"></span>
+  <button id="error-toast-close">&times;</button>
+</div>
+
+<nav class="mobile-bottom-nav">
+  <button class="mobile-nav-btn" data-action="findUsers">Users</button>
+  <button class="mobile-nav-btn" data-action="leaveNote">Note</button>
+  <button class="mobile-nav-btn" data-action="explore">Explore</button>
+  <button class="mobile-nav-btn" data-action="tutorial">Items</button>
+</nav>
+
+<script>
+  const collapseBtn = document.getElementById('collapseProfileBtn');
+  const profileContent = document.querySelector('.collapsible-profile-content');
+  let collapsed = false;
+  collapseBtn.addEventListener('click', () => {
+    collapsed = !collapsed;
+    profileContent.style.display = collapsed ? 'none' : '';
+    collapseBtn.textContent = collapsed ? '▲' : '▼';
+  });
+</script>
+
+<script>
+  // Sidebar open/close logic
+  const sidebar = document.querySelector('.sidebar-nav');
+  const overlay = document.querySelector('.sidebar-overlay');
+  const openBtn = document.querySelector('.hamburger-menu');
+  const closeBtn = document.querySelector('.sidebar-close-btn');
+  function openSidebar() {
+    sidebar.classList.add('open');
+    overlay.classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeSidebar() {
+    sidebar.classList.remove('open');
+    overlay.classList.remove('show');
+    document.body.style.overflow = '';
+  }
+  openBtn.addEventListener('click', openSidebar);
+  closeBtn.addEventListener('click', closeSidebar);
+  overlay.addEventListener('click', closeSidebar);
+  // Swipe gesture for mobile
+  let startX = null;
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches[0].clientX < 30 && !sidebar.classList.contains('open')) {
+      startX = e.touches[0].clientX;
+    } else if (sidebar.classList.contains('open')) {
+      startX = e.touches[0].clientX;
+    } else {
+      startX = null;
+    }
+  });
+  document.addEventListener('touchmove', function(e) {
+    if (startX !== null) {
+      let dx = e.touches[0].clientX - startX;
+      if (!sidebar.classList.contains('open') && dx > 60) {
+        openSidebar();
+        startX = null;
+      } else if (sidebar.classList.contains('open') && dx < -60) {
+        closeSidebar();
+        startX = null;
+      }
+    }
+  });
+  document.addEventListener('touchend', function() { startX = null; });
+</script>
+
+<script>
+  // Profile navigation buttons
+  const profileNavBtns = document.querySelectorAll('.profile-nav-btn');
+  profileNavBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const page = btn.getAttribute('data-page');
+      console.log(`Navigating to: ${page}`);
+      
+      switch(page) {
+        case 'about':
+          // Navigate to about page
+          window.location.href = '/about.html';
+          break;
+        case 'explore':
+          // Navigate to explore page
+          window.location.href = '/explore.html';
+          break;
+        case 'inventory':
+          // Navigate to inventory page
+          window.location.href = '/inventory.html';
+          break;
+        default:
+          console.log('Unknown page:', page);
+      }
+    });
+  });
+</script>
+
+<script>
+  // Tutorial button functionality
+  const tutorialBtn = document.getElementById('tutorialBtn');
+  tutorialBtn.addEventListener('click', () => {
+    console.log('Tutorial button clicked');
+    // For now, just show an alert. In the future, this will open a comprehensive tutorial
+    alert('Tutorial feature coming soon! This will explain everything about inque.');
+  });
+
+  // Social media banners functionality
+  const socialBanners = document.querySelectorAll('.social-banner');
+  socialBanners.forEach(banner => {
+    banner.addEventListener('click', () => {
+      const platform = banner.getAttribute('data-platform');
+      console.log(`Social banner clicked: ${platform}`);
+      
+      // Define social media URLs (replace with actual URLs)
+      const socialUrls = {
+        twitter: 'https://twitter.com/inque',
+        instagram: 'https://instagram.com/inque',
+        discord: 'https://discord.gg/inque',
+        youtube: 'https://youtube.com/@inque'
+      };
+      
+      const url = socialUrls[platform];
+      if (url) {
+        window.open(url, '_blank');
+      } else {
+        console.log(`No URL defined for ${platform}`);
+      }
+    });
+  });
+</script>
