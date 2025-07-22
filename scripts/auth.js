@@ -49,6 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
   const profileLvl = document.getElementById("profileLvl");
   const profileType = document.getElementById("profileType");
   const profileRole = document.getElementById("profileRole");
+  const profileStatusIndicator = document.getElementById(
+    "profileStatusIndicator"
+  );
+  const profileStatus = document.getElementById("profileStatus");
+  const editProfileQuickBtn = document.getElementById("editProfileQuickBtn");
   const editProfileModal = document.getElementById("editProfileModal");
   const editProfileForm = document.getElementById("editProfileForm");
   const editPhotoInput = document.getElementById("editPhoto");
@@ -400,16 +405,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  const updateProfileBanner = (profileData) => {
+  const updateProfileBanner = (profileData, isLoggedIn = false) => {
     currentUserProfile = profileData;
-    profileName.textContent = profileData.name;
-    profileBio.textContent = profileData.bio;
-    profileLvl.textContent = profileData.lvl;
-    profileType.textContent = profileData.type;
-    profileRole.textContent = profileData.role;
-    profilePicContainer.style.backgroundImage = `url(${
-      profileData.photoURL || defaultProfile.photoURL
-    })`;
+
+    // Update profile name
+    if (profileName) {
+      profileName.textContent = profileData.name;
+    }
+
+    // Update profile bio
+    if (profileBio) {
+      profileBio.textContent = profileData.bio;
+    }
+
+    // Update profile stats
+    if (profileLvl) {
+      profileLvl.textContent = profileData.lvl.replace("LVL • ", "");
+    }
+    if (profileType) {
+      profileType.textContent = profileData.type.replace("TYPE • ", "");
+    }
+    if (profileRole) {
+      profileRole.textContent = profileData.role.replace("ROLE • ", "");
+    }
+
+    // Update profile picture
+    if (profilePicContainer) {
+      profilePicContainer.style.backgroundImage = `url(${
+        profileData.photoURL || defaultProfile.photoURL
+      })`;
+    }
+
+    // Update status indicator
+    if (profileStatusIndicator) {
+      if (isLoggedIn) {
+        profileStatusIndicator.className = "profile-status-indicator online";
+      } else {
+        profileStatusIndicator.className = "profile-status-indicator offline";
+      }
+    }
+
+    // Update status badge
+    if (profileStatus) {
+      const statusBadge = profileStatus.querySelector(".status-badge");
+      if (statusBadge) {
+        statusBadge.className = `status-badge ${isLoggedIn ? "user" : "guest"}`;
+        statusBadge.textContent = isLoggedIn ? "User" : "Guest";
+      }
+    }
+
     // Update sidebar profile pic
     if (sidebarAvatar) {
       sidebarAvatar.style.backgroundImage = `url(${
@@ -625,154 +669,27 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Edit Profile Logic
-  if (sidebarEditProfileBtn && editProfileModal && editProfileForm) {
-    sidebarEditProfileBtn.addEventListener("click", () => {
-      if (!currentUserProfile) return;
-      document.getElementById("editName").value = currentUserProfile.name;
-      document.getElementById("editBio").value = currentUserProfile.bio;
-      selectedFile = null; // Reset file selection
-      editProfileModal.style.display = "block";
-    });
-
-    editPhotoInput.addEventListener("change", (e) => {
-      selectedFile = e.target.files[0];
-    });
-
-    editProfileCloseBtn.addEventListener("click", () => {
-      editProfileModal.style.display = "none";
-    });
-
-    editProfileForm.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const newName = document.getElementById("editName").value;
-      const newBio = document.getElementById("editBio").value;
-      const user = auth.currentUser;
-
-      if (user) {
-        try {
-          let photoURL = currentUserProfile.photoURL;
-
-          // If a new photo was selected, upload it
-          if (selectedFile) {
-            const storageRef = ref(storage, `profile_pictures/${user.uid}`);
-            await uploadBytes(storageRef, selectedFile);
-            photoURL = await getDownloadURL(storageRef);
-          }
-
-          const userDocRef = doc(db, "users", user.uid);
-          await updateDoc(userDocRef, {
-            name: newName,
-            bio: newBio,
-            photoURL: photoURL,
-          });
-
-          // Manually update the banner right away for a better UX
-          updateProfileBanner({
-            ...currentUserProfile,
-            name: newName,
-            bio: newBio,
-            photoURL: photoURL,
-          });
-
-          // Also update sidebar with new profile info
-          updateSidebarUserInfo(
-            {
-              ...currentUserProfile,
-              name: newName,
-              bio: newBio,
-              photoURL: photoURL,
-            },
-            true,
-            user.email
-          );
-
-          // Add success notification
-          addLocalNotification("Profile updated successfully!", "success");
-
-          editProfileModal.style.display = "none";
-        } catch (error) {
-          alert(error.message);
-          console.error("Error updating profile: ", error);
-        }
-      }
-    });
-  }
-
-  const fetchAndDisplayProfile = async (userId) => {
-    const userDocRef = doc(db, "users", userId);
-    const userDoc = await getDoc(userDocRef);
-
-    if (userDoc.exists()) {
-      updateProfileBanner({ ...defaultProfile, ...userDoc.data() });
-    } else {
-      console.log("No such user profile!");
-      updateProfileBanner(defaultProfile); // Show default if profile not found
-    }
-  };
-
   // Handle Auth State Changes
   onAuthStateChanged(auth, async (user) => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileUserId = urlParams.get("user");
 
-    if (profileUserId) {
-      // If a user ID is in the URL, fetch that profile
-      fetchAndDisplayProfile(profileUserId);
-      // If there's a logged-in user, set up their info but don't override the banner
-      if (user) {
-        authModal.style.display = "none"; // Close modal on successful auth
-        // Update sidebar with logged-in user info
-        updateSidebarUserInfo(
-          currentUserProfile || defaultProfile,
-          true,
-          user.email
-        );
-        // Set up notification listener for logged-in user
-        setupNotificationListener(user.uid);
-        // Add welcome notification
-        addLocalNotification(`Welcome back, ${user.email}!`, "success");
-      } else {
-        // Not logged in, viewing a profile
-        // Update sidebar with guest info
-        updateSidebarUserInfo(defaultProfile, false);
-        // Clean up notification listener
-        if (notificationUnsubscribe) {
-          notificationUnsubscribe();
-          notificationUnsubscribe = null;
-        }
-      }
-    } else if (user) {
-      // User is signed in and not viewing a specific profile, show their own
-      fetchAndDisplayProfile(user.uid);
-      authModal.style.display = "none"; // Close modal on successful auth
-      // Update sidebar with logged-in user info
-      updateSidebarUserInfo(
-        currentUserProfile || defaultProfile,
-        true,
-        user.email
-      );
-      // Set up notification listener
-      setupNotificationListener(user.uid);
-      // Add welcome notification
-      addLocalNotification(`Welcome back, ${user.email}!`, "success");
+    if (user) {
+      // Always show logged-in user's info in sidebar
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      const sidebarProfile = userDoc.exists() ? userDoc.data() : defaultProfile;
+      updateSidebarUserInfo(sidebarProfile, true, user.email);
 
-      // Create sample notifications for new users (you can remove this later)
-      // Uncomment the next line to create sample notifications for testing
-      // createSampleNotifications(user.uid);
-    } else {
-      // User is signed out and not viewing any profile
-      currentUserProfile = null;
-      updateProfileBanner(defaultProfile); // Revert to default
-      // Update sidebar with guest info
-      updateSidebarUserInfo(defaultProfile, false);
-      // Clean up notification listener
-      if (notificationUnsubscribe) {
-        notificationUnsubscribe();
-        notificationUnsubscribe = null;
+      // Show profile banner for viewed profile (could be self or other)
+      if (profileUserId) {
+        fetchAndDisplayProfile(profileUserId);
+      } else {
+        updateProfileBanner(sidebarProfile, true);
       }
-      // Add logout notification
-      addLocalNotification("You have been logged out.", "info");
+    } else {
+      // Not logged in
+      updateSidebarUserInfo(defaultProfile, false);
+      updateProfileBanner(defaultProfile, false);
     }
   });
 
@@ -804,7 +721,6 @@ document.addEventListener("DOMContentLoaded", () => {
   if (signUpForm) {
     signUpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-
       grecaptcha.enterprise.ready(async () => {
         const token = await grecaptcha.enterprise.execute(
           "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
@@ -834,6 +750,28 @@ document.addEventListener("DOMContentLoaded", () => {
           };
           await setDoc(doc(db, "users", user.uid), newUserProfile);
 
+          // Seed widget folders in Firebase Storage with placeholder index.html
+          const placeholderHtml = new Blob(
+            [
+              `<html><body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;'><div><h2>Widget Placeholder</h2><img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;'/></div></body></html>`,
+            ],
+            { type: "text/html" }
+          );
+          for (let i = 1; i <= 3; i++) {
+            const storageRef = ref(
+              storage,
+              `users/${user.uid}/app-widget-${i}/index.html`
+            );
+            try {
+              await uploadBytes(storageRef, placeholderHtml);
+            } catch (err) {
+              console.error(
+                `Failed to seed app-widget-${i} for user ${user.uid}:`,
+                err
+              );
+            }
+          }
+
           console.log("Signed up and profile created:", user);
         } catch (error) {
           alert(error.message);
@@ -842,7 +780,6 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-
   // Login
   if (loginForm) {
     loginForm.addEventListener("submit", (e) => {

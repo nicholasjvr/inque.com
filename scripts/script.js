@@ -1,3 +1,7 @@
+import { uploadProjectFiles } from "./scripts/upload.js";
+import { createProject, listUserProjects } from "./scripts/project-manager.js";
+import { previewWidget } from "./scripts/widget-preview.js";
+
 document.addEventListener("DOMContentLoaded", function () {
   // Timeline Event Card Data (placeholder)
   const timelineCardData = [
@@ -41,66 +45,113 @@ document.addEventListener("DOMContentLoaded", function () {
     { hasWidget: false },
   ];
 
-  // Inject cards into each timeline-event
-  const timelineEvents = document.querySelectorAll(".timeline-event");
-  timelineEvents.forEach((event, idx) => {
-    // Remove any previous card
-    const oldCard = event.querySelector(".timeline-event-card");
-    if (oldCard) oldCard.remove();
+  let widgetEditMode = false;
+  let currentlyEditingCard = null;
 
-    // Create card
-    const card = document.createElement("div");
-    card.className = "timeline-event-card";
-
-    // Prevent any default click behavior on the card itself
-    card.addEventListener("click", function (e) {
-      e.preventDefault();
-      e.stopPropagation();
+  // Listen for Edit Profile button (assume it has id 'editProfileQuickBtn')
+  document
+    .getElementById("editProfileQuickBtn")
+    ?.addEventListener("click", () => {
+      widgetEditMode = !widgetEditMode;
+      renderAllWidgetCards();
     });
 
-    const widgetData = timelineCardData[idx];
+  function renderAllWidgetCards() {
+    const timelineEvents = document.querySelectorAll(".timeline-event");
+    timelineEvents.forEach((event, idx) => {
+      // Remove any previous card
+      const oldCard = event.querySelector(".timeline-event-card");
+      if (oldCard) oldCard.remove();
 
-    if (widgetData?.hasWidget && widgetData?.iframe) {
-      // Widget with preview image and portal overlay
-      card.innerHTML = `
-        <h3>${widgetData.title}</h3>
-        <p>${widgetData.desc}</p>
-        <div class="widget-preview-container">
-          <div class="portal-overlay"></div>
-          <img src="assets/imgs/portal_placeholder.gif" class="widget-placeholder-img" />
-        </div>
-        <button class="widget-preview-btn" data-widget-path="${widgetData.iframe}">
-          Open Full View
-        </button>
-      `;
-    } else {
-      // Placeholder for an empty slot
-      card.innerHTML = `
-        <div class="empty-widget-slot">
-          <button class="add-widget-btn">+</button>
-        </div>
-      `;
-    }
+      // Create card
+      const card = document.createElement("div");
+      card.className = "timeline-event-card";
+      const widgetData = timelineCardData[idx];
 
-    event.appendChild(card);
-
-    // Add click handlers for preview buttons
-    const previewBtn = card.querySelector(".widget-preview-btn");
-    if (previewBtn && !previewBtn.disabled) {
-      previewBtn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        const widgetPath = this.dataset.widgetPath;
-        if (widgetPath) {
-          openWidgetModal(widgetPath, widgetData.title);
+      if (widgetData?.hasWidget && widgetData?.iframe) {
+        if (currentlyEditingCard === idx) {
+          // Edit mode for this card
+          card.innerHTML = `
+            <input class="widget-edit-title" value="${widgetData.title}" style="width:100%;margin-bottom:8px;" />
+            <textarea class="widget-edit-desc" style="width:100%;margin-bottom:8px;">${widgetData.desc}</textarea>
+            <button class="widget-save-btn">💾 Save</button>
+            <button class="widget-cancel-btn">Cancel</button>
+          `;
+          card
+            .querySelector(".widget-save-btn")
+            .addEventListener("click", () => {
+              // Save changes
+              widgetData.title = card.querySelector(".widget-edit-title").value;
+              widgetData.desc = card.querySelector(".widget-edit-desc").value;
+              currentlyEditingCard = null;
+              // Show refresh animation
+              card.classList.add("refreshing");
+              setTimeout(() => {
+                card.classList.remove("refreshing");
+                renderAllWidgetCards();
+              }, 600);
+            });
+          card
+            .querySelector(".widget-cancel-btn")
+            .addEventListener("click", () => {
+              currentlyEditingCard = null;
+              renderAllWidgetCards();
+            });
+        } else {
+          // Normal view mode
+          card.innerHTML = `
+            <h3>${widgetData.title}</h3>
+            <p>${widgetData.desc}</p>
+            <div class="widget-preview-container">
+              <div class="portal-overlay"></div>
+              <img src="assets/imgs/portal_placeholder.gif" class="widget-placeholder-img" />
+            </div>
+            <button class="widget-preview-btn" data-widget-path="${
+              widgetData.iframe
+            }">
+              Open Full View
+            </button>
+            ${
+              widgetEditMode
+                ? '<button class="widget-edit-btn" title="Edit">✏️</button>'
+                : ""
+            }
+          `;
+          // Edit button
+          if (widgetEditMode) {
+            card
+              .querySelector(".widget-edit-btn")
+              .addEventListener("click", () => {
+                currentlyEditingCard = idx;
+                renderAllWidgetCards();
+              });
+          }
+          // Preview button
+          const previewBtn = card.querySelector(".widget-preview-btn");
+          if (previewBtn && !previewBtn.disabled) {
+            previewBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              const widgetPath = this.dataset.widgetPath;
+              if (widgetPath) {
+                openWidgetModal(widgetPath, widgetData.title);
+              }
+            });
+          }
         }
-      });
-    }
+      } else {
+        // Placeholder for an empty slot
+        card.innerHTML = `
+          <div class="empty-widget-slot">
+            <button class="add-widget-btn">+</button>
+          </div>
+        `;
+      }
+      event.appendChild(card);
+    });
+  }
 
-    // Accessibility: show card on focus
-    event.setAttribute("tabindex", "0");
-    event.addEventListener("focus", () => (card.style.display = "block"));
-    event.addEventListener("blur", () => (card.style.display = ""));
-  });
+  // Initial render
+  renderAllWidgetCards();
 
   // Widget Modal Function
   function openWidgetModal(widgetPath, widgetTitle) {
@@ -344,4 +395,31 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
+
+  document.getElementById("uploadProjectBtn").onclick = async () => {
+    const files = document.getElementById("projectFiles").files;
+    const projectId = Date.now().toString();
+    const fileURLs = await uploadProjectFiles(files, projectId);
+    await createProject(projectId, {
+      files: fileURLs,
+      name: "My Widget Project",
+    });
+    alert("Project uploaded!");
+    // Optionally refresh project list
+  };
+
+  async function showProjects() {
+    const projects = await listUserProjects();
+    const listDiv = document.getElementById("projectList");
+    listDiv.innerHTML = projects
+      .map(
+        (p) => `
+      <div>
+        <strong>${p.name}</strong>
+        <button onclick="previewWidget('${p.files["index.html"]}', 'widgetPreview')">Preview</button>
+      </div>
+    `
+      )
+      .join("");
+  }
 });

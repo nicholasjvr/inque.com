@@ -114,23 +114,313 @@ main {
 /* --- Profile Banner Styles --- */
 #profile-banner {
     position: relative;
-    /* Changed from fixed */
     top: auto;
     left: auto;
     z-index: 10000;
     display: flex;
-    justify-content: space-between;
+    align-items: flex-start;
     gap: 20px;
-    align-items: center;
-    background-color: var(--bg-card);
+    background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 240, 255, 0.05) 100%);
     border: 1px solid var(--primary-color);
-    border-radius: 12px;
-    padding: 15px 20px;
-    backdrop-filter: blur(5px);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 240, 255, 0.1);
     color: var(--text-light);
-    max-width: 600px;
+    max-width: 700px;
     width: 100%;
+    transition: all 0.3s ease, max-height 0.3s ease;
+}
+
+#profile-banner:hover {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(0, 240, 255, 0.2);
+    transform: translateY(-2px);
+}
+
+/* Profile Avatar Section */
+.profile-avatar-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+}
+
+.profile-pic-container {
+    position: relative;
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    border: 3px solid var(--primary-color);
+    background-image: url('https://i.pinimg.com/originals/3c/69/1d/3c691d9047d7fb33383a8b417c8e9b67.jpg');
+    background-size: cover;
+    background-position: center;
+    box-shadow: 0 4px 16px rgba(0, 240, 255, 0.2);
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.profile-pic-container:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.3);
+}
+
+.profile-status-indicator {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid var(--bg-card);
+    background-color: #666;
+    transition: all 0.3s ease;
+}
+
+.profile-status-indicator.online {
+    background-color: #00ff88;
+    box-shadow: 0 0 8px rgba(0, 255, 136, 0.6);
+}
+
+.profile-status-indicator.offline {
+    background-color: #ff4444;
+}
+
+.profile-quick-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.profile-action-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+}
+
+.profile-action-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 240, 255, 0.3);
+}
+
+.profile-action-btn:active {
+    transform: translateY(0);
+}
+
+.action-icon {
+    font-size: 14px;
+}
+
+/* Profile Info Section */
+.profile-info-section {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-width: 0;
+}
+
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.profile-name {
+    font-family: 'Orbitron', monospace;
+    font-size: 24px;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin: 0;
+    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+}
+
+.profile-status {
+    display: flex;
+    align-items: center;
+}
+
+.status-badge {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Orbitron', monospace;
+    transition: all 0.3s ease;
+}
+
+.status-badge.guest {
+    background: rgba(255, 68, 68, 0.2);
+    color: #ff4444;
+    border: 1px solid rgba(255, 68, 68, 0.3);
+}
+
+.status-badge.user {
+    background: rgba(0, 240, 255, 0.2);
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.status-badge.admin {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.profile-bio {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #ccc;
+    margin: 0;
+    max-width: 100%;
+    word-wrap: break-word;
+}
+
+/* Profile Stats Row */
+.profile-stats-row {
+    display: flex;
+    gap: 16px;
+    padding: 12px 0;
+    border-top: 1px solid rgba(0, 240, 255, 0.1);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    min-width: 60px;
+}
+
+.stat-label {
+    font-size: 10px;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-family: 'Orbitron', monospace;
+}
+
+.stat-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--primary-color);
+    font-family: 'Orbitron', monospace;
+    text-shadow: 0 0 5px rgba(0, 240, 255, 0.3);
+}
+
+/* Navigation Buttons */
+.profile-navigation {
+    display: flex;
+    gap: 8px;
+}
+
+.profile-navigation .nav-btn {
+    flex: 1 1 0;
+    min-width: 0;
+    text-align: center;
+}
+
+.nav-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    font-family: 'Orbitron', monospace;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.nav-btn.primary {
+    background: linear-gradient(135deg, var(--primary-color) 0%, rgba(0, 240, 255, 0.8) 100%);
+    color: var(--secondary-color);
+    box-shadow: 0 2px 8px rgba(0, 240, 255, 0.3);
+}
+
+.nav-btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 240, 255, 0.4);
+}
+
+.nav-btn.secondary {
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--primary-color);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+}
+
+.nav-btn.secondary:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(0, 240, 255, 0.2);
+}
+
+.nav-btn:active {
+    transform: translateY(0);
+}
+
+.nav-icon {
+    font-size: 14px;
+}
+
+.nav-text {
+    font-size: 11px;
+}
+
+/* Collapse Button */
+.collapse-profile-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--primary-color);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(5px);
+}
+
+.collapse-profile-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateY(-1px);
+}
+
+.collapse-profile-btn:active {
+    transform: translateY(0);
+}
+
+.collapse-icon {
+    font-size: 12px;
+    transition: transform 0.2s ease;
+}
+
+.collapse-profile-btn.collapsed .collapse-icon {
+    transform: rotate(180deg);
 }
 
 .profile-actions-nav {
@@ -751,17 +1041,64 @@ footer {
 
     #profile-banner {
         position: static;
-        /* Not fixed or absolute */
-        margin: 32px auto 0 auto;
-        /* Top margin to separate from header */
-        max-width: 400px;
-        /* Smaller width */
-        padding: 16px 12px;
-        z-index: 2;
+        margin: 20px auto 0 auto;
+        max-width: 95vw;
+        padding: 16px;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
     }
 
-    .profile-info {
+    .profile-avatar-section {
+        order: 1;
+    }
+
+    .profile-info-section {
+        order: 2;
+        width: 100%;
         align-items: center;
+        text-align: center;
+    }
+
+    .profile-header {
+        justify-content: center;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .profile-name {
+        font-size: 20px;
+    }
+
+    .profile-stats-row {
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .profile-navigation {
+        justify-content: center;
+        gap: 6px;
+    }
+
+    .nav-btn {
+        padding: 6px 12px;
+        font-size: 11px;
+    }
+
+    .nav-icon {
+        font-size: 12px;
+    }
+
+    .nav-text {
+        font-size: 10px;
+    }
+
+    .collapse-profile-btn {
+        position: relative;
+        top: auto;
+        right: auto;
+        order: 3;
+        margin-top: 8px;
     }
 
     .timeline-3channel {
@@ -799,6 +1136,12 @@ footer {
     .action-button {
         padding: 10px;
         font-size: 12px;
+    }
+}
+
+@media (max-width: 768px) {
+    main {
+        padding-top: 10px;
     }
 }
 

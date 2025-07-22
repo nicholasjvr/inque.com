@@ -85,31 +85,84 @@
   </div>
 
   <button class="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
-  <a href="assets/users/users.html" class="sidebar-nav-btn">Users</a>
-  <button class="sidebar-nav-btn" data-action="leaveNote">Note</button>
-  <button class="sidebar-nav-btn" data-action="explore">Explore</button>
-  <button class="sidebar-nav-btn" data-action="tutorial">Items</button>
+  <a href="assets/users/users.html" class="sidebar-nav-btn">List Users</a>
+  <button class="sidebar-nav-btn" data-action="leaveNote">Leave a Note</button>
+  <button class="sidebar-nav-btn" data-action="explore">Explore Creations</button>
+  <button class="sidebar-nav-btn" data-action="tutorial">My Inventory</button>
 </nav>
 <header class="site-header">
   <button class="hamburger-menu" aria-label="Open sidebar">&#9776;</button>
   <div id="profile-banner">
-    <div class="profile-pic-container"></div>
-    <button id="collapseProfileBtn" class="collapse-profile-btn" aria-label="Collapse profile">▼</button>
-    <button id="tutorialBtn" class="tutorial-btn" aria-label="Tutorial">ℹ</button>
-    <div class="collapsible-profile-content">
-      <div class="profile-info">
-        <h3 class="profile-name">Welcome</h3>
-        <p class="profile-bio">Explore the world of inque</p>
-        <div class="profile-stats">
-          <button class="profile-nav-btn" data-page="about">THE LORE</button>
-          <button class="profile-nav-btn" data-page="explore">EXPLORE</button>
-          <button class="profile-nav-btn" data-page="inventory">INVENTORY</button>
+    <!-- Profile Avatar Section -->
+    <div class="profile-avatar-section">
+      <div class="profile-pic-container">
+        <div class="profile-status-indicator" id="profileStatusIndicator"></div>
+      </div>
+      <div class="profile-quick-actions">
+        <button class="profile-action-btn" id="editProfileQuickBtn" title="Edit Profile" aria-label="Edit Profile">
+          <span class="action-icon">✏️</span>
+        </button>
+        <button class="profile-action-btn" id="tutorialBtn" title="Help & Tutorial" aria-label="Help & Tutorial">
+          <span class="action-icon">ℹ️</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Profile Info Section -->
+    <div class="profile-info-section">
+      <div class="profile-header">
+        <h3 class="profile-name" id="profileName">Welcome</h3>
+        <div class="profile-status" id="profileStatus">
+          <span class="status-badge guest">Guest</span>
         </div>
       </div>
-      <!-- Removed profile-actions from here -->
+      
+      <p class="profile-bio" id="profileBio">Explore the world of inque</p>
+      
+      <!-- Profile Stats Row -->
+      <div class="profile-stats-row">
+        <div class="stat-item">
+          <span class="stat-label">Level</span>
+          <span class="stat-value" id="profileLvl">?</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Type</span>
+          <span class="stat-value" id="profileType">?</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">Role</span>
+          <span class="stat-value" id="profileRole">GUEST</span>
+        </div>
+      </div>
+
+      <!-- Navigation Buttons -->
+      <div class="profile-navigation">
+        <button class="nav-btn primary" data-page="about" title="Learn about inque">
+          <span class="nav-icon">📚</span>
+          <span class="nav-text">The Lore</span>
+        </button>
+        <button class="nav-btn secondary" data-page="explore" title="Explore creations">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-text">Explore</span>
+        </button>
+        <button class="nav-btn secondary" data-page="inventory" title="View your items">
+          <span class="nav-icon">🎒</span>
+          <span class="nav-text">Inventory</span>
+        </button>
+        <button class="nav-btn secondary" data-page="inventory" title="View your items">
+          <span class="nav-icon">🎒</span>
+          <span class="nav-text">Blog</span>
+        </button>
+      </div>
     </div>
+
+    <!-- Collapse/Expand Button -->
+    <button id="collapseProfileBtn" class="collapse-profile-btn" aria-label="Toggle profile details">
+      <span class="collapse-icon">▼</span>
+    </button>
   </div>
 </header>
+
   <main>
       <section class="timeline-nav">
         <div class="timeline-3channel">
@@ -288,152 +341,6 @@
       </div>
     </div>
 
-    <!-- Edit Profile Modal -->
-    <div id="editProfileModal" class="modal">
-        <div class="modal-content edit-profile-modal-content">
-            <div class="modal-header">
-                <h2 class="modal-title">Edit Profile</h2>
-                <span class="close-button edit-profile-close-button">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="editProfileForm">
-                    <!-- Profile Information Section -->
-                    <div class="edit-section">
-                        <h3 class="edit-section-title">Profile Information</h3>
-                        <div class="form-group">
-                            <label for="editName">Display Name</label>
-                            <input type="text" id="editName" placeholder="Your display name" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="editBio">Bio</label>
-                            <textarea id="editBio" placeholder="Tell us about yourself..." rows="3"></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="editPhoto" class="file-upload-label">
-                                <span class="upload-icon">📷</span>
-                                Change Profile Photo
-                            </label>
-                            <input type="file" id="editPhoto" accept="image/*" style="display: none;">
-                            <div class="photo-preview" id="photoPreview"></div>
-                        </div>
-                    </div>
-
-                    <!-- Widget Management Section -->
-                    <div class="edit-section">
-                        <h3 class="edit-section-title">Widget Management</h3>
-                        <div class="widget-stats">
-                            <div class="stat-card">
-                                <span class="stat-number" id="widgetSlotsOccupied">0</span>
-                                <span class="stat-label">Widgets Active</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-number" id="widgetSlotsTotal">10</span>
-                                <span class="stat-label">Total Slots</span>
-                            </div>
-                            <div class="stat-card">
-                                <span class="stat-number" id="widgetSlotsAvailable">10</span>
-                                <span class="stat-label">Available</span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="editWidgetLayout">Widget Layout</label>
-                            <select id="editWidgetLayout">
-                                <option value="grid">Grid Layout</option>
-                                <option value="timeline">Timeline Layout</option>
-                                <option value="masonry">Masonry Layout</option>
-                                <option value="carousel">Carousel Layout</option>
-                            </select>
-                        </div>
-                        <button type="button" class="secondary-btn" id="manageWidgetsBtn">Manage Widgets</button>
-                    </div>
-
-                    <!-- Appearance Settings Section -->
-                    <div class="edit-section">
-                        <h3 class="edit-section-title">Appearance</h3>
-                        <div class="form-group">
-                            <label for="editTheme">Theme</label>
-                            <select id="editTheme">
-                                <option value="dark">Dark Theme</option>
-                                <option value="light">Light Theme</option>
-                                <option value="cyberpunk">Cyberpunk</option>
-                                <option value="minimal">Minimal</option>
-                                <option value="neon">Neon</option>
-                                <option value="custom">Custom</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFontFamily">Font Family</label>
-                            <select id="editFontFamily">
-                                <option value="Inter">Inter (Default)</option>
-                                <option value="Orbitron">Orbitron</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Open Sans">Open Sans</option>
-                                <option value="Montserrat">Montserrat</option>
-                                <option value="Poppins">Poppins</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editFontSize">Font Size</label>
-                            <select id="editFontSize">
-                                <option value="small">Small</option>
-                                <option value="medium">Medium (Default)</option>
-                                <option value="large">Large</option>
-                                <option value="xl">Extra Large</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editAccentColor">Accent Color</label>
-                            <div class="color-picker-container">
-                                <input type="color" id="editAccentColor" value="#00f0ff">
-                                <span class="color-preview" id="accentColorPreview"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Advanced Settings Section -->
-                    <div class="edit-section">
-                        <h3 class="edit-section-title">Advanced Settings</h3>
-                        <div class="form-group">
-                            <label for="editProfileVisibility">Profile Visibility</label>
-                            <select id="editProfileVisibility">
-                                <option value="public">Public</option>
-                                <option value="private">Private</option>
-                                <option value="friends">Friends Only</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="editShowStats">Show Profile Stats</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="editShowStats" checked>
-                                <span class="toggle-slider"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="editShowNotifications">Show Notifications</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="editShowNotifications" checked>
-                                <span class="toggle-slider"></span>
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="editAutoSave">Auto-save Changes</label>
-                            <div class="toggle-switch">
-                                <input type="checkbox" id="editAutoSave" checked>
-                                <span class="toggle-slider"></span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Action Buttons -->
-                    <div class="edit-actions">
-                        <button type="button" class="secondary-btn" id="resetToDefaultsBtn">Reset to Defaults</button>
-                        <button type="button" class="secondary-btn" id="previewProfileBtn">Preview</button>
-                        <button type="submit" class="primary-btn">Save Changes</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
   </body>
 </html>
 
@@ -442,24 +349,7 @@
   <button id="error-toast-close">&times;</button>
 </div>
 
-<nav class="mobile-bottom-nav">
-  <button class="mobile-nav-btn" data-action="findUsers">Users</button>
-  <button class="mobile-nav-btn" data-action="leaveNote">Note</button>
-  <button class="mobile-nav-btn" data-action="explore">Explore</button>
-  <button class="mobile-nav-btn" data-action="tutorial">Items</button>
-</nav>
-
-<script>
-  const collapseBtn = document.getElementById('collapseProfileBtn');
-  const profileContent = document.querySelector('.collapsible-profile-content');
-  let collapsed = false;
-  collapseBtn.addEventListener('click', () => {
-    collapsed = !collapsed;
-    profileContent.style.display = collapsed ? 'none' : '';
-    collapseBtn.textContent = collapsed ? '▲' : '▼';
-  });
-</script>
-
+<!-- Floating button to expand header if collapsed -->
 <script>
   // Sidebar open/close logic
   const sidebar = document.querySelector('.sidebar-nav');
@@ -507,7 +397,7 @@
 
 <script>
   // Profile navigation buttons
-  const profileNavBtns = document.querySelectorAll('.profile-nav-btn');
+  const profileNavBtns = document.querySelectorAll('.nav-btn');
   profileNavBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const page = btn.getAttribute('data-page');
@@ -565,4 +455,33 @@
       }
     });
   });
+</script>
+
+<script>
+// Profile banner collapse/expand logic
+(function() {
+  const collapseBtn = document.getElementById('collapseProfileBtn');
+  const profileBanner = document.getElementById('profile-banner');
+  const collapseIcon = collapseBtn.querySelector('.collapse-icon');
+  let collapsed = false;
+
+  if (collapseBtn && profileBanner && collapseIcon) {
+    collapseBtn.addEventListener('click', () => {
+      collapsed = !collapsed;
+      if (collapsed) {
+        profileBanner.classList.add('collapsed');
+        profileBanner.style.maxHeight = '120px';
+        profileBanner.style.overflow = 'hidden';
+        collapseBtn.classList.add('collapsed');
+        collapseIcon.textContent = '▲';
+      } else {
+        profileBanner.classList.remove('collapsed');
+        profileBanner.style.maxHeight = 'none';
+        profileBanner.style.overflow = 'visible';
+        collapseBtn.classList.remove('collapsed');
+        collapseIcon.textContent = '▼';
+      }
+    });
+  }
+})();
 </script>
