@@ -64,10 +64,14 @@
       <span class="quick-action-icon">⚙️</span>
       <span class="quick-action-text">Settings</span>
     </button>
-    <button class="quick-action-btn" data-action="testNotifications">
-      <span class="quick-action-icon">🧪</span>
-      <span class="quick-action-text">Test Notifications</span>
-    </button>
+            <button class="quick-action-btn" data-action="testNotifications">
+          <span class="quick-action-icon">🧪</span>
+          <span class="quick-action-text">Test Notifications</span>
+        </button>
+        <button class="quick-action-btn" data-action="testUpload">
+          <span class="quick-action-icon">📤</span>
+          <span class="quick-action-text">Test Upload</span>
+        </button>
   </div>
 
   <!-- Notifications Section -->
@@ -138,19 +142,23 @@
       <!-- Navigation Buttons -->
       <div class="profile-navigation">
         <button class="nav-btn primary" data-page="about" title="Learn about inque">
-          <span class="nav-icon">📚</span>
-          <span class="nav-text">The Lore</span>
+          <span class="nav-icon"></span>
+          <span class="nav-text">About</span>
         </button>
         <button class="nav-btn secondary" data-page="explore" title="Explore creations">
-          <span class="nav-icon">🔍</span>
+          <span class="nav-icon"></span>
           <span class="nav-text">Explore</span>
         </button>
         <button class="nav-btn secondary" data-page="inventory" title="View your items">
-          <span class="nav-icon">🎒</span>
+          <span class="nav-icon"></span>
           <span class="nav-text">Inventory</span>
         </button>
+        <a href="widgets.html" class="nav-btn secondary" style="display:inline-block;text-decoration:none;margin-left:8px;" title="Manage Widgets">
+          <span class="nav-icon">✨</span>
+          <span class="nav-text">Widgets</span>
+        </a>
         <button class="nav-btn secondary" data-page="inventory" title="View your items">
-          <span class="nav-icon">🎒</span>
+          <span class="nav-icon"></span>
           <span class="nav-text">Blog</span>
         </button>
       </div>
@@ -163,16 +171,26 @@
   </div>
 </header>
 
-  <main>
+<main>
       <section class="timeline-nav">
         <div class="timeline-3channel">
             <div class="timeline-row top">
               <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
-              <div class="timeline-event" data-id="1"></div>
-              <div class="timeline-event" data-id="3"></div>
-              <div class="timeline-event" data-id="5"></div>
-              <div class="timeline-event" data-id="5"></div>
-              <div class="timeline-event" data-id="5"></div>
+              <div class="timeline-event" data-id="1">
+                <button class="edit-widget-btn">Edit</button>
+              </div>
+              <div class="timeline-event" data-id="3">
+                <button class="edit-widget-btn">Edit</button>
+              </div>
+              <div class="timeline-event" data-id="5">
+                <button class="edit-widget-btn">Edit</button>
+              </div>
+              <div class="timeline-event" data-id="5">
+                <button class="edit-widget-btn">Edit</button>
+              </div>
+              <div class="timeline-event" data-id="5">
+                <button class="edit-widget-btn">Edit</button>
+              </div>
             </div>
             <!---Seperator-------------------------------------------------->
             <!--TO DO: ADD SLIDER FORM MOVEMENT-->
@@ -202,11 +220,11 @@
         <p style="color: #aaa; font-size: 0.8rem;">&copy; 2025 inque by nicholas. All rights reserved.</p>
       </footer>
 
+      <!-- Only ONE main script, loaded as a module -->
       <script type="module" src="script.js"></script>
-      <script src="scripts/script.js"></script>
       <script type="module" src="scripts/canvas.js"></script>
       <script type="module" src="scripts/auth.js"></script>
-      <div class="light-cursor"></div>
+      <script type="module" src="scripts/widget-display.js"></script>
 
       <!-- Widget Preview Modal -->
       <div id="widgetModal" class="modal">
@@ -343,6 +361,11 @@
 
   </body>
 </html>
+
+<!-- Toast Notification System -->
+<div id="toast-container" class="toast-container">
+  <!-- Toast notifications will be dynamically added here -->
+</div>
 
 <div id="error-toast" class="error-toast">
   <span id="error-toast-message"></span>
@@ -484,4 +507,404 @@
     });
   }
 })();
+</script>
+
+<!-- Add Edit Widget Modal -->
+<div id="editWidgetModal" class="modal">
+  <div class="modal-content edit-widget-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Widget Properties</h2>
+      <span class="close-button edit-widget-close">&times;</span>
+    </div>
+    <div class="modal-body">
+      <form id="editWidgetForm" class="edit-widget-form">
+        <div class="form-group">
+          <label for="widgetTitle">Widget Title</label>
+          <input type="text" id="widgetTitle" name="widgetTitle" placeholder="Enter widget title" required />
+        </div>
+        <div class="form-group">
+          <label for="widgetDescription">Description</label>
+          <textarea id="widgetDescription" name="widgetDescription" placeholder="Enter description" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="widgetColor">Color</label>
+          <input type="color" id="widgetColor" name="widgetColor" />
+        </div>
+        <div class="edit-actions">
+          <button type="submit" class="primary-btn">Save</button>
+          <button type="button" class="secondary-btn edit-widget-close">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+// Edit Widget Modal logic
+const editWidgetModal = document.getElementById('editWidgetModal');
+const editWidgetForm = document.getElementById('editWidgetForm');
+const editWidgetCloseBtns = document.querySelectorAll('.edit-widget-close');
+const editWidgetBtns = document.querySelectorAll('.edit-widget-btn');
+
+editWidgetBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    editWidgetModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  });
+});
+editWidgetCloseBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    editWidgetModal.style.display = 'none';
+    document.body.style.overflow = '';
+  });
+});
+window.addEventListener('click', (e) => {
+  if (e.target === editWidgetModal) {
+    editWidgetModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+});
+editWidgetForm.addEventListener('submit', (e) => {
+  e.preventDefault();
+  // For demo: just close modal
+  editWidgetModal.style.display = 'none';
+  document.body.style.overflow = '';
+  // You can add your save logic here!
+});
+</script>
+
+<!-- Profile Edit Modal -->
+<div id="editProfileModal" class="modal">
+  <div class="modal-content edit-profile-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Profile & Widget Management</h2>
+      <span class="close-button edit-profile-close-button">&times;</span>
+    </div>
+    <div class="modal-body">
+      <!-- Profile Tab -->
+      <div class="profile-tab-content" id="profileTab">
+        <form id="editProfileForm" class="edit-profile-form">
+          <div class="form-group">
+            <label for="editProfileName">Name</label>
+            <input type="text" id="editProfileName" name="editProfileName" placeholder="Enter your name" required />
+          </div>
+          <div class="form-group">
+            <label for="editProfileBio">Bio</label>
+            <textarea id="editProfileBio" name="editProfileBio" placeholder="Enter your bio" rows="3"></textarea>
+          </div>
+          <div class="form-group">
+            <label for="editPhoto">Profile Photo</label>
+            <input type="file" id="editPhoto" name="editPhoto" accept="image/*" />
+          </div>
+          <div class="edit-actions">
+            <button type="submit" class="primary-btn">Save Profile</button>
+            <button type="button" class="secondary-btn edit-profile-close-button">Cancel</button>
+          </div>
+        </form>
+      </div>
+      
+      <!-- Widget Management Tab -->
+      <div class="widget-tab-content" id="widgetTab" style="display: none;">
+        <h3 style="color: #fff; margin-bottom: 1rem;">Widget Management</h3>
+        <div class="widget-slots-container">
+          <div class="widget-slot" data-slot="1">
+            <h4>Slot 1</h4>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="1" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
+            </div>
+          </div>
+          
+          <div class="widget-slot" data-slot="2">
+            <h4>Slot 2</h4>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="2" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+            </div>
+          </div>
+          
+          <div class="widget-slot" data-slot="3">
+            <h4>Slot 3</h4>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="3" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Tab Navigation -->
+      <div class="modal-tabs">
+        <button class="tab-btn active" data-tab="profile">Profile</button>
+        <button class="tab-btn" data-tab="widgets">Widgets</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script type="module">
+import { db, auth, storage } from './scripts/firebase-init.js';
+import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+import { uploadWidgetToSlot } from './scripts/upload.js';
+import { saveWidgetSlotMetadata } from './scripts/project-manager.js';
+
+const editProfileModal = document.getElementById('editProfileModal');
+const editProfileForm = document.getElementById('editProfileForm');
+const editProfileCloseBtns = document.querySelectorAll('.edit-profile-close-button');
+const editProfileQuickBtn = document.getElementById('editProfileQuickBtn');
+const editProfileName = document.getElementById('editProfileName');
+const editProfileBio = document.getElementById('editProfileBio');
+const editPhotoInput = document.getElementById('editPhoto');
+let currentPhotoURL = null;
+
+// Tab switching functionality
+const tabBtns = document.querySelectorAll('.tab-btn');
+const profileTab = document.getElementById('profileTab');
+const widgetTab = document.getElementById('widgetTab');
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const tabName = btn.getAttribute('data-tab');
+    
+    // Update active tab button
+    tabBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    
+    // Show/hide tab content
+    if (tabName === 'profile') {
+      profileTab.style.display = 'block';
+      widgetTab.style.display = 'none';
+    } else if (tabName === 'widgets') {
+      profileTab.style.display = 'none';
+      widgetTab.style.display = 'block';
+    }
+  });
+});
+
+// Live image preview
+const photoPreview = document.createElement('img');
+photoPreview.style.display = 'none';
+photoPreview.style.width = '80px';
+photoPreview.style.height = '80px';
+photoPreview.style.borderRadius = '50%';
+photoPreview.style.marginTop = '10px';
+editPhotoInput.parentNode.appendChild(photoPreview);
+
+// Pre-fill form with current user info
+async function prefillProfileForm() {
+  const user = auth.currentUser;
+  if (!user) return;
+  const userDoc = await getDoc(doc(db, 'users', user.uid));
+  if (userDoc.exists()) {
+    const data = userDoc.data();
+    editProfileName.value = data.name || '';
+    editProfileBio.value = data.bio || '';
+    currentPhotoURL = data.photoURL || '';
+    if (currentPhotoURL) {
+      photoPreview.src = currentPhotoURL;
+      photoPreview.style.display = 'block';
+    } else {
+      photoPreview.style.display = 'none';
+    }
+  }
+}
+
+// Widget upload functionality
+const uploadWidgetBtns = document.querySelectorAll('.upload-widget-btn');
+const widgetFileInputs = document.querySelectorAll('.widget-file-input');
+
+uploadWidgetBtns.forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const slot = btn.getAttribute('data-slot');
+    const fileInput = document.querySelector(`.widget-file-input[data-slot="${slot}"]`);
+    const titleInput = document.querySelector(`.widget-title-input[data-slot="${slot}"]`);
+    const descInput = document.querySelector(`.widget-desc-input[data-slot="${slot}"]`);
+    
+    if (!fileInput.files.length) {
+      alert('Please select files to upload.');
+      return;
+    }
+    
+    const title = titleInput.value.trim() || 'Untitled Widget';
+    const desc = descInput.value.trim() || '';
+    
+    btn.textContent = 'Uploading...';
+    btn.disabled = true;
+    
+    try {
+      const fileURLs = await uploadWidgetToSlot(fileInput.files, `app-widget-${slot}`);
+      await saveWidgetSlotMetadata(`app-widget-${slot}`, {
+        title,
+        desc,
+        files: fileURLs,
+        updated: new Date(),
+      });
+      
+      btn.textContent = `Uploaded to Slot ${slot}!`;
+      btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
+      
+      // Reset form after successful upload
+      setTimeout(() => {
+        btn.textContent = `Upload to Slot ${slot}`;
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
+        fileInput.value = '';
+        titleInput.value = '';
+        descInput.value = '';
+      }, 2000);
+      
+    } catch (error) {
+      btn.textContent = 'Upload Failed';
+      btn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
+      alert('Upload failed: ' + error.message);
+      
+      setTimeout(() => {
+        btn.textContent = `Upload to Slot ${slot}`;
+        btn.disabled = false;
+        btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
+      }, 2000);
+    }
+  });
+});
+
+// Drag and drop functionality for widget uploads
+widgetFileInputs.forEach(input => {
+  const uploadArea = input.closest('.widget-upload-area');
+  
+  uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = 'var(--primary-color)';
+    uploadArea.style.background = 'rgba(0, 240, 255, 0.1)';
+  });
+  
+  uploadArea.addEventListener('dragleave', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#555';
+    uploadArea.style.background = '#0f0f0f';
+  });
+  
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.style.borderColor = '#555';
+    uploadArea.style.background = '#0f0f0f';
+    
+    const files = e.dataTransfer.files;
+    input.files = files;
+    
+    // Show selected files
+    const placeholder = uploadArea.querySelector('.upload-placeholder p');
+    if (files.length > 0) {
+      placeholder.textContent = `${files.length} file(s) selected`;
+    }
+  });
+});
+
+if (editProfileQuickBtn) {
+  editProfileQuickBtn.addEventListener('click', () => {
+    prefillProfileForm();
+    editProfileModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  });
+}
+
+editProfileCloseBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    editProfileModal.style.display = 'none';
+    document.body.style.overflow = '';
+  });
+});
+
+window.addEventListener('click', (e) => {
+  if (e.target === editProfileModal) {
+    editProfileModal.style.display = 'none';
+    document.body.style.overflow = '';
+  }
+});
+
+// Live image preview on file select
+editPhotoInput.addEventListener('change', function() {
+  if (this.files && this.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      photoPreview.src = e.target.result;
+      photoPreview.style.display = 'block';
+    };
+    reader.readAsDataURL(this.files[0]);
+  } else if (currentPhotoURL) {
+    photoPreview.src = currentPhotoURL;
+    photoPreview.style.display = 'block';
+  } else {
+    photoPreview.style.display = 'none';
+  }
+});
+
+// Save profile changes
+editProfileForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const user = auth.currentUser;
+  if (!user) return;
+  const name = editProfileName.value.trim();
+  const bio = editProfileBio.value.trim();
+  let photoURL = currentPhotoURL;
+  
+  // If a new photo is selected, upload it
+  if (editPhotoInput.files && editPhotoInput.files[0]) {
+    try {
+      const file = editPhotoInput.files[0];
+      const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
+      await uploadBytes(storageRef, file);
+      photoURL = await getDownloadURL(storageRef);
+      console.log('Profile photo uploaded successfully');
+    } catch (storageError) {
+      console.warn('Failed to upload profile photo:', storageError);
+      // Continue without photo upload - don't fail the entire profile update
+    }
+  }
+  
+  try {
+    // Update Firestore
+    await updateDoc(doc(db, 'users', user.uid), {
+      name,
+      bio,
+      photoURL
+    });
+    editProfileModal.style.display = 'none';
+    document.body.style.overflow = '';
+    alert('Profile updated!');
+    location.reload();
+  } catch (error) {
+    console.error('Failed to update profile:', error);
+    alert('Failed to update profile. Please try again.');
+  }
+});
 </script>

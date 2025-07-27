@@ -1,0 +1,52 @@
+[
+  {
+    "origin": [
+      "https://inque-31cb5.web.app",
+      "https://inque-31cb5.firebaseapp.com",
+      "http://localhost:5000",
+      "http://localhost:3000",
+      "http://127.0.0.1:5000",
+      "http://127.0.0.1:3000"
+    ],
+    "method": [
+      "GET",
+      "POST",
+      "PUT",
+      "DELETE",
+      "HEAD",
+      "OPTIONS"
+    ],
+    "maxAgeSeconds": 3600,
+    "responseHeader": [
+      "Content-Type",
+      "Authorization",
+      "Content-Length",
+      "User-Agent",
+      "x-goog-resumable",
+      "x-goog-encryption-algorithm",
+      "x-goog-meta-*",
+      "x-goog-generation",
+      "x-goog-metageneration",
+      "x-goog-storage-class",
+      "x-goog-hash",
+      "x-goog-version",
+      "x-goog-upload-url",
+      "x-goog-upload-protocol",
+      "x-goog-upload-command",
+      "x-goog-upload-header-*",
+      "x-goog-upload-body",
+      "x-goog-upload-content-length",
+      "x-goog-upload-content-type",
+      "x-goog-upload-content-encoding",
+      "x-goog-upload-content-disposition",
+      "x-goog-upload-content-language",
+      "x-goog-upload-content-md5",
+      "x-goog-upload-content-range",
+      "x-goog-upload-content-crc32c",
+      "x-goog-upload-content-sha256",
+      "x-goog-upload-content-sha1",
+      "x-goog-upload-content-etag",
+      "x-goog-upload-content-*"
+    ]
+  }
+] 

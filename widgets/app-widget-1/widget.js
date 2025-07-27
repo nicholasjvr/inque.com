@@ -1,3 +1,13 @@
+import { db, auth, storage } from "../../scripts/firebase-init.js";
+import {
+  getFirestore,
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  getDoc,
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+
 function addLineItem() {
   const tbody = document.getElementById("lineItemsBody");
   const row = document.createElement("tr");

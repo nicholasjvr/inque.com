@@ -30,3 +30,26 @@ export async function listUserProjects() {
 export async function deleteProject(projectId) {
   await deleteDoc(doc(db, "projects", projectId));
 }
+
+export async function updateProject(projectId, updates) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+  const projectRef = doc(db, "projects", projectId);
+  await setDoc(projectRef, updates, { merge: true });
+}
+
+export async function saveWidgetSlotMetadata(slotNumber, metadata) {
+  const user = auth.currentUser;
+  if (!user) throw new Error("Not logged in");
+  if (![1, 2, 3].includes(Number(slotNumber))) throw new Error("Invalid slot");
+
+  await setDoc(
+    doc(db, "users", user.uid),
+    {
+      widgets: {
+        [`app-widget-${slotNumber}`]: metadata,
+      },
+    },
+    { merge: true }
+  );
+}

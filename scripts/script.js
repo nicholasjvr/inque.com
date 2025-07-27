@@ -1,95 +1,68 @@
-import { uploadProjectFiles } from "./scripts/upload.js";
-import { createProject, listUserProjects } from "./scripts/project-manager.js";
+import { db, auth, storage } from "./scripts/firebase-init.js";
+import {
+  createProject,
+  listUserProjects,
+  updateProject,
+} from "./scripts/project-manager.js";
 import { previewWidget } from "./scripts/widget-preview.js";
 
-document.addEventListener("DOMContentLoaded", function () {
-  // Timeline Event Card Data (placeholder)
-  const timelineCardData = [
-    {
-      title: "Quote Builder",
-      desc: "Interactive quote generation tool with real-time calculations",
-      iframe: "widgets/app-widget-1/widget.html",
-      hasWidget: true,
-      placeholder: "assets/imgs/portal_placeholder.gif",
-    },
-    {
-      title: "Category 2",
-      desc: "Advanced analytics dashboard with customizable widgets",
-      iframe: "widgets/widget2/index.html",
-      hasWidget: true,
-      placeholder: "assets/imgs/portal_placeholder.gif",
-    },
-    {
-      title: "Category 3",
-      desc: "This is a description for Category 3. More details coming soon!",
-      hasWidget: false,
-      placeholder: "assets/imgs/portal_placeholder.gif",
-    },
-    {
-      title: "Category 4",
-      desc: "This is a description for Category 4. More details coming soon!",
-      hasWidget: false,
-      placeholder: "assets/imgs/portal_placeholder.gif",
-    },
-    {
-      title: "Category 5",
-      desc: "This is a description for Category 5. More details coming soon!",
-      hasWidget: false,
-      placeholder: "assets/imgs/portal_placeholder.gif",
-    },
-    { hasWidget: false },
-    { hasWidget: false },
-    { hasWidget: false },
-    { hasWidget: false },
-    { hasWidget: false },
-    { hasWidget: false },
-  ];
-
+document.addEventListener("DOMContentLoaded", async function () {
+  // --- Firestore-backed Timeline Data ---
+  let timelineProjects = [];
   let widgetEditMode = false;
   let currentlyEditingCard = null;
 
-  // Listen for Edit Profile button (assume it has id 'editProfileQuickBtn')
-  document
-    .getElementById("editProfileQuickBtn")
-    ?.addEventListener("click", () => {
-      widgetEditMode = !widgetEditMode;
-      renderAllWidgetCards();
-    });
+  // Fetch projects from Firestore
+  async function loadTimelineProjects() {
+    timelineProjects = await listUserProjects();
+  }
 
-  function renderAllWidgetCards() {
+  // Render timeline from Firestore data
+  async function renderAllWidgetCards() {
+    await loadTimelineProjects();
     const timelineEvents = document.querySelectorAll(".timeline-event");
     timelineEvents.forEach((event, idx) => {
       // Remove any previous card
       const oldCard = event.querySelector(".timeline-event-card");
       if (oldCard) oldCard.remove();
 
-      // Create card
+      // Get project data for this slot (if any)
+      const project = timelineProjects[idx];
       const card = document.createElement("div");
       card.className = "timeline-event-card";
-      const widgetData = timelineCardData[idx];
 
-      if (widgetData?.hasWidget && widgetData?.iframe) {
-        if (currentlyEditingCard === idx) {
+      if (project) {
+        if (currentlyEditingCard === project.id) {
           // Edit mode for this card
           card.innerHTML = `
-            <input class="widget-edit-title" value="${widgetData.title}" style="width:100%;margin-bottom:8px;" />
-            <textarea class="widget-edit-desc" style="width:100%;margin-bottom:8px;">${widgetData.desc}</textarea>
+            <input class="widget-edit-title" value="${
+              project.title || ""
+            }" style="width:100%;margin-bottom:8px;" />
+            <textarea class="widget-edit-desc" style="width:100%;margin-bottom:8px;">${
+              project.desc || ""
+            }</textarea>
             <button class="widget-save-btn">💾 Save</button>
             <button class="widget-cancel-btn">Cancel</button>
           `;
           card
             .querySelector(".widget-save-btn")
-            .addEventListener("click", () => {
-              // Save changes
-              widgetData.title = card.querySelector(".widget-edit-title").value;
-              widgetData.desc = card.querySelector(".widget-edit-desc").value;
-              currentlyEditingCard = null;
-              // Show refresh animation
-              card.classList.add("refreshing");
-              setTimeout(() => {
-                card.classList.remove("refreshing");
-                renderAllWidgetCards();
-              }, 600);
+            .addEventListener("click", async () => {
+              const newTitle = card.querySelector(".widget-edit-title").value;
+              const newDesc = card.querySelector(".widget-edit-desc").value;
+              try {
+                await updateProject(project.id, {
+                  title: newTitle,
+                  desc: newDesc,
+                });
+                currentlyEditingCard = null;
+                card.classList.add("refreshing");
+                setTimeout(() => {
+                  card.classList.remove("refreshing");
+                  renderAllWidgetCards();
+                }, 600);
+              } catch (e) {
+                alert("Failed to update project: " + e.message);
+              }
             });
           card
             .querySelector(".widget-cancel-btn")
@@ -100,17 +73,17 @@ document.addEventListener("DOMContentLoaded", function () {
         } else {
           // Normal view mode
           card.innerHTML = `
-            <h3>${widgetData.title}</h3>
-            <p>${widgetData.desc}</p>
+            <h3>${project.title || "Untitled Widget"}</h3>
+            <p>${project.desc || ""}</p>
             <div class="widget-preview-container">
               <div class="portal-overlay"></div>
               <img src="assets/imgs/portal_placeholder.gif" class="widget-placeholder-img" />
             </div>
-            <button class="widget-preview-btn" data-widget-path="${
-              widgetData.iframe
-            }">
-              Open Full View
-            </button>
+            ${
+              project.files && project.files["index.html"]
+                ? `<button class="widget-preview-btn" data-widget-path="${project.files["index.html"]}">Open Full View</button>`
+                : ""
+            }
             ${
               widgetEditMode
                 ? '<button class="widget-edit-btn" title="Edit">✏️</button>'
@@ -122,7 +95,7 @@ document.addEventListener("DOMContentLoaded", function () {
             card
               .querySelector(".widget-edit-btn")
               .addEventListener("click", () => {
-                currentlyEditingCard = idx;
+                currentlyEditingCard = project.id;
                 renderAllWidgetCards();
               });
           }
@@ -133,7 +106,7 @@ document.addEventListener("DOMContentLoaded", function () {
               e.stopPropagation();
               const widgetPath = this.dataset.widgetPath;
               if (widgetPath) {
-                openWidgetModal(widgetPath, widgetData.title);
+                openWidgetModal(widgetPath, project.title);
               }
             });
           }
@@ -149,6 +122,14 @@ document.addEventListener("DOMContentLoaded", function () {
       event.appendChild(card);
     });
   }
+
+  // Listen for Edit Profile button (assume it has id 'editProfileQuickBtn')
+  document
+    .getElementById("editProfileQuickBtn")
+    ?.addEventListener("click", () => {
+      widgetEditMode = !widgetEditMode;
+      renderAllWidgetCards();
+    });
 
   // Initial render
   renderAllWidgetCards();

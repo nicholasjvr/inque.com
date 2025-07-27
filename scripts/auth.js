@@ -529,48 +529,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   };
 
-  // Quick Actions Event Listeners
-  const quickActionBtns = document.querySelectorAll(".quick-action-btn");
-  quickActionBtns.forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const action = btn.getAttribute("data-action");
-      console.log(`Quick action clicked: ${action}`);
-
-      switch (action) {
-        case "newWidget":
-          alert("Create new widget functionality coming soon!");
-          break;
-        case "shareProfile":
-          if (navigator.share) {
-            navigator.share({
-              title: "Check out my profile!",
-              url: window.location.href,
-            });
-          } else {
-            navigator.clipboard.writeText(window.location.href);
-            alert("Profile URL copied to clipboard!");
-          }
-          break;
-        case "settings":
-          alert("Settings panel coming soon!");
-          break;
-        case "testNotifications":
-          if (auth.currentUser) {
-            createSampleNotifications(auth.currentUser.uid);
-            addLocalNotification(
-              "Sample notifications created! Check the sidebar.",
-              "success"
-            );
-          } else {
-            addLocalNotification(
-              "Please log in to test notifications.",
-              "info"
-            );
-          }
-          break;
-      }
-    });
-  });
+  // Quick Actions Event Listeners (moved to end of file to avoid duplicate)
 
   // Notification Functions
   const addNotification = (message, type = "info") => {
@@ -669,27 +628,124 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Handle Auth State Changes
+  // Toast notification function
+  const showToast = (message, type = "info", duration = 5000) => {
+    const toastContainer = document.getElementById("toast-container");
+    if (!toastContainer) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-message">${message}</span>
+      <button class="toast-close">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add("show"), 100);
+
+    // Auto remove
+    const autoRemove = setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, duration);
+
+    // Manual close
+    const closeBtn = toast.querySelector(".toast-close");
+    closeBtn.addEventListener("click", () => {
+      clearTimeout(autoRemove);
+      toast.classList.remove("show");
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    });
+  };
+
+  // Handle Auth State Changes with better error handling
   onAuthStateChanged(auth, async (user) => {
     const urlParams = new URLSearchParams(window.location.search);
     const profileUserId = urlParams.get("user");
 
     if (user) {
-      // Always show logged-in user's info in sidebar
-      const userDoc = await getDoc(doc(db, "users", user.uid));
-      const sidebarProfile = userDoc.exists() ? userDoc.data() : defaultProfile;
-      updateSidebarUserInfo(sidebarProfile, true, user.email);
+      try {
+        console.log("User authenticated:", user.uid);
 
-      // Show profile banner for viewed profile (could be self or other)
-      if (profileUserId) {
-        fetchAndDisplayProfile(profileUserId);
-      } else {
-        updateProfileBanner(sidebarProfile, true);
+        // Show success toast and close auth modal
+        showToast(
+          `Welcome back, ${user.displayName || user.email}! 🎉`,
+          "success",
+          4000
+        );
+
+        // Close the auth modal if it's open
+        const authModal = document.getElementById("authModal");
+        if (authModal && authModal.style.display === "block") {
+          authModal.style.display = "none";
+          document.body.style.overflow = "";
+        }
+
+        // Get user profile from Firestore
+        console.log("Fetching user profile from Firestore...");
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+
+        if (userDoc.exists()) {
+          console.log("User profile found:", userDoc.data());
+          const sidebarProfile = userDoc.data();
+          updateSidebarUserInfo(sidebarProfile, true, user.email);
+
+          // Show profile banner for viewed profile (could be self or other)
+          if (profileUserId) {
+            // For now, just show the current user's profile
+            // TODO: Implement fetchAndDisplayProfile for viewing other users
+            updateProfileBanner(sidebarProfile, true);
+          } else {
+            updateProfileBanner(sidebarProfile, true);
+          }
+
+          // Set up notifications for this user
+          setupNotificationListener(user.uid);
+        } else {
+          console.warn(
+            "User profile not found in Firestore, creating default profile"
+          );
+          // Create a default profile if it doesn't exist
+          const defaultUserProfile = {
+            name: user.displayName || user.email.split("@")[0],
+            bio: "A new user ready to create amazing things.",
+            lvl: "LVL • 1",
+            type: "TYPE • NEWB",
+            role: "ROLE • USER",
+            photoURL: defaultProfile.photoURL,
+            email: user.email,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+          };
+
+          await setDoc(doc(db, "users", user.uid), defaultUserProfile);
+          updateSidebarUserInfo(defaultUserProfile, true, user.email);
+          updateProfileBanner(defaultUserProfile, true);
+        }
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
+        showToast("Error loading profile. Please refresh the page.", "error");
       }
     } else {
       // Not logged in
+      console.log("User not authenticated");
       updateSidebarUserInfo(defaultProfile, false);
       updateProfileBanner(defaultProfile, false);
+
+      // Clean up notification listener
+      if (notificationUnsubscribe) {
+        notificationUnsubscribe();
+      }
     }
   });
 
@@ -721,63 +777,142 @@ document.addEventListener("DOMContentLoaded", () => {
   if (signUpForm) {
     signUpForm.addEventListener("submit", async (e) => {
       e.preventDefault();
-      grecaptcha.enterprise.ready(async () => {
-        const token = await grecaptcha.enterprise.execute(
-          "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
-          { action: "SIGNUP" }
-        );
-        console.log("reCAPTCHA token (Sign Up):", token);
 
-        const email = document.getElementById("signUpEmail").value;
-        const password = document.getElementById("signUpPassword").value;
+      const email = document.getElementById("signUpEmail").value;
+      const password = document.getElementById("signUpPassword").value;
 
-        try {
-          const userCredential = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
+      try {
+        // Show loading state
+        const submitBtn = signUpForm.querySelector(".auth-submit-btn");
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Creating Account...";
+        submitBtn.disabled = true;
+
+        grecaptcha.enterprise.ready(async () => {
+          const token = await grecaptcha.enterprise.execute(
+            "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
+            { action: "SIGNUP" }
           );
-          const user = userCredential.user;
+          console.log("reCAPTCHA token (Sign Up):", token);
 
-          // This part creates the user's "directory" (document) in Firestore!
-          const newUserProfile = {
-            name: email.split("@")[0],
-            bio: "A new user ready to create amazing things.",
-            lvl: "LVL • 1",
-            type: "TYPE • NEWB",
-            role: "ROLE • USER",
-            photoURL: defaultProfile.photoURL,
-          };
-          await setDoc(doc(db, "users", user.uid), newUserProfile);
-
-          // Seed widget folders in Firebase Storage with placeholder index.html
-          const placeholderHtml = new Blob(
-            [
-              `<html><body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;'><div><h2>Widget Placeholder</h2><img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;'/></div></body></html>`,
-            ],
-            { type: "text/html" }
-          );
-          for (let i = 1; i <= 3; i++) {
-            const storageRef = ref(
-              storage,
-              `users/${user.uid}/app-widget-${i}/index.html`
+          try {
+            // Create the user account
+            const userCredential = await createUserWithEmailAndPassword(
+              auth,
+              email,
+              password
             );
+            const user = userCredential.user;
+            console.log("User created:", user.uid);
+
+            // Create user profile in Firestore
+            const newUserProfile = {
+              name: email.split("@")[0],
+              bio: "A new user ready to create amazing things.",
+              lvl: "LVL • 1",
+              type: "TYPE • NEWB",
+              role: "ROLE • USER",
+              photoURL: defaultProfile.photoURL,
+              email: email,
+              createdAt: serverTimestamp(),
+              lastLogin: serverTimestamp(),
+            };
+
+            console.log("Creating user profile in Firestore...");
+            await setDoc(doc(db, "users", user.uid), newUserProfile);
+            console.log("User profile created in Firestore");
+
+            // Create widget slots in Storage (only if storage is available)
             try {
-              await uploadBytes(storageRef, placeholderHtml);
-            } catch (err) {
-              console.error(
-                `Failed to seed app-widget-${i} for user ${user.uid}:`,
-                err
+              console.log("Creating widget slots in Storage...");
+              const placeholderHtml = new Blob(
+                [
+                  `<html>
+                  <head><title>Widget Placeholder</title></head>
+                  <body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;font-family:Arial,sans-serif;'>
+                    <div style='text-align:center;'>
+                      <h2>Widget Placeholder</h2>
+                      <p>This is a placeholder widget.</p>
+                      <p>Upload your files to replace this!</p>
+                      <img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;border-radius:10px;'/>
+                    </div>
+                  </body>
+                </html>`,
+                ],
+                { type: "text/html" }
+              );
+
+              // Create widget slots
+              for (let i = 1; i <= 3; i++) {
+                const storageRef = ref(
+                  storage,
+                  `users/${user.uid}/app-widget-${i}/index.html`
+                );
+                await uploadBytes(storageRef, placeholderHtml);
+                console.log(`Created widget slot ${i}`);
+              }
+              console.log("All widget slots created successfully");
+            } catch (storageError) {
+              console.warn(
+                "Storage setup failed (this is okay for now):",
+                storageError
+              );
+              // Don't fail the signup if storage fails
+            }
+
+            // Create initial notifications
+            try {
+              await createNotification(user.uid, {
+                type: "system",
+                title: "Welcome to inque! 🎉",
+                message:
+                  "Your account has been created successfully. Start by uploading your first widget!",
+                icon: "🎉",
+              });
+            } catch (notificationError) {
+              console.warn(
+                "Failed to create welcome notification:",
+                notificationError
               );
             }
-          }
 
-          console.log("Signed up and profile created:", user);
-        } catch (error) {
-          alert(error.message);
-          console.error("Sign up error:", error);
-        }
-      });
+            console.log("Signup completed successfully!");
+            showToast(
+              "Account created successfully! Welcome to inque! 🎉",
+              "success",
+              5000
+            );
+          } catch (error) {
+            console.error("Signup error:", error);
+
+            // Provide user-friendly error messages
+            let errorMessage = "Signup failed. Please try again.";
+            if (error.code === "auth/email-already-in-use") {
+              errorMessage =
+                "This email is already registered. Please try logging in instead.";
+            } else if (error.code === "auth/weak-password") {
+              errorMessage =
+                "Password is too weak. Please choose a stronger password.";
+            } else if (error.code === "auth/invalid-email") {
+              errorMessage = "Please enter a valid email address.";
+            }
+
+            showToast(errorMessage, "error", 5000);
+          } finally {
+            // Reset button state
+            submitBtn.textContent = originalText;
+            submitBtn.disabled = false;
+          }
+        });
+      } catch (error) {
+        console.error("reCAPTCHA error:", error);
+        showToast("Please complete the reCAPTCHA verification.", "error");
+
+        // Reset button state
+        const submitBtn = signUpForm.querySelector(".auth-submit-btn");
+        submitBtn.textContent = "Create Account";
+        submitBtn.disabled = false;
+      }
     });
   }
   // Login
@@ -825,13 +960,85 @@ document.addEventListener("DOMContentLoaded", () => {
     markAllReadBtn.addEventListener("click", () => {
       if (auth.currentUser) {
         markAllNotificationsAsRead(auth.currentUser.uid);
-        addLocalNotification("All notifications marked as read!", "success");
+        showToast("All notifications marked as read!", "success");
       } else {
-        addLocalNotification(
-          "Please log in to mark all notifications as read.",
-          "info"
-        );
+        showToast("Please log in to mark all notifications as read.", "info");
       }
     });
   }
+
+  // Quick Actions Event Listeners
+  const quickActionBtns = document.querySelectorAll(".quick-action-btn");
+  quickActionBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const action = btn.getAttribute("data-action");
+      console.log("Quick action clicked:", action);
+
+      switch (action) {
+        case "newWidget":
+          showToast("Opening widget creation...", "info");
+          // Open edit profile modal to widgets tab
+          if (editProfileModal) {
+            editProfileModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            // Switch to widgets tab
+            const widgetTabBtn = document.querySelector(
+              '.tab-btn[data-tab="widgets"]'
+            );
+            if (widgetTabBtn) widgetTabBtn.click();
+          }
+          break;
+        case "shareProfile":
+          if (navigator.share) {
+            navigator.share({
+              title: "Check out my profile!",
+              url: window.location.href,
+            });
+          } else {
+            navigator.clipboard.writeText(window.location.href);
+            showToast("Profile URL copied to clipboard!", "success");
+          }
+          break;
+        case "settings":
+          showToast("Settings panel opening...", "info");
+          break;
+        case "testNotifications":
+          if (auth.currentUser) {
+            createSampleNotifications(auth.currentUser.uid);
+            showToast(
+              "Sample notifications created! Check the sidebar.",
+              "success"
+            );
+          } else {
+            showToast("Please log in to test notifications.", "info");
+          }
+          break;
+        case "testUpload":
+          if (auth.currentUser) {
+            showToast("Testing upload functionality...", "info");
+            // Import and test upload
+            import("./upload.js").then(async (uploadModule) => {
+              try {
+                const success = await uploadModule.testUpload();
+                if (success) {
+                  showToast("Upload test successful! 🎉", "success");
+                } else {
+                  showToast(
+                    "Upload test failed. Check console for details.",
+                    "error"
+                  );
+                }
+              } catch (error) {
+                showToast(`Upload test failed: ${error.message}`, "error");
+              }
+            });
+          } else {
+            showToast("Please log in to test upload functionality.", "info");
+          }
+          break;
+        default:
+          showToast(`Action "${action}" not implemented yet.`, "warning");
+      }
+    });
+  });
 });
