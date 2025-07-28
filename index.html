@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Home Page</title>
     <link rel="stylesheet" href="styles.css" />
     <link
@@ -153,10 +153,6 @@
           <span class="nav-icon"></span>
           <span class="nav-text">Inventory</span>
         </button>
-        <a href="widgets.html" class="nav-btn secondary" style="display:inline-block;text-decoration:none;margin-left:8px;" title="Manage Widgets">
-          <span class="nav-icon">✨</span>
-          <span class="nav-text">Widgets</span>
-        </a>
         <button class="nav-btn secondary" data-page="inventory" title="View your items">
           <span class="nav-icon"></span>
           <span class="nav-text">Blog</span>
@@ -573,101 +569,182 @@ editWidgetForm.addEventListener('submit', (e) => {
 });
 </script>
 
-<!-- Profile Edit Modal -->
+<!-- Enhanced Profile & Settings Modal -->
 <div id="editProfileModal" class="modal">
   <div class="modal-content edit-profile-modal-content">
     <div class="modal-header">
-      <h2 class="modal-title">Profile & Widget Management</h2>
+      <h2 class="modal-title">Profile & Settings</h2>
       <span class="close-button edit-profile-close-button">&times;</span>
     </div>
     <div class="modal-body">
-      <!-- Profile Tab -->
-      <div class="profile-tab-content" id="profileTab">
-        <form id="editProfileForm" class="edit-profile-form">
-          <div class="form-group">
-            <label for="editProfileName">Name</label>
-            <input type="text" id="editProfileName" name="editProfileName" placeholder="Enter your name" required />
-          </div>
-          <div class="form-group">
-            <label for="editProfileBio">Bio</label>
-            <textarea id="editProfileBio" name="editProfileBio" placeholder="Enter your bio" rows="3"></textarea>
-          </div>
-          <div class="form-group">
-            <label for="editPhoto">Profile Photo</label>
-            <input type="file" id="editPhoto" name="editPhoto" accept="image/*" />
-          </div>
-          <div class="edit-actions">
-            <button type="submit" class="primary-btn">Save Profile</button>
-            <button type="button" class="secondary-btn edit-profile-close-button">Cancel</button>
-          </div>
-        </form>
-      </div>
       
-      <!-- Widget Management Tab -->
-      <div class="widget-tab-content" id="widgetTab" style="display: none;">
-        <h3 style="color: #fff; margin-bottom: 1rem;">Widget Management</h3>
-        <div class="widget-slots-container">
-          <div class="widget-slot" data-slot="1">
-            <h4>Slot 1</h4>
-            <div class="widget-slot-content">
-              <div class="widget-upload-area">
-                <input type="file" class="widget-file-input" data-slot="1" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                <div class="upload-placeholder">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
-                </div>
-              </div>
-              <div class="widget-slot-info">
-                <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
-                <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
-              </div>
-              <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
-            </div>
+      <!-- Unified Settings Layout -->
+      <div class="settings-container">
+        
+        <!-- Profile Section -->
+        <div class="settings-section">
+          <div class="section-header">
+            <h3>👤 Profile Information</h3>
+            <p class="section-description">Customize your public profile and personal details</p>
           </div>
           
-          <div class="widget-slot" data-slot="2">
-            <h4>Slot 2</h4>
-            <div class="widget-slot-content">
-              <div class="widget-upload-area">
-                <input type="file" class="widget-file-input" data-slot="2" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                <div class="upload-placeholder">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
+          <div class="profile-settings-grid">
+            <!-- Profile Photo -->
+            <div class="profile-photo-section">
+              <div class="current-photo">
+                <div class="photo-preview" id="profilePhotoPreview"></div>
+                <div class="photo-overlay">
+                  <span class="photo-icon">📷</span>
+                  <span class="photo-text">Change Photo</span>
                 </div>
               </div>
-              <div class="widget-slot-info">
-                <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
-                <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
-              </div>
-              <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+              <input type="file" id="editPhoto" name="editPhoto" accept="image/*" class="photo-input" />
             </div>
-          </div>
-          
-          <div class="widget-slot" data-slot="3">
-            <h4>Slot 3</h4>
-            <div class="widget-slot-content">
-              <div class="widget-upload-area">
-                <input type="file" class="widget-file-input" data-slot="3" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                <div class="upload-placeholder">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
-                </div>
+            
+            <!-- Profile Details -->
+            <div class="profile-details">
+              <div class="form-group">
+                <label for="editProfileName">Display Name</label>
+                <input type="text" id="editProfileName" name="editProfileName" placeholder="Enter your display name" required />
               </div>
-              <div class="widget-slot-info">
-                <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
-                <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
+              <div class="form-group">
+                <label for="editProfileBio">Bio</label>
+                <textarea id="editProfileBio" name="editProfileBio" placeholder="Tell us about yourself..." rows="3"></textarea>
               </div>
-              <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
             </div>
           </div>
         </div>
+        
+        <!-- Account Settings -->
+        <div class="settings-section">
+          <div class="section-header">
+            <h3>⚙️ Account Settings</h3>
+            <p class="section-description">Manage your account preferences and security</p>
+          </div>
+          
+          <div class="account-settings-grid">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Email Notifications</h4>
+                <p>Receive updates about your widgets and activity</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="emailNotifications" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Public Profile</h4>
+                <p>Allow others to view your profile and widgets</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="publicProfile" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Auto-save</h4>
+                <p>Automatically save changes to your widgets</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="autoSave" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Widget Management -->
+        <div class="settings-section">
+          <div class="section-header">
+            <h3>🎨 Widget Showcase</h3>
+            <p class="section-description">Upload and manage your interactive widgets</p>
+          </div>
+          
+          <div class="widget-showcase-grid">
+            <div class="widget-slot" data-slot="1">
+              <div class="slot-header">
+                <h4>Slot 1</h4>
+                <span class="slot-status">Available</span>
+              </div>
+              <div class="widget-slot-content">
+                <div class="widget-upload-area">
+                  <input type="file" class="widget-file-input" data-slot="1" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                  <div class="upload-placeholder">
+                    <span class="upload-icon">📁</span>
+                    <p>Drop files here or click to upload</p>
+                  </div>
+                </div>
+                <div class="widget-slot-info">
+                  <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
+                  <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
+                </div>
+                <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
+              </div>
+            </div>
+            
+            <div class="widget-slot" data-slot="2">
+              <div class="slot-header">
+                <h4>Slot 2</h4>
+                <span class="slot-status">Available</span>
+              </div>
+              <div class="widget-slot-content">
+                <div class="widget-upload-area">
+                  <input type="file" class="widget-file-input" data-slot="2" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                  <div class="upload-placeholder">
+                    <span class="upload-icon">📁</span>
+                    <p>Drop files here or click to upload</p>
+                  </div>
+                </div>
+                <div class="widget-slot-info">
+                  <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
+                  <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
+                </div>
+                <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+              </div>
+            </div>
+            
+            <div class="widget-slot" data-slot="3">
+              <div class="slot-header">
+                <h4>Slot 3</h4>
+                <span class="slot-status">Available</span>
+              </div>
+              <div class="widget-slot-content">
+                <div class="widget-upload-area">
+                  <input type="file" class="widget-file-input" data-slot="3" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
+                  <div class="upload-placeholder">
+                    <span class="upload-icon">📁</span>
+                    <p>Drop files here or click to upload</p>
+                  </div>
+                </div>
+                <div class="widget-slot-info">
+                  <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
+                  <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
+                </div>
+                <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Action Buttons -->
+        <div class="settings-actions">
+          <button type="submit" class="primary-btn" id="saveAllSettings">
+            <span class="btn-icon">💾</span>
+            Save All Changes
+          </button>
+          <button type="button" class="secondary-btn edit-profile-close-button">
+            <span class="btn-icon">✕</span>
+            Cancel
+          </button>
+        </div>
+        
       </div>
       
-      <!-- Tab Navigation -->
-      <div class="modal-tabs">
-        <button class="tab-btn active" data-tab="profile">Profile</button>
-        <button class="tab-btn" data-tab="widgets">Widgets</button>
-      </div>
     </div>
   </div>
 </div>
@@ -687,29 +764,16 @@ const editProfileBio = document.getElementById('editProfileBio');
 const editPhotoInput = document.getElementById('editPhoto');
 let currentPhotoURL = null;
 
-// Tab switching functionality
-const tabBtns = document.querySelectorAll('.tab-btn');
-const profileTab = document.getElementById('profileTab');
-const widgetTab = document.getElementById('widgetTab');
+// Enhanced profile photo handling
+const profilePhotoPreview = document.getElementById('profilePhotoPreview');
+const currentPhoto = document.querySelector('.current-photo');
 
-tabBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tabName = btn.getAttribute('data-tab');
-    
-    // Update active tab button
-    tabBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    
-    // Show/hide tab content
-    if (tabName === 'profile') {
-      profileTab.style.display = 'block';
-      widgetTab.style.display = 'none';
-    } else if (tabName === 'widgets') {
-      profileTab.style.display = 'none';
-      widgetTab.style.display = 'block';
-    }
+// Set up photo click handler
+if (currentPhoto) {
+  currentPhoto.addEventListener('click', () => {
+    editPhotoInput.click();
   });
-});
+}
 
 // Live image preview
 const photoPreview = document.createElement('img');
@@ -730,6 +794,16 @@ async function prefillProfileForm() {
     editProfileName.value = data.name || '';
     editProfileBio.value = data.bio || '';
     currentPhotoURL = data.photoURL || '';
+    
+    // Update profile photo preview
+    if (profilePhotoPreview) {
+      if (currentPhotoURL) {
+        profilePhotoPreview.style.backgroundImage = `url(${currentPhotoURL})`;
+      } else {
+        profilePhotoPreview.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+      }
+    }
+    
     if (currentPhotoURL) {
       photoPreview.src = currentPhotoURL;
       photoPreview.style.display = 'block';
@@ -755,6 +829,12 @@ uploadWidgetBtns.forEach(btn => {
       return;
     }
     
+    // Validate files
+    if (window.validateWidgetFiles && !window.validateWidgetFiles(fileInput.files)) {
+      alert('Invalid file type selected. Allowed: html, js, css, png, jpg, jpeg, gif, svg, json.');
+      return;
+    }
+    
     const title = titleInput.value.trim() || 'Untitled Widget';
     const desc = descInput.value.trim() || '';
     
@@ -762,13 +842,20 @@ uploadWidgetBtns.forEach(btn => {
     btn.disabled = true;
     
     try {
-      const fileURLs = await uploadWidgetToSlot(fileInput.files, `app-widget-${slot}`);
+      console.log(`Starting upload for slot ${slot}...`);
+      
+      // Use the imported uploadWidgetToSlot function
+      const fileURLs = await uploadWidgetToSlot(fileInput.files, slot);
+      console.log('Files uploaded successfully:', fileURLs);
+      
+      // Save metadata using the imported function
       await saveWidgetSlotMetadata(`app-widget-${slot}`, {
         title,
         desc,
         files: fileURLs,
         updated: new Date(),
       });
+      console.log('Metadata saved successfully');
       
       btn.textContent = `Uploaded to Slot ${slot}!`;
       btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
@@ -784,6 +871,7 @@ uploadWidgetBtns.forEach(btn => {
       }, 2000);
       
     } catch (error) {
+      console.error('Upload error:', error);
       btn.textContent = 'Upload Failed';
       btn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
       alert('Upload failed: ' + error.message);
@@ -856,55 +944,139 @@ editPhotoInput.addEventListener('change', function() {
   if (this.files && this.files[0]) {
     const reader = new FileReader();
     reader.onload = function(e) {
+      // Update both previews
       photoPreview.src = e.target.result;
       photoPreview.style.display = 'block';
+      
+      if (profilePhotoPreview) {
+        profilePhotoPreview.style.backgroundImage = `url(${e.target.result})`;
+      }
     };
     reader.readAsDataURL(this.files[0]);
   } else if (currentPhotoURL) {
     photoPreview.src = currentPhotoURL;
     photoPreview.style.display = 'block';
+    
+    if (profilePhotoPreview) {
+      profilePhotoPreview.style.backgroundImage = `url(${currentPhotoURL})`;
+    }
   } else {
     photoPreview.style.display = 'none';
+    
+    if (profilePhotoPreview) {
+      profilePhotoPreview.style.backgroundImage = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+    }
   }
 });
 
-// Save profile changes
-editProfileForm.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const user = auth.currentUser;
-  if (!user) return;
-  const name = editProfileName.value.trim();
-  const bio = editProfileBio.value.trim();
-  let photoURL = currentPhotoURL;
-  
-  // If a new photo is selected, upload it
-  if (editPhotoInput.files && editPhotoInput.files[0]) {
+// Save all settings functionality
+const saveAllSettingsBtn = document.getElementById('saveAllSettings');
+
+if (saveAllSettingsBtn) {
+  saveAllSettingsBtn.addEventListener('click', async () => {
+    const user = auth.currentUser;
+    if (!user) return;
+    
+    // Show loading state
+    saveAllSettingsBtn.textContent = 'Saving...';
+    saveAllSettingsBtn.disabled = true;
+    
     try {
-      const file = editPhotoInput.files[0];
-      const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
-      await uploadBytes(storageRef, file);
-      photoURL = await getDownloadURL(storageRef);
-      console.log('Profile photo uploaded successfully');
-    } catch (storageError) {
-      console.warn('Failed to upload profile photo:', storageError);
-      // Continue without photo upload - don't fail the entire profile update
+      const name = editProfileName.value.trim();
+      const bio = editProfileBio.value.trim();
+      let photoURL = currentPhotoURL;
+      
+      // If a new photo is selected, upload it
+      if (editPhotoInput.files && editPhotoInput.files[0]) {
+        try {
+          const file = editPhotoInput.files[0];
+          const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
+          await uploadBytes(storageRef, file);
+          photoURL = await getDownloadURL(storageRef);
+          console.log('Profile photo uploaded successfully');
+        } catch (storageError) {
+          console.warn('Failed to upload profile photo:', storageError);
+        }
+      }
+      
+      // Get settings values
+      const emailNotifications = document.getElementById('emailNotifications')?.checked || false;
+      const publicProfile = document.getElementById('publicProfile')?.checked || false;
+      const autoSave = document.getElementById('autoSave')?.checked || false;
+      
+      // Update Firestore with all settings
+      await updateDoc(doc(db, 'users', user.uid), {
+        name,
+        bio,
+        photoURL,
+        settings: {
+          emailNotifications,
+          publicProfile,
+          autoSave,
+          updatedAt: new Date()
+        }
+      });
+      
+      // Show success message
+      showToast('All settings saved successfully! 🎉', 'success');
+      
+      // Close modal after a short delay
+      setTimeout(() => {
+        editProfileModal.style.display = 'none';
+        document.body.style.overflow = '';
+        location.reload();
+      }, 1500);
+      
+    } catch (error) {
+      console.error('Failed to save settings:', error);
+      showToast('Failed to save settings. Please try again.', 'error');
+    } finally {
+      // Reset button state
+      saveAllSettingsBtn.textContent = 'Save All Changes';
+      saveAllSettingsBtn.disabled = false;
     }
-  }
-  
-  try {
-    // Update Firestore
-    await updateDoc(doc(db, 'users', user.uid), {
-      name,
-      bio,
-      photoURL
-    });
-    editProfileModal.style.display = 'none';
-    document.body.style.overflow = '';
-    alert('Profile updated!');
-    location.reload();
-  } catch (error) {
-    console.error('Failed to update profile:', error);
-    alert('Failed to update profile. Please try again.');
-  }
-});
+  });
+}
+
+// Legacy form handler (for backward compatibility)
+if (editProfileForm) {
+  editProfileForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const user = auth.currentUser;
+    if (!user) return;
+    const name = editProfileName.value.trim();
+    const bio = editProfileBio.value.trim();
+    let photoURL = currentPhotoURL;
+    
+    // If a new photo is selected, upload it
+    if (editPhotoInput.files && editPhotoInput.files[0]) {
+      try {
+        const file = editPhotoInput.files[0];
+        const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
+        await uploadBytes(storageRef, file);
+        photoURL = await getDownloadURL(storageRef);
+        console.log('Profile photo uploaded successfully');
+      } catch (storageError) {
+        console.warn('Failed to upload profile photo:', storageError);
+        // Continue without photo upload - don't fail the entire profile update
+      }
+    }
+    
+    try {
+      // Update Firestore
+      await updateDoc(doc(db, 'users', user.uid), {
+        name,
+        bio,
+        photoURL
+      });
+      editProfileModal.style.display = 'none';
+      document.body.style.overflow = '';
+      alert('Profile updated!');
+      location.reload();
+    } catch (error) {
+      console.error('Failed to update profile:', error);
+      alert('Failed to update profile. Please try again.');
+    }
+  });
+}
 </script>

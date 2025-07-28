@@ -974,21 +974,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const action = btn.getAttribute("data-action");
       console.log("Quick action clicked:", action);
 
+      // Close sidebar when opening modals
+      const closeSidebar = () => {
+        const sidebar = document.querySelector(".sidebar-nav");
+        const overlay = document.querySelector(".sidebar-overlay");
+        if (sidebar && overlay) {
+          sidebar.classList.remove("open");
+          overlay.classList.remove("show");
+          document.body.style.overflow = "";
+        }
+      };
+
       switch (action) {
         case "newWidget":
           showToast("Opening widget creation...", "info");
-          // Open edit profile modal to widgets tab
+          closeSidebar(); // Close sidebar before opening modal
+          // Open edit profile modal
           if (editProfileModal) {
             editProfileModal.style.display = "block";
             document.body.style.overflow = "hidden";
-            // Switch to widgets tab
-            const widgetTabBtn = document.querySelector(
-              '.tab-btn[data-tab="widgets"]'
-            );
-            if (widgetTabBtn) widgetTabBtn.click();
           }
           break;
         case "shareProfile":
+          closeSidebar(); // Close sidebar before sharing
           if (navigator.share) {
             navigator.share({
               title: "Check out my profile!",
@@ -1000,9 +1008,11 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           break;
         case "settings":
+          closeSidebar(); // Close sidebar before opening settings
           showToast("Settings panel opening...", "info");
           break;
         case "testNotifications":
+          closeSidebar(); // Close sidebar before testing
           if (auth.currentUser) {
             createSampleNotifications(auth.currentUser.uid);
             showToast(
@@ -1014,6 +1024,7 @@ document.addEventListener("DOMContentLoaded", () => {
           }
           break;
         case "testUpload":
+          closeSidebar(); // Close sidebar before testing upload
           if (auth.currentUser) {
             showToast("Testing upload functionality...", "info");
             // Import and test upload

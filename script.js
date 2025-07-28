@@ -64,38 +64,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Widget slot status functionality removed - not needed for current implementation
+  // Remove the problematic uploadBtn reference - upload functionality is now handled in the profile modal
+  // The upload functionality is properly implemented in the profile and widget management modal
 
-  // Widget Slot Upload Logic (with slot status update)
-  if (uploadBtn) {
-    uploadBtn.onclick = async () => {
-      const slot = document.getElementById("widgetSlotSelect").value;
-      const files = document.getElementById("widgetFiles").files;
-      const statusDivUpload = document.getElementById("widgetUploadStatus");
-      if (!files.length) {
-        statusDivUpload.textContent = "Please select files to upload.";
-        return;
-      }
-      const title = prompt("Widget Title?") || "Untitled Widget";
-      const desc = prompt("Widget Description?") || "";
-      statusDivUpload.textContent = "Uploading...";
-      try {
-        const fileURLs = await uploadWidgetToSlot(files, slot);
-        await saveWidgetSlotMetadata(slot, {
-          title,
-          desc,
-          files: fileURLs,
-          updated: new Date(),
-        });
-        statusDivUpload.textContent = `Widget uploaded to slot ${slot}!`;
-      } catch (e) {
-        statusDivUpload.textContent = "Upload failed: " + e.message;
-      }
-      // Upload completed successfully
-    };
-  }
-
-  // File type validation and drag-and-drop for widget upload
+  // File type validation function for widget uploads
   const allowedTypes = [
     "text/html",
     "text/css",
@@ -119,11 +91,9 @@ document.addEventListener("DOMContentLoaded", function () {
     ".svg",
     ".json",
   ];
-  const fileInput = document.getElementById("widgetFiles");
-  const uploadStatus = document.getElementById("widgetUploadStatus");
-  const uploadContainer = document.getElementById("widgetSlotUploadContainer");
 
-  function validateFiles(files) {
+  // Make validation function globally available
+  window.validateWidgetFiles = function (files) {
     for (let file of files) {
       const ext = file.name.slice(file.name.lastIndexOf(".")).toLowerCase();
       if (
@@ -134,44 +104,74 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
     return true;
-  }
-
-  if (fileInput) {
-    fileInput.addEventListener("change", function () {
-      if (!validateFiles(this.files)) {
-        uploadStatus.textContent =
-          "Invalid file type selected. Allowed: html, js, css, png, jpg, jpeg, gif, svg, json.";
-        this.value = "";
-      } else {
-        uploadStatus.textContent = "";
-      }
-    });
-  }
-
-  // Drag-and-drop support
-  if (uploadContainer && fileInput) {
-    uploadContainer.addEventListener("dragover", function (e) {
-      e.preventDefault();
-      uploadContainer.style.background = "#333";
-    });
-    uploadContainer.addEventListener("dragleave", function (e) {
-      e.preventDefault();
-      uploadContainer.style.background = "#222";
-    });
-    uploadContainer.addEventListener("drop", function (e) {
-      e.preventDefault();
-      uploadContainer.style.background = "#222";
-      const files = e.dataTransfer.files;
-      if (!validateFiles(files)) {
-        uploadStatus.textContent =
-          "Invalid file type selected. Allowed: html, js, css, png, jpg, jpeg, gif, svg, json.";
-        fileInput.value = "";
-        return;
-      }
-      fileInput.files = files;
-      uploadStatus.textContent = "";
-    });
-  }
+  };
 
   // Initial setup complete
+});
+
+// Mobile-specific enhancements
+document.addEventListener("DOMContentLoaded", function () {
+  // Prevent double-tap zoom on buttons
+  const touchElements = document.querySelectorAll(
+    ".nav-btn, .quick-action-btn, .edit-widget-btn, .hamburger-menu"
+  );
+  touchElements.forEach((element) => {
+    element.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      this.click();
+    });
+  });
+
+  // Better touch feedback
+  const touchTargets = document.querySelectorAll('button, a, [role="button"]');
+  touchTargets.forEach((target) => {
+    target.addEventListener("touchstart", function () {
+      this.style.transform = "scale(0.98)";
+    });
+
+    target.addEventListener("touchend", function () {
+      this.style.transform = "";
+    });
+  });
+
+  // Prevent pull-to-refresh on mobile
+  let startY = 0;
+  document.addEventListener("touchstart", function (e) {
+    startY = e.touches[0].clientY;
+  });
+
+  document.addEventListener("touchmove", function (e) {
+    const y = e.touches[0].clientY;
+    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop <= 0 && y > startY) {
+      e.preventDefault();
+    }
+  });
+
+  // Better sidebar handling for mobile
+  const sidebar = document.querySelector(".sidebar-nav");
+  const overlay = document.querySelector(".sidebar-overlay");
+
+  if (sidebar && overlay) {
+    // Close sidebar when clicking outside
+    overlay.addEventListener("click", function () {
+      sidebar.classList.remove("open");
+      overlay.classList.remove("show");
+      document.body.style.overflow = "";
+    });
+
+    // Prevent body scroll when sidebar is open
+    sidebar.addEventListener("touchmove", function (e) {
+      e.stopPropagation();
+    });
+  }
+
+  // Improved modal handling for mobile
+  const modals = document.querySelectorAll(".modal");
+  modals.forEach((modal) => {
+    modal.addEventListener("touchmove", function (e) {
+      e.stopPropagation();
+    });
+  });
 });
