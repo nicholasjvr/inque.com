@@ -1,5 +1,5 @@
 // scripts/widget-display.js
-import { db, auth, storage } from "./firebase-init.js";
+import { db, auth, storage } from "../firebase/firebase-init.js";
 import {
   doc,
   getDoc,
@@ -344,8 +344,17 @@ window.editWidget = function (slotNumber) {
   widgetDisplay.editWidget(slotNumber);
 };
 
-// Initialize widget display when DOM is loaded
-document.addEventListener("DOMContentLoaded", () => {
-  const widgetDisplay = new WidgetDisplay();
-  widgetDisplay.init();
+// Initialize widget display when user is authenticated
+let widgetDisplay = null;
+
+// Wait for authentication before initializing
+auth.onAuthStateChanged((user) => {
+  if (user) {
+    if (!widgetDisplay) {
+      widgetDisplay = new WidgetDisplay();
+      widgetDisplay.init();
+    }
+  } else {
+    widgetDisplay = null;
+  }
 });

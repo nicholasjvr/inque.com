@@ -1,4 +1,4 @@
-import { auth, db, storage } from "../script.js";
+import { auth, db, storage } from "../../core/firebase-core.js";
 import {
   createUserWithEmailAndPassword,
   signInWithEmailAndPassword,
@@ -976,12 +976,17 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Close sidebar when opening modals
       const closeSidebar = () => {
-        const sidebar = document.querySelector(".sidebar-nav");
-        const overlay = document.querySelector(".sidebar-overlay");
-        if (sidebar && overlay) {
-          sidebar.classList.remove("open");
-          overlay.classList.remove("show");
-          document.body.style.overflow = "";
+        // Use the global sidebar handler if available, otherwise fall back to direct manipulation
+        if (window.sidebarHandler) {
+          window.sidebarHandler.closeSidebar();
+        } else {
+          const sidebar = document.querySelector(".sidebar-nav");
+          const overlay = document.querySelector(".sidebar-overlay");
+          if (sidebar && overlay) {
+            sidebar.classList.remove("open");
+            overlay.classList.remove("show");
+            document.body.style.overflow = "";
+          }
         }
       };
 

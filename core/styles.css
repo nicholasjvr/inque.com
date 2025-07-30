@@ -23,6 +23,148 @@ body {
     background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Canvas Controls Styles */
+.canvas-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: rgba(16, 21, 32, 0.95);
+    border-bottom: 1px solid var(--primary-color);
+    border-radius: 8px 8px 0 0;
+    margin-bottom: 10px;
+}
+
+.canvas-info {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.line-counter,
+.mode-indicator,
+.storage-info,
+.user-limit {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 10px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.3);
+    border-radius: 4px;
+    font-weight: 500;
+}
+
+.canvas-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.canvas-btn {
+    padding: 8px 16px;
+    border: 1px solid var(--primary-color);
+    background: transparent;
+    color: var(--primary-color);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.canvas-btn:hover {
+    background: var(--primary-color);
+    color: var(--secondary-color);
+    transform: translateY(-1px);
+}
+
+.canvas-btn:active {
+    transform: translateY(0);
+}
+
+.canvas-btn.save-btn {
+    border-color: #4caf50;
+    color: #4caf50;
+}
+
+.canvas-btn.save-btn:hover {
+    background: #4caf50;
+    color: white;
+}
+
+.canvas-btn.reset-btn {
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.canvas-btn.reset-btn:hover {
+    background: #f44336;
+    color: white;
+}
+
+.canvas-btn.mode-btn {
+    border-color: #ff9800;
+    color: #ff9800;
+}
+
+.canvas-btn.mode-btn:hover {
+    background: #ff9800;
+    color: white;
+}
+
+.canvas-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.canvas-btn:disabled:hover {
+    background: transparent;
+    color: inherit;
+    transform: none;
+}
+
+/* Mobile responsive canvas controls */
+@media (max-width: 768px) {
+    .canvas-controls {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px 15px;
+    }
+
+    .canvas-info {
+        width: 100%;
+        justify-content: space-between;
+        gap: 10px;
+    }
+
+    .canvas-actions {
+        width: 100%;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .canvas-btn {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .line-counter,
+    .mode-indicator,
+    .storage-info,
+    .user-limit {
+        font-size: 12px;
+        padding: 4px 8px;
+    }
 }
 
 /* Main content styling */
@@ -46,7 +188,7 @@ main {
     top: 0;
     left: 0;
     width: 100%;
-    z-index: 10000;
+    z-index: 999;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -111,12 +253,19 @@ main {
     z-index: 1;
 }
 
+/* Hide scrollbar on mobile */
+@media (max-width: 768px) {
+    .timeline-scrollbar {
+        display: none;
+    }
+}
+
 /* --- Profile Banner Styles --- */
 #profile-banner {
     position: relative;
     top: auto;
     left: auto;
-    z-index: 10000;
+    z-index: 9999;
     display: flex;
     align-items: flex-start;
     gap: 20px;
@@ -137,6 +286,51 @@ main {
     transform: translateY(-2px);
 }
 
+/* Center content when profile banner is collapsed */
+#profile-banner.collapsed {
+    align-items: center;
+    gap: 15px;
+    padding: 15px 20px;
+}
+
+#profile-banner.collapsed .profile-avatar-section {
+    padding: 0;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#profile-banner.collapsed .profile-info-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+}
+
+#profile-banner.collapsed .profile-header {
+    margin-bottom: 0;
+}
+
+#profile-banner.collapsed .profile-bio {
+    display: none;
+}
+
+#profile-banner.collapsed .profile-stats-row {
+    display: none;
+}
+
+#profile-banner.collapsed .profile-navigation {
+    display: none;
+}
+
+#profile-banner.collapsed .collapse-profile-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+}
+
 /* Profile Avatar Section */
 .profile-avatar-section {
     display: flex;
@@ -148,8 +342,8 @@ main {
 
 .profile-pic-container {
     position: relative;
-    width: 80px;
-    height: 80px;
+    width: 90px;
+    height: 90px;
     border-radius: 50%;
     background-color: var(--secondary-color);
     border: 3px solid var(--primary-color);
@@ -293,7 +487,7 @@ main {
 .profile-stats-row {
     display: flex;
     gap: 16px;
-    padding: 12px 0;
+    padding: 14px 0;
     border-top: 1px solid rgba(0, 240, 255, 0.1);
     border-bottom: 1px solid rgba(0, 240, 255, 0.1);
 }
@@ -303,7 +497,7 @@ main {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    min-width: 60px;
+    min-width: 100px;
 }
 
 .stat-label {
@@ -315,7 +509,7 @@ main {
 }
 
 .stat-value {
-    font-size: 14px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--primary-color);
     font-family: 'Orbitron', monospace;
@@ -409,8 +603,6 @@ main {
     width: 100%;
     max-width: 600px;
     margin-top: -10px;
-    /* Adjust for profile banner height */
-    /* Pulls it up closer to the banner */
 }
 
 .action-button {
@@ -436,9 +628,9 @@ main {
 }
 
 .profile-pic-container {
-    width: 75px;
-    height: 75px;
-    min-width: 75px;
+    width: 90px;
+    height: 90px;
+    min-width: 90px;
     border-radius: 50%;
     background-color: var(--secondary-color);
     border: 2px solid var(--primary-color);
@@ -763,6 +955,25 @@ footer {
     height: 100%;
     background-color: #f0f0f0;
     cursor: crosshair;
+    touch-action: none;
+    /* Prevents default touch behaviors on mobile */
+}
+
+/* Mobile-specific canvas styles */
+@media (max-width: 768px) {
+    #collabCanvas {
+        border: 1px solid var(--primary-color);
+        border-radius: 4px;
+    }
+
+    .modal-content {
+        max-height: 90vh;
+        overflow-y: auto;
+    }
+
+    .modal-body {
+        padding: 10px;
+    }
 }
 
 .canvas-tooltip-text {
@@ -1270,22 +1481,22 @@ footer {
 
 
 /* --- Sidebar Navigation --- */
+/* Sidebar has higher z-index than hamburger menu to ensure proper layering */
 .sidebar-nav {
     position: fixed;
     top: 0;
     left: 0;
-    width: 260px;
+    width: 320px;
     height: 100vh;
-    background: var(--bg-card);
-    box-shadow: 2px 0 24px rgba(0, 0, 0, 0.4);
-    z-index: 11000;
+    background: linear-gradient(135deg, rgba(16, 21, 32, 0.98) 0%, rgba(26, 34, 50, 0.98) 100%);
+    border-right: 2px solid var(--primary-color);
     transform: translateX(-100%);
-    transition: transform 0.3s cubic-bezier(0.77, 0, 0.18, 1);
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    padding: 32px 18px 18px 18px;
+    transition: transform 0.3s ease;
+    z-index: 1002;
     overflow-y: auto;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 0 30px rgba(0, 240, 255, 0.1);
 }
 
 .sidebar-nav.open {
@@ -1307,6 +1518,7 @@ footer {
     border-radius: 6px;
     transition: background 0.2s, color 0.2s;
     text-decoration: none;
+    margin: 18px 18px 18px 18px;
 }
 
 .sidebar-nav-btn:hover {
@@ -1315,18 +1527,35 @@ footer {
 }
 
 .sidebar-close-btn {
-    background: none;
-    border: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
     color: var(--primary-color);
-    font-size: 2rem;
-    align-self: flex-end;
-    margin-bottom: 10px;
+    font-size: 1.5rem;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 11001;
+    /* Add hover effect */
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: var(--accent-color);
+    transform: scale(1.1);
 }
 
 .sidebar-close-btn:active {
     color: var(--accent-color);
+    transform: scale(0.95);
 }
 
 .sidebar-overlay {
@@ -1336,10 +1565,12 @@ footer {
     width: 100vw;
     height: 100vh;
     background: rgba(10, 10, 20, 0.55);
-    z-index: 10999;
+    z-index: 999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s;
+    /* Add touch-action for swipe detection */
+    touch-action: pan-x;
 }
 
 .sidebar-overlay.show {
@@ -1347,11 +1578,12 @@ footer {
     pointer-events: all;
 }
 
+/* Hamburger menu - positioned in top right corner for easy mobile access */
 .hamburger-menu {
     position: fixed;
     top: 18px;
-    left: 18px;
-    z-index: 12000;
+    right: 18px;
+    z-index: 10001;
     background: var(--bg-card);
     border: 1px solid var(--primary-color);
     color: var(--primary-color);
@@ -1376,7 +1608,7 @@ footer {
     gap: 10px;
     padding-bottom: 18px;
     border-bottom: 1px solid var(--primary-color);
-    margin-bottom: 18px;
+    margin: 18px;
 }
 
 .sidebar-avatar {
@@ -1460,7 +1692,7 @@ footer {
     gap: 8px;
     padding: 12px 0;
     border-bottom: 1px solid rgba(234, 231, 247, 0.2);
-    margin-bottom: 18px;
+    margin: 18px;
 }
 
 .sidebar-stat-item {
@@ -1485,7 +1717,7 @@ footer {
 
 /* --- Quick Actions --- */
 .sidebar-quick-actions {
-    margin-bottom: 18px;
+    margin: 18px;
 }
 
 .sidebar-section-title {
@@ -1549,7 +1781,56 @@ footer {
 
 /* --- Notifications --- */
 .sidebar-notifications {
-    margin-bottom: 18px;
+    margin: 18px;
+    transition: height 0.3s ease;
+    overflow: hidden;
+}
+
+.sidebar-notifications.expanded {
+    height: 500px;
+}
+
+.notifications-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.notifications-header:hover {
+    opacity: 0.8;
+}
+
+.notifications-toggle {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.notifications-toggle:hover {
+    background: rgba(234, 231, 247, 0.1);
+}
+
+.notifications-toggle:active {
+    transform: scale(0.95);
+}
+
+.notifications-toggle .toggle-icon {
+    transition: transform 0.3s ease;
+}
+
+.notifications-toggle.expanded .toggle-icon {
+    transform: rotate(180deg);
 }
 
 .notification-badge {
@@ -1568,6 +1849,11 @@ footer {
     overflow-y: auto;
     scrollbar-width: thin;
     scrollbar-color: var(--primary-color) transparent;
+    transition: max-height 0.3s ease;
+}
+
+.sidebar-notifications.expanded .notification-list {
+    max-height: 400px;
 }
 
 .notification-list::-webkit-scrollbar {
@@ -1834,10 +2120,13 @@ footer {
 /* Mobile Styles for Sidebar */
 @media (max-width: 768px) {
     .sidebar-nav {
-        width: 85vw;
-        max-width: 300px;
-        padding: 20px 12px 12px 12px;
-        gap: 12px;
+        width: 90vw;
+        max-width: 320px;
+        padding: 24px 16px 16px 16px;
+        gap: 16px;
+        touch-action: pan-y;
+        font-size: 14px;
+        line-height: 1.4;
     }
 
     .sidebar-user-info {
@@ -1918,30 +2207,31 @@ footer {
     }
 
     .notification-item {
-        padding: 6px 0;
-        font-size: 0.75rem;
+        padding: 8px 0;
+        font-size: 0.85rem;
+        line-height: 1.3;
+        color: #ffffff;
     }
 
     .notification-badge {
-        font-size: 0.6rem;
-        padding: 1px 4px;
-        min-width: 16px;
+        font-size: 0.7rem;
+        padding: 2px 6px;
+        min-width: 18px;
+        font-weight: 600;
     }
 
-    .sidebar-nav-btn {
-        font-size: 1rem;
-        padding: 10px 0;
-        gap: 8px;
-    }
 
     .sidebar-close-btn {
-        font-size: 1.5rem;
-        margin-bottom: 6px;
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        font-size: 1.3rem;
     }
 
     .hamburger-menu {
         top: 12px;
-        left: 12px;
+        right: 12px;
         font-size: 1.5rem;
         padding: 2px 8px;
     }
@@ -3230,6 +3520,7 @@ footer {
     /* Improved profile banner */
     #profile-banner {
         margin: 0 auto 20px auto;
+        z-index: 9999;
         max-width: 100%;
         padding: 20px 16px;
         border-radius: 12px;
@@ -3272,7 +3563,9 @@ footer {
         justify-content: space-around;
         gap: 16px;
         margin-bottom: 20px;
-        padding: 12px;
+        padding: 20px;
+        padding-left: 10px;
+        padding-right: 10px;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 8px;
     }
@@ -3438,6 +3731,7 @@ footer {
         width: 44px;
         height: 44px;
         border-radius: 8px;
+        z-index: 10001;
         background: rgba(255, 255, 255, 0.1);
         border: 1px solid rgba(255, 255, 255, 0.2);
         font-size: 18px;
@@ -3569,17 +3863,44 @@ footer {
     }
 
     .profile-stats-row {
-        flex-direction: column;
-        gap: 12px;
+        display: flex;
+        flex-direction: row;
+        gap: 4px;
+        padding: 4px;
+        margin: 0 4px;
+        width: calc(100% - 8px);
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
     }
 
     .stat-item {
         display: flex;
-        justify-content: space-between;
+        flex-direction: column;
+        justify-content: center;
         align-items: center;
-        padding: 8px 12px;
+        padding: 8px 4px;
         background: rgba(255, 255, 255, 0.05);
         border-radius: 6px;
+        flex: 1;
+        min-width: 0;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 10px;
+        opacity: 0.7;
+        margin-bottom: 2px;
+        display: block;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .stat-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--primary-color);
+        text-align: center;
+        line-height: 1.2;
     }
 
     .modal-content {
@@ -3590,6 +3911,30 @@ footer {
     .sidebar-nav {
         width: 100%;
         max-width: none;
+        padding: 20px 12px 12px 12px;
+        font-size: 13px;
+    }
+
+    .sidebar-user-name {
+        font-size: 0.95rem;
+    }
+
+    .sidebar-user-email {
+        font-size: 0.75rem;
+    }
+
+    .sidebar-user-status {
+        font-size: 0.8rem;
+    }
+
+    .quick-action-btn {
+        padding: 8px 0;
+        font-size: 0.8rem;
+    }
+
+    .notification-item {
+        padding: 6px 0;
+        font-size: 0.8rem;
     }
 }
 
@@ -4191,3 +4536,38 @@ footer {
 }
 
 /* ... existing code ... */
+
+/* === Mobile Overscroll and Navigation Improvements === */
+@media (max-width: 768px) {
+
+    html,
+    body {
+        overscroll-behavior-y: contain;
+        scroll-behavior: smooth;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .profile-navigation {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        margin-top: 16px;
+        width: 100%;
+        max-width: 350px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-navigation {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        max-width: 98vw;
+    }
+}
+
+/* Subtle bounce/overscroll effect for iOS */
+body {
+    -webkit-overflow-scrolling: touch;
+}

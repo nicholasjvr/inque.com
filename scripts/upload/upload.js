@@ -1,5 +1,5 @@
 // scripts/upload.js
-import { storage, auth } from "./firebase-init.js";
+import { storage, auth } from "../firebase/firebase-init.js";
 import {
   ref,
   uploadBytes,
@@ -55,8 +55,14 @@ export async function uploadWidgetToSlot(files, slotNumber) {
     console.error("Upload error:", error);
 
     // Check for CORS-related errors
-    if (error.message.includes('CORS') || error.message.includes('preflight') || error.message.includes('ERR_FAILED')) {
-      throw new Error('Upload failed: CORS configuration issue. Please check the CORS setup guide (CORS_SETUP.md) or contact support.');
+    if (
+      error.message.includes("CORS") ||
+      error.message.includes("preflight") ||
+      error.message.includes("ERR_FAILED")
+    ) {
+      throw new Error(
+        "Upload failed: CORS configuration issue. Please check the CORS setup guide (CORS_SETUP.md) or contact support."
+      );
     }
 
     // Provide more specific error messages

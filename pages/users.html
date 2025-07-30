@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Find Users</title>
-    <link rel="stylesheet" href="../../styles.css" />
-    <link rel="stylesheet" href="users.css" />
+    <link rel="stylesheet" href="../core/styles.css" />
+    <link rel="stylesheet" href="page_styles/users.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
       rel="stylesheet"
@@ -22,7 +22,11 @@
     </header>
 
     <main id="users-container">
-      <!-- User list will be populated here by JavaScript -->
+      <!-- Loading State -->
+      <div class="users-loading">
+        <div class="loading-spinner"></div>
+        <div class="loading-text">Loading Users...</div>
+      </div>
     </main>
 
     <!-- Chat Modal -->
@@ -46,6 +50,21 @@
       </div>
     </div>
 
-    <script type="module" src="/assets/users/scripts/users.js"></script>
+    <!-- Error Modal -->
+    <div id="errorModal" class="error-modal">
+      <div class="error-modal-content">
+        <div class="error-icon">⚠️</div>
+        <h3 class="error-title" id="errorTitle">Error</h3>
+        <p class="error-message" id="errorMessage">
+          An unexpected error occurred.
+        </p>
+        <div class="error-actions">
+          <button class="error-btn primary" id="errorRetryBtn">Retry</button>
+          <button class="error-btn secondary" id="errorCloseBtn">Close</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="page_scripts/users.js"></script>
   </body>
 </html>

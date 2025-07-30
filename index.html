@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Home Page</title>
-    <link rel="stylesheet" href="styles.css" />
+    <link rel="stylesheet" href="core/styles.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
       rel="stylesheet"
@@ -52,35 +52,32 @@
   <!-- Quick Actions Section -->
   <div class="sidebar-quick-actions">
     <h4 class="sidebar-section-title">Quick Actions</h4>
-    <button class="quick-action-btn" data-action="newWidget">
+    <button class="quick-action-btn" data-action="newWidget" onclick="event.stopPropagation();">
       <span class="quick-action-icon">+</span>
       <span class="quick-action-text">Add Project to Showcase</span>
     </button>
-    <button class="quick-action-btn" data-action="shareProfile">
+    <button class="quick-action-btn" data-action="shareProfile" onclick="event.stopPropagation();">
       <span class="quick-action-icon">📤</span>
       <span class="quick-action-text">Share Profile</span>
     </button>
-    <button class="quick-action-btn" data-action="settings">
+    <button class="quick-action-btn" data-action="settings" onclick="event.stopPropagation();">
       <span class="quick-action-icon">⚙️</span>
       <span class="quick-action-text">Settings</span>
     </button>
-            <button class="quick-action-btn" data-action="testNotifications">
-          <span class="quick-action-icon">🧪</span>
-          <span class="quick-action-text">Test Notifications</span>
-        </button>
-        <button class="quick-action-btn" data-action="testUpload">
-          <span class="quick-action-icon">📤</span>
-          <span class="quick-action-text">Test Upload</span>
-        </button>
   </div>
 
   <!-- Notifications Section -->
-  <div class="sidebar-notifications">
-    <h4 class="sidebar-section-title">
-      Notifications
-      <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
-      <button id="markAllReadBtn" class="mark-all-read-btn" style="display: none;" title="Mark all as read">✓</button>
-    </h4>
+  <div class="sidebar-notifications" id="sidebarNotifications">
+    <div class="notifications-header" id="notificationsHeader">
+      <h4 class="sidebar-section-title">
+        Notifications
+        <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
+        <button id="markAllReadBtn" class="mark-all-read-btn" style="display: none;" title="Mark all as read">✓</button>
+      </h4>
+      <button class="notifications-toggle" id="notificationsToggle" title="Expand notifications">
+        <span class="toggle-icon">▼</span>
+      </button>
+    </div>
     <div class="notification-list" id="notificationList">
       <div class="notification-item empty-notification">
         <span class="notification-text">No new notifications</span>
@@ -88,9 +85,9 @@
     </div>
   </div>
 
+  <!-- UPDATE -->
   <button class="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
-  <a href="assets/users/users.html" class="sidebar-nav-btn">List Users</a>
-  <button class="sidebar-nav-btn" data-action="leaveNote">Leave a Note</button>
+  <a href="pages/users.html" class="sidebar-nav-btn">List Users</a>
   <button class="sidebar-nav-btn" data-action="explore">Explore Creations</button>
   <button class="sidebar-nav-btn" data-action="tutorial">My Inventory</button>
 </nav>
@@ -157,6 +154,10 @@
           <span class="nav-icon"></span>
           <span class="nav-text">Blog</span>
         </button>
+        <button id="leaveNoteBtn" class="nav-btn secondary" title="Leave a note in the yearbook">
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">Leave a Note</span>
+        </button>
       </div>
     </div>
 
@@ -173,23 +174,21 @@
             <div class="timeline-row top">
               <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
               <div class="timeline-event" data-id="1">
-                <button class="edit-widget-btn">Edit</button>
+                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
               <div class="timeline-event" data-id="3">
-                <button class="edit-widget-btn">Edit</button>
+                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
               <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn">Edit</button>
+                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
               <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn">Edit</button>
+                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
               <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn">Edit</button>
+                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
             </div>
-            <!---Seperator-------------------------------------------------->
-            <!--TO DO: ADD SLIDER FORM MOVEMENT-->
             <div class="timeline-row middle">
               <div class="timeline-track"></div>
               <div class="timeline-scrollbar">
@@ -200,8 +199,6 @@
                 </div>
               </div>
             </div>
-            <!---Seperator-------------------------------------------------->
-            <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN TOP CHANNEL timeline-row top-->
             <div class="timeline-row bottom">
               <div class="timeline-event" data-id="2"></div>
               <div class="timeline-event" data-id="4"></div>
@@ -213,14 +210,13 @@
         </section>
       </main>
       <footer>
-        <p style="color: #aaa; font-size: 0.8rem;">&copy; 2025 inque by nicholas. All rights reserved.</p>
+        <p style="color: #aaa; font-size: 0.8rem;">&copy; 2025 inque. All rights reserved.</p>
       </footer>
 
       <!-- Only ONE main script, loaded as a module -->
-      <script type="module" src="script.js"></script>
-      <script type="module" src="scripts/canvas.js"></script>
-      <script type="module" src="scripts/auth.js"></script>
-      <script type="module" src="scripts/widget-display.js"></script>
+      <script type="module" src="main.js"></script>
+      <script type="module" src="scripts/ui/canvas.js"></script>
+      <script type="module" src="scripts/widgets/widget-display.js"></script>
 
       <!-- Widget Preview Modal -->
       <div id="widgetModal" class="modal">
@@ -295,10 +291,6 @@
                   <span class="social-icon">🔍</span>
                   Google
                 </button>
-                <button type="button" class="social-btn github-btn" id="githubLoginBtn">
-                  <span class="social-icon">🐙</span>
-                  GitHub
-                </button>
               </div>
             </div>
             
@@ -340,13 +332,8 @@
                   <span class="social-icon">🔍</span>
                   Google
                 </button>
-                <button type="button" class="social-btn github-btn" id="githubSignUpBtn">
-                  <span class="social-icon">🐙</span>
-                  GitHub
-                </button>
               </div>
             </div>
-            
             <p class="auth-switch">
               Already have an account? <a href="#" id="showLogin">Sign in</a>
             </p>
@@ -369,50 +356,7 @@
 </div>
 
 <!-- Floating button to expand header if collapsed -->
-<script>
-  // Sidebar open/close logic
-  const sidebar = document.querySelector('.sidebar-nav');
-  const overlay = document.querySelector('.sidebar-overlay');
-  const openBtn = document.querySelector('.hamburger-menu');
-  const closeBtn = document.querySelector('.sidebar-close-btn');
-  function openSidebar() {
-    sidebar.classList.add('open');
-    overlay.classList.add('show');
-    document.body.style.overflow = 'hidden';
-  }
-  function closeSidebar() {
-    sidebar.classList.remove('open');
-    overlay.classList.remove('show');
-    document.body.style.overflow = '';
-  }
-  openBtn.addEventListener('click', openSidebar);
-  closeBtn.addEventListener('click', closeSidebar);
-  overlay.addEventListener('click', closeSidebar);
-  // Swipe gesture for mobile
-  let startX = null;
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches[0].clientX < 30 && !sidebar.classList.contains('open')) {
-      startX = e.touches[0].clientX;
-    } else if (sidebar.classList.contains('open')) {
-      startX = e.touches[0].clientX;
-    } else {
-      startX = null;
-    }
-  });
-  document.addEventListener('touchmove', function(e) {
-    if (startX !== null) {
-      let dx = e.touches[0].clientX - startX;
-      if (!sidebar.classList.contains('open') && dx > 60) {
-        openSidebar();
-        startX = null;
-      } else if (sidebar.classList.contains('open') && dx < -60) {
-        closeSidebar();
-        startX = null;
-      }
-    }
-  });
-  document.addEventListener('touchend', function() { startX = null; });
-</script>
+        <!-- Sidebar functionality is handled in firebase-core.js -->
 
 <script>
   // Profile navigation buttons
@@ -425,15 +369,15 @@
       switch(page) {
         case 'about':
           // Navigate to about page
-          window.location.href = '/about.html';
+          window.location.href = 'core/personal/about.html';
           break;
         case 'explore':
           // Navigate to explore page
-          window.location.href = '/explore.html';
+          window.location.href = 'pages/explore.html';
           break;
         case 'inventory':
           // Navigate to inventory page
-          window.location.href = '/inventory.html';
+          window.location.href = 'pages/inventory.html';
           break;
         default:
           console.log('Unknown page:', page);
@@ -449,30 +393,6 @@
     console.log('Tutorial button clicked');
     // For now, just show an alert. In the future, this will open a comprehensive tutorial
     alert('Tutorial feature coming soon! This will explain everything about inque.');
-  });
-
-  // Social media banners functionality
-  const socialBanners = document.querySelectorAll('.social-banner');
-  socialBanners.forEach(banner => {
-    banner.addEventListener('click', () => {
-      const platform = banner.getAttribute('data-platform');
-      console.log(`Social banner clicked: ${platform}`);
-      
-      // Define social media URLs (replace with actual URLs)
-      const socialUrls = {
-        twitter: 'https://twitter.com/inque',
-        instagram: 'https://instagram.com/inque',
-        discord: 'https://discord.gg/inque',
-        youtube: 'https://youtube.com/@inque'
-      };
-      
-      const url = socialUrls[platform];
-      if (url) {
-        window.open(url, '_blank');
-      } else {
-        console.log(`No URL defined for ${platform}`);
-      }
-    });
   });
 </script>
 
@@ -655,6 +575,17 @@ editWidgetForm.addEventListener('submit', (e) => {
                 <span class="toggle-slider"></span>
               </label>
             </div>
+            
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Sidebar Sliding Effect</h4>
+                <p>Enable swipe and drag gestures for the sidebar drawer</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="sidebarSliding" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
           </div>
         </div>
         
@@ -749,11 +680,11 @@ editWidgetForm.addEventListener('submit', (e) => {
   </div>
 </div>
 <script type="module">
-import { db, auth, storage } from './scripts/firebase-init.js';
+import { db, auth, storage } from "../scripts/auth/auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-import { uploadWidgetToSlot } from './scripts/upload.js';
-import { saveWidgetSlotMetadata } from './scripts/project-manager.js';
+import { uploadWidgetToSlot } from '../scripts/upload/upload.js';
+import { saveWidgetSlotMetadata } from '../scripts/widgets/project-manager.js';
 
 const editProfileModal = document.getElementById('editProfileModal');
 const editProfileForm = document.getElementById('editProfileForm');
@@ -810,6 +741,27 @@ async function prefillProfileForm() {
     } else {
       photoPreview.style.display = 'none';
     }
+    
+    // Load user settings
+    if (data.settings) {
+      const emailNotificationsSetting = document.getElementById('emailNotifications');
+      const publicProfileSetting = document.getElementById('publicProfile');
+      const autoSaveSetting = document.getElementById('autoSave');
+      const sidebarSlidingSetting = document.getElementById('sidebarSliding');
+      
+      if (emailNotificationsSetting) {
+        emailNotificationsSetting.checked = data.settings.emailNotifications !== false;
+      }
+      if (publicProfileSetting) {
+        publicProfileSetting.checked = data.settings.publicProfile !== false;
+      }
+      if (autoSaveSetting) {
+        autoSaveSetting.checked = data.settings.autoSave !== false;
+      }
+      if (sidebarSlidingSetting) {
+        sidebarSlidingSetting.checked = data.settings.sidebarSliding !== false;
+      }
+    }
   }
 }
 
@@ -842,6 +794,13 @@ uploadWidgetBtns.forEach(btn => {
     btn.disabled = true;
     
     try {
+      // Check if user is authenticated
+      const user = auth.currentUser;
+      if (!user) {
+        alert('Please log in to upload files.');
+        return;
+      }
+      
       console.log(`Starting upload for slot ${slot}...`);
       
       // Use the imported uploadWidgetToSlot function
@@ -1003,6 +962,7 @@ if (saveAllSettingsBtn) {
       const emailNotifications = document.getElementById('emailNotifications')?.checked || false;
       const publicProfile = document.getElementById('publicProfile')?.checked || false;
       const autoSave = document.getElementById('autoSave')?.checked || false;
+      const sidebarSliding = document.getElementById('sidebarSliding')?.checked || false;
       
       // Update Firestore with all settings
       await updateDoc(doc(db, 'users', user.uid), {
@@ -1013,6 +973,7 @@ if (saveAllSettingsBtn) {
           emailNotifications,
           publicProfile,
           autoSave,
+          sidebarSliding,
           updatedAt: new Date()
         }
       });
@@ -1080,3 +1041,5 @@ if (editProfileForm) {
   });
 }
 </script>
+
+
