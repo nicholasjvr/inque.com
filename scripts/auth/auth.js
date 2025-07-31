@@ -7,6 +7,9 @@ import {
   GoogleAuthProvider,
   GithubAuthProvider,
   signInWithPopup,
+  updateProfile,
+  sendPasswordResetEmail,
+  sendEmailVerification,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import {
   getFirestore,
@@ -23,14 +26,560 @@ import {
   onSnapshot,
   serverTimestamp,
   getDocs,
+  deleteDoc,
+  arrayUnion,
+  arrayRemove,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref,
   uploadBytes,
   getDownloadURL,
+  deleteObject,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
 
+// Enhanced Auth System with Social Features
+class SocialAuthManager {
+  constructor() {
+    this.currentUser = null;
+    this.userProfile = null;
+    this.isLoading = false;
+    this.authStateListeners = [];
+    this.debugMode = true;
+  }
+
+  // Debug logging utility
+  log(message, data = null) {
+    if (this.debugMode) {
+      console.log(`[SOCIAL AUTH] ${message}`, data || "");
+    }
+  }
+
+  error(message, error = null) {
+    console.error(`[SOCIAL AUTH ERROR] ${message}`, error || "");
+  }
+
+  // Initialize the auth system
+  async init() {
+    this.log("Initializing Social Auth Manager");
+
+    // Set up auth state listener
+    onAuthStateChanged(auth, async (user) => {
+      this.currentUser = user;
+      this.log("Auth state changed", { userId: user?.uid });
+
+      if (user) {
+        await this.handleUserLogin(user);
+      } else {
+        await this.handleUserLogout();
+      }
+
+      // Notify listeners
+      this.authStateListeners.forEach((listener) => listener(user));
+    });
+
+    // Set up DOM event listeners
+    this.setupEventListeners();
+
+    this.log("Social Auth Manager initialized");
+  }
+
+  // Enhanced registration with social features
+  async registerUser(userData) {
+    try {
+      this.isLoading = true;
+      this.log("Starting user registration", { email: userData.email });
+
+      // Create Firebase auth user
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userData.email,
+        userData.password
+      );
+      const user = userCredential.user;
+
+      // Send email verification
+      await sendEmailVerification(user);
+
+      // Create comprehensive user profile
+      const profileData = {
+        uid: user.uid,
+        email: userData.email,
+        displayName: userData.displayName || userData.email.split("@")[0],
+        bio: userData.bio || "Welcome to inque! 🚀",
+        photoURL: userData.photoURL || this.getDefaultAvatar(),
+        username: userData.username || this.generateUsername(userData.email),
+        level: 1,
+        experience: 0,
+        type: "NEWB",
+        role: "USER",
+        followers: [],
+        following: [],
+        widgets: [],
+        socialLinks: {
+          twitter: userData.twitter || "",
+          instagram: userData.instagram || "",
+          github: userData.github || "",
+          website: userData.website || "",
+        },
+        preferences: {
+          theme: "auto",
+          notifications: true,
+          privacy: "public",
+          language: "en",
+        },
+        stats: {
+          widgetsCreated: 0,
+          followersCount: 0,
+          followingCount: 0,
+          totalViews: 0,
+          totalLikes: 0,
+        },
+        createdAt: serverTimestamp(),
+        lastActive: serverTimestamp(),
+        isVerified: false,
+        isPremium: false,
+      };
+
+      // Save to Firestore
+      await setDoc(doc(db, "users", user.uid), profileData);
+      this.log("User profile created successfully");
+
+      // Create welcome notification
+      await this.createNotification(user.uid, {
+        type: "welcome",
+        title: "Welcome to inque! 🎉",
+        message:
+          "Your account has been created successfully. Start by uploading your first widget!",
+        icon: "🎉",
+        data: { action: "upload_widget" },
+      });
+
+      // Create default widget slots
+      await this.createDefaultWidgetSlots(user.uid);
+
+      this.log("Registration completed successfully");
+      return { success: true, user, profile: profileData };
+    } catch (error) {
+      this.error("Registration failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Enhanced login with social features
+  async loginUser(credentials) {
+    try {
+      this.isLoading = true;
+      this.log("Starting user login", { email: credentials.email });
+
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        credentials.email,
+        credentials.password
+      );
+      const user = userCredential.user;
+
+      // Update last active
+      await updateDoc(doc(db, "users", user.uid), {
+        lastActive: serverTimestamp(),
+      });
+
+      // Create login notification
+      await this.createNotification(user.uid, {
+        type: "login",
+        title: "Welcome back! 👋",
+        message: "You've successfully logged into your account.",
+        icon: "🔐",
+        data: { action: "dashboard" },
+      });
+
+      this.log("Login completed successfully");
+      return { success: true, user };
+    } catch (error) {
+      this.error("Login failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Social provider login
+  async loginWithProvider(providerName) {
+    try {
+      this.isLoading = true;
+      this.log("Starting social login", { provider: providerName });
+
+      let provider;
+      switch (providerName) {
+        case "google":
+          provider = new GoogleAuthProvider();
+          break;
+        case "github":
+          provider = new GithubAuthProvider();
+          break;
+        default:
+          throw new Error("Unsupported provider");
+      }
+
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user exists in our database
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+
+      if (!userDoc.exists()) {
+        // Create new user profile for social login
+        await this.createSocialUserProfile(user, providerName);
+      } else {
+        // Update existing user
+        await updateDoc(doc(db, "users", user.uid), {
+          lastActive: serverTimestamp(),
+        });
+      }
+
+      this.log("Social login completed successfully");
+      return { success: true, user };
+    } catch (error) {
+      this.error("Social login failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Enhanced widget upload system
+  async uploadWidget(widgetData) {
+    try {
+      this.isLoading = true;
+      this.log("Starting widget upload", { title: widgetData.title });
+
+      if (!this.currentUser) {
+        throw new Error("User must be logged in to upload widgets");
+      }
+
+      const userId = this.currentUser.uid;
+      const widgetId = this.generateWidgetId();
+      const timestamp = Date.now();
+
+      // Upload widget files to storage
+      const fileUrls = await this.uploadWidgetFiles(
+        widgetData.files,
+        userId,
+        widgetId
+      );
+
+      // Create widget document
+      const widgetDoc = {
+        id: widgetId,
+        userId: userId,
+        title: widgetData.title,
+        description: widgetData.description,
+        category: widgetData.category || "general",
+        tags: widgetData.tags || [],
+        files: fileUrls,
+        thumbnail:
+          widgetData.thumbnail ||
+          fileUrls.find((url) => url.includes(".png") || url.includes(".jpg")),
+        isPublic: widgetData.isPublic !== false,
+        isFeatured: false,
+        stats: {
+          views: 0,
+          likes: 0,
+          shares: 0,
+          downloads: 0,
+        },
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      };
+
+      // Save to Firestore
+      await setDoc(doc(db, "widgets", widgetId), widgetDoc);
+
+      // Update user's widget count
+      await updateDoc(doc(db, "users", userId), {
+        "stats.widgetsCreated": arrayUnion(1),
+        widgets: arrayUnion(widgetId),
+      });
+
+      // Create upload notification
+      await this.createNotification(userId, {
+        type: "widget_upload",
+        title: "Widget uploaded! 🎨",
+        message: `Your widget "${widgetData.title}" has been successfully uploaded.`,
+        icon: "🎨",
+        data: { widgetId, action: "view_widget" },
+      });
+
+      this.log("Widget upload completed successfully");
+      return { success: true, widgetId, widget: widgetDoc };
+    } catch (error) {
+      this.error("Widget upload failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    } finally {
+      this.isLoading = false;
+    }
+  }
+
+  // Social features
+  async followUser(targetUserId) {
+    try {
+      if (!this.currentUser) throw new Error("User must be logged in");
+
+      const currentUserId = this.currentUser.uid;
+
+      // Add to following list
+      await updateDoc(doc(db, "users", currentUserId), {
+        following: arrayUnion(targetUserId),
+      });
+
+      // Add to target user's followers
+      await updateDoc(doc(db, "users", targetUserId), {
+        followers: arrayUnion(currentUserId),
+      });
+
+      // Create follow notification
+      await this.createNotification(targetUserId, {
+        type: "follow",
+        title: "New follower! 👥",
+        message: `${
+          this.userProfile?.displayName || "Someone"
+        } started following you.`,
+        icon: "👥",
+        data: { followerId: currentUserId, action: "view_profile" },
+      });
+
+      this.log("User followed successfully");
+      return { success: true };
+    } catch (error) {
+      this.error("Follow action failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    }
+  }
+
+  async unfollowUser(targetUserId) {
+    try {
+      if (!this.currentUser) throw new Error("User must be logged in");
+
+      const currentUserId = this.currentUser.uid;
+
+      // Remove from following list
+      await updateDoc(doc(db, "users", currentUserId), {
+        following: arrayRemove(targetUserId),
+      });
+
+      // Remove from target user's followers
+      await updateDoc(doc(db, "users", targetUserId), {
+        followers: arrayRemove(currentUserId),
+      });
+
+      this.log("User unfollowed successfully");
+      return { success: true };
+    } catch (error) {
+      this.error("Unfollow action failed", error);
+      return { success: false, error: this.getUserFriendlyError(error) };
+    }
+  }
+
+  // Helper methods
+  generateUsername(email) {
+    const base = email.split("@")[0];
+    const random = Math.floor(Math.random() * 1000);
+    return `${base}${random}`;
+  }
+
+  generateWidgetId() {
+    return `widget_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+  }
+
+  getDefaultAvatar() {
+    const avatars = [
+      "https://i.pinimg.com/originals/3c/69/1d/3c691d9047d7fb33383a8b417c8e9b67.jpg",
+      "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
+      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+      "https://images.unsplash.com/photo-1494790108755-2616b612b786?w=150&h=150&fit=crop&crop=face",
+    ];
+    return avatars[Math.floor(Math.random() * avatars.length)];
+  }
+
+  getUserFriendlyError(error) {
+    const errorMessages = {
+      "auth/user-not-found": "No account found with this email address.",
+      "auth/wrong-password": "Incorrect password. Please try again.",
+      "auth/email-already-in-use": "An account with this email already exists.",
+      "auth/weak-password":
+        "Password is too weak. Please choose a stronger password.",
+      "auth/invalid-email": "Please enter a valid email address.",
+      "auth/too-many-requests":
+        "Too many failed attempts. Please try again later.",
+      "auth/network-request-failed":
+        "Network error. Please check your connection.",
+      "auth/popup-closed-by-user": "Login was cancelled.",
+      "auth/cancelled-popup-request": "Login was cancelled.",
+      "auth/popup-blocked":
+        "Popup was blocked. Please allow popups for this site.",
+    };
+
+    return errorMessages[error.code] || "An error occurred. Please try again.";
+  }
+
+  async createNotification(userId, notificationData) {
+    try {
+      const notification = {
+        userId: userId,
+        type: notificationData.type || "system",
+        title: notificationData.title,
+        message: notificationData.message,
+        read: false,
+        timestamp: serverTimestamp(),
+        data: notificationData.data || {},
+        icon: notificationData.icon || "🔔",
+      };
+
+      await addDoc(collection(db, "notifications"), notification);
+      this.log("Notification created", notification);
+    } catch (error) {
+      this.error("Error creating notification", error);
+    }
+  }
+
+  async createDefaultWidgetSlots(userId) {
+    try {
+      const placeholderHtml = new Blob(
+        [
+          `<html>
+        <head><title>Widget Placeholder</title></head>
+        <body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;font-family:Arial,sans-serif;'>
+          <div style='text-align:center;'>
+            <h2>Widget Placeholder</h2>
+            <p>This is a placeholder widget.</p>
+            <p>Upload your files to replace this!</p>
+            <img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;border-radius:10px;'/>
+          </div>
+        </body>
+      </html>`,
+        ],
+        { type: "text/html" }
+      );
+
+      for (let i = 1; i <= 3; i++) {
+        const storageRef = ref(
+          storage,
+          `users/${userId}/app-widget-${i}/index.html`
+        );
+        await uploadBytes(storageRef, placeholderHtml);
+        this.log(`Created widget slot ${i}`);
+      }
+    } catch (error) {
+      this.error("Error creating widget slots", error);
+    }
+  }
+
+  async uploadWidgetFiles(files, userId, widgetId) {
+    const fileUrls = [];
+
+    for (const file of files) {
+      const fileRef = ref(
+        storage,
+        `users/${userId}/widgets/${widgetId}/${file.name}`
+      );
+      await uploadBytes(fileRef, file);
+      const url = await getDownloadURL(fileRef);
+      fileUrls.push(url);
+    }
+
+    return fileUrls;
+  }
+
+  async createSocialUserProfile(user, providerName) {
+    const profileData = {
+      uid: user.uid,
+      email: user.email,
+      displayName: user.displayName || user.email.split("@")[0],
+      bio: "Welcome to inque! 🚀",
+      photoURL: user.photoURL || this.getDefaultAvatar(),
+      username: this.generateUsername(user.email),
+      level: 1,
+      experience: 0,
+      type: "NEWB",
+      role: "USER",
+      followers: [],
+      following: [],
+      widgets: [],
+      socialLinks: {},
+      preferences: {
+        theme: "auto",
+        notifications: true,
+        privacy: "public",
+        language: "en",
+      },
+      stats: {
+        widgetsCreated: 0,
+        followersCount: 0,
+        followingCount: 0,
+        totalViews: 0,
+        totalLikes: 0,
+      },
+      createdAt: serverTimestamp(),
+      lastActive: serverTimestamp(),
+      isVerified: false,
+      isPremium: false,
+      loginProvider: providerName,
+    };
+
+    await setDoc(doc(db, "users", user.uid), profileData);
+    await this.createDefaultWidgetSlots(user.uid);
+  }
+
+  // Event listeners setup
+  setupEventListeners() {
+    // ... existing event listeners will be enhanced here
+  }
+
+  // Auth state management
+  onAuthStateChanged(listener) {
+    this.authStateListeners.push(listener);
+  }
+
+  async handleUserLogin(user) {
+    this.log("Handling user login", { uid: user.uid });
+
+    try {
+      const userDoc = await getDoc(doc(db, "users", user.uid));
+      if (userDoc.exists()) {
+        this.userProfile = userDoc.data();
+        this.updateUIForLoggedInUser();
+      }
+    } catch (error) {
+      this.error("Error handling user login", error);
+    }
+  }
+
+  async handleUserLogout() {
+    this.log("Handling user logout");
+    this.userProfile = null;
+    this.updateUIForLoggedOutUser();
+  }
+
+  updateUIForLoggedInUser() {
+    // Update UI elements for logged in user
+    this.log("Updating UI for logged in user");
+    // Implementation will be added
+  }
+
+  updateUIForLoggedOutUser() {
+    // Update UI elements for logged out user
+    this.log("Updating UI for logged out user");
+    // Implementation will be added
+  }
+}
+
+// Initialize the enhanced auth system
+const socialAuth = new SocialAuthManager();
+
 document.addEventListener("DOMContentLoaded", () => {
+  socialAuth.init();
+
   // DOM Elements for Auth Modal
   const authModal = document.getElementById("authModal");
   const authCloseBtn = document.querySelector(".auth-close-button");

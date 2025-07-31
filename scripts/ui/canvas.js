@@ -43,12 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
     const lineBuffer = [];
 
     // Storage optimization configuration
-    const MAX_LINES = 100; // Increased from 50 - allows more detailed drawings
-    const MAX_LINE_LENGTH = 150; // Increased from 100 - allows longer strokes
     const MAX_NOTES_PER_USER = 10; // Limit notes per user
     const MAX_STORAGE_SIZE = 50000; // 50KB limit per note
     const CANVAS_COMPRESSION_RATIO = 0.5; // Reduce canvas size for storage
-    let currentLineCount = 0;
+
+    // NEW: Spatial drawing limits - much more user-friendly!
+    const DRAWING_AREA_PADDING = 50; // Padding from canvas edges
+    const MIN_DRAWING_AREA_SIZE = 200; // Minimum drawing area size
+    let DRAWING_AREA_TYPE = "rectangle"; // "rectangle" or "circle" - made mutable
+    let drawingArea = null; // Will be set when canvas opens
     let savedLines = [];
     let currentUserNotes = 0;
 
@@ -57,7 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
     canvasControls.className = "canvas-controls";
     canvasControls.innerHTML = `
       <div class="canvas-info">
-        <span class="line-counter">Lines: <span id="lineCount">0</span>/${MAX_LINES}</span>
+        <span class="drawing-area-info">Drawing Area: <span id="drawingAreaInfo">Calculating...</span></span>
         <span class="mode-indicator">Mode: <span id="drawMode">Draw</span></span>
         <span class="storage-info">Storage: <span id="storageInfo">Optimized</span></span>
         <span class="user-limit">Notes: <span id="userNoteCount">0</span>/${MAX_NOTES_PER_USER}</span>
@@ -66,6 +69,7 @@ document.addEventListener("DOMContentLoaded", () => {
         <button id="saveCanvasBtn" class="canvas-btn save-btn" title="Save your note">💾 Save</button>
         <button id="resetCanvasBtn" class="canvas-btn reset-btn" title="Clear canvas">🗑️ Reset</button>
         <button id="toggleModeBtn" class="canvas-btn mode-btn" title="Toggle draw/erase mode">✏️ Draw</button>
+        <button id="toggleAreaBtn" class="canvas-btn area-btn" title="Toggle drawing area shape">⬜ Rectangle</button>
       </div>
     `;
 
@@ -86,31 +90,224 @@ document.addEventListener("DOMContentLoaded", () => {
       }, 3000);
     };
 
+    // NEW: Spatial drawing area functions
+    const calculateDrawingArea = () => {
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      if (DRAWING_AREA_TYPE === "circle") {
+        // Circular drawing area - more natural for signatures/doodles
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+        const radius = Math.min(
+          (canvasWidth - DRAWING_AREA_PADDING * 2) / 2,
+          (canvasHeight - DRAWING_AREA_PADDING * 2) / 2,
+          Math.max(MIN_DRAWING_AREA_SIZE / 2, 100)
+        );
+
+        drawingArea = {
+          type: "circle",
+          centerX: centerX,
+          centerY: centerY,
+          radius: radius,
+          radiusSquared: radius * radius, // For efficient distance checking
+        };
+      } else {
+        // Rectangular drawing area - more traditional
+        const areaWidth = Math.max(
+          canvasWidth - DRAWING_AREA_PADDING * 2,
+          MIN_DRAWING_AREA_SIZE
+        );
+        const areaHeight = Math.max(
+          canvasHeight - DRAWING_AREA_PADDING * 2,
+          MIN_DRAWING_AREA_SIZE
+        );
+
+        const areaX = (canvasWidth - areaWidth) / 2;
+        const areaY = (canvasHeight - areaHeight) / 2;
+
+        drawingArea = {
+          type: "rectangle",
+          x: areaX,
+          y: areaY,
+          width: areaWidth,
+          height: areaHeight,
+        };
+      }
+
+      console.log("Canvas.js: Drawing area calculated:", drawingArea);
+      return drawingArea;
+    };
+
+    const drawDrawingAreaBoundary = () => {
+      if (!drawingArea) return;
+
+      // Draw a subtle boundary around the drawing area
+      ctx.save();
+      ctx.strokeStyle = "rgba(0, 150, 255, 0.3)";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([5, 5]);
+      if (drawingArea.type === "circle") {
+        ctx.beginPath();
+        ctx.arc(
+          drawingArea.centerX,
+          drawingArea.centerY,
+          drawingArea.radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(
+          drawingArea.x,
+          drawingArea.y,
+          drawingArea.width,
+          drawingArea.height
+        );
+      }
+      ctx.restore();
+
+      console.log("Canvas.js: Drawing area boundary drawn");
+    };
+
+    const highlightDrawingAreaBoundary = () => {
+      if (!drawingArea) return;
+
+      // Temporarily highlight the boundary in red to show it's restricted
+      ctx.save();
+      ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
+      ctx.lineWidth = 3;
+      ctx.setLineDash([3, 3]);
+      if (drawingArea.type === "circle") {
+        ctx.beginPath();
+        ctx.arc(
+          drawingArea.centerX,
+          drawingArea.centerY,
+          drawingArea.radius,
+          0,
+          Math.PI * 2
+        );
+        ctx.stroke();
+      } else {
+        ctx.strokeRect(
+          drawingArea.x,
+          drawingArea.y,
+          drawingArea.width,
+          drawingArea.height
+        );
+      }
+      ctx.restore();
+
+      // Reset to normal boundary after a short delay
+      setTimeout(() => {
+        drawDrawingAreaBoundary();
+      }, 1000);
+
+      console.log("Canvas.js: Drawing area boundary highlighted (restricted)");
+    };
+
+    const isPointInDrawingArea = (x, y) => {
+      if (!drawingArea) return true; // Allow drawing if area not set yet
+
+      if (drawingArea.type === "circle") {
+        const dx = x - drawingArea.centerX;
+        const dy = y - drawingArea.centerY;
+        const distanceSquared = dx * dx + dy * dy;
+        const isInside = distanceSquared <= drawingArea.radiusSquared;
+
+        if (!isInside) {
+          console.log(
+            `Canvas.js: Drawing blocked at (${x}, ${y}) - outside circular area:`,
+            drawingArea
+          );
+        }
+
+        return isInside;
+      } else {
+        const isInside =
+          x >= drawingArea.x &&
+          x <= drawingArea.x + drawingArea.width &&
+          y >= drawingArea.y &&
+          y <= drawingArea.y + drawingArea.height;
+
+        if (!isInside) {
+          console.log(
+            `Canvas.js: Drawing blocked at (${x}, ${y}) - outside drawing area:`,
+            drawingArea
+          );
+        }
+
+        return isInside;
+      }
+    };
+
+    const updateDrawingAreaInfo = () => {
+      const drawingAreaInfoElement = document.getElementById("drawingAreaInfo");
+      if (drawingAreaInfoElement && drawingArea) {
+        if (lineBuffer.length === 0) {
+          drawingAreaInfoElement.textContent = "Empty";
+          drawingAreaInfoElement.style.color = "#888888";
+        } else {
+          let areaPercent = 0;
+          if (drawingArea.type === "circle") {
+            const area = Math.PI * drawingArea.radius * drawingArea.radius;
+            const canvasArea = canvas.width * canvas.height;
+            areaPercent = Math.round((area / canvasArea) * 100);
+          } else {
+            const area = drawingArea.width * drawingArea.height;
+            const canvasArea = canvas.width * canvas.height;
+            areaPercent = Math.round((area / canvasArea) * 100);
+          }
+          drawingAreaInfoElement.textContent = `${areaPercent}% of canvas`;
+          drawingAreaInfoElement.style.color =
+            areaPercent < 50 ? "#ff8800" : "#00ff00";
+        }
+      }
+    };
+
     const drawLine = (startX, startY, endX, endY, erase = false) => {
-      ctx.globalCompositeOperation = erase ? "destination-out" : "source-over";
-      ctx.beginPath();
-      ctx.strokeStyle = erase ? "rgba(0,0,0,1)" : "black";
-      ctx.lineWidth = erase ? 25 : 6; // Increased line width for better visibility
-      ctx.lineCap = "round";
-      ctx.moveTo(startX, startY);
-      ctx.lineTo(endX, endY);
-      ctx.stroke();
-      ctx.closePath();
-      ctx.globalCompositeOperation = "source-over";
+      if (erase) {
+        // Enhanced eraser with multiple passes for better effectiveness
+        ctx.save(); // Save current context state
+        ctx.globalCompositeOperation = "destination-out";
+        ctx.beginPath();
+        ctx.strokeStyle = "rgba(0,0,0,1)";
+        ctx.lineWidth = 30;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+
+        // Second pass with smaller width for precision
+        ctx.lineWidth = 15;
+        ctx.stroke();
+
+        // Third pass for complete erasing
+        ctx.lineWidth = 8;
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore(); // Restore context state
+      } else {
+        // Normal drawing
+        ctx.save(); // Save current context state
+        ctx.globalCompositeOperation = "source-over";
+        ctx.beginPath();
+        ctx.strokeStyle = "black";
+        ctx.lineWidth = 6;
+        ctx.lineCap = "round";
+        ctx.lineJoin = "round";
+        ctx.moveTo(startX, startY);
+        ctx.lineTo(endX, endY);
+        ctx.stroke();
+        ctx.closePath();
+        ctx.restore(); // Restore context state
+      }
     };
 
     const startDrawing = (e) => {
       isDrawing = true;
       [lastX, lastY] = [e.offsetX, e.offsetY];
-    };
-
-    const updateLineCounter = () => {
-      const lineCountElement = document.getElementById("lineCount");
-      if (lineCountElement) {
-        lineCountElement.textContent = currentLineCount;
-        lineCountElement.style.color =
-          currentLineCount >= MAX_LINES ? "#ff4444" : "#00ff00";
-      }
     };
 
     const updateModeIndicator = () => {
@@ -164,11 +361,20 @@ document.addEventListener("DOMContentLoaded", () => {
       const userNoteCountElement = document.getElementById("userNoteCount");
 
       if (storageInfoElement) {
-        const currentSize = calculateStorageSize(lineBuffer);
-        const sizeKB = (currentSize / 1024).toFixed(1);
-        storageInfoElement.textContent = `${sizeKB}KB`;
-        storageInfoElement.style.color =
-          currentSize > MAX_STORAGE_SIZE ? "#ff4444" : "#00ff00";
+        if (lineBuffer.length === 0) {
+          storageInfoElement.textContent = "Ready";
+          storageInfoElement.style.color = "#00ff00";
+        } else {
+          const currentSize = calculateStorageSize(lineBuffer);
+          const sizeKB = (currentSize / 1024).toFixed(1);
+          storageInfoElement.textContent = `${sizeKB}KB`;
+          storageInfoElement.style.color =
+            currentSize > MAX_STORAGE_SIZE ? "#ff4444" : "#00ff00";
+
+          console.log(
+            `Canvas.js: Storage updated - ${sizeKB}KB (${lineBuffer.length} lines)`
+          );
+        }
       }
 
       if (userNoteCountElement) {
@@ -198,13 +404,21 @@ document.addEventListener("DOMContentLoaded", () => {
     const bufferDrawingAction = (e) => {
       if (!isDrawing) return;
 
-      // Check line limit
-      if (currentLineCount >= MAX_LINES) {
-        showTooltip(`Line limit reached (${MAX_LINES}). Please save or reset.`);
+      const currentX = e.offsetX;
+      const currentY = e.offsetY;
+
+      // NEW: Check if drawing point is within allowed area
+      if (!isPointInDrawingArea(currentX, currentY)) {
+        const areaType =
+          drawingArea?.type === "circle" ? "circular" : "rectangular";
+        showTooltip(
+          `Drawing outside allowed ${areaType} area! Stay within the boundary.`
+        );
+        highlightDrawingAreaBoundary(); // Highlight boundary temporarily
         return;
       }
 
-      // Check storage size limit
+      // Check storage size limit (keep this as a safety)
       const currentSize = calculateStorageSize(lineBuffer);
       if (currentSize > MAX_STORAGE_SIZE) {
         showTooltip(
@@ -215,18 +429,9 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      const currentX = e.offsetX;
-      const currentY = e.offsetY;
-
-      // Calculate line length to prevent very long strokes
-      const lineLength = Math.sqrt(
-        Math.pow(currentX - lastX, 2) + Math.pow(currentY - lastY, 2)
-      );
-
-      if (lineLength > MAX_LINE_LENGTH) {
-        // Skip this line segment if it's too long
-        [lastX, lastY] = [currentX, currentY];
-        return;
+      // Debug logging for eraser state
+      if (isErasing) {
+        console.log("Canvas.js: Erasing at", currentX, currentY);
       }
 
       drawLine(lastX, lastY, currentX, currentY, isErasing);
@@ -240,8 +445,7 @@ document.addEventListener("DOMContentLoaded", () => {
       };
 
       lineBuffer.push(newLine);
-      currentLineCount++;
-      updateLineCounter();
+      updateDrawingAreaInfo();
       updateStorageInfo();
 
       [lastX, lastY] = [currentX, currentY];
@@ -288,7 +492,6 @@ document.addEventListener("DOMContentLoaded", () => {
         // Save compressed note data
         const noteData = {
           lines: compressedLines,
-          lineCount: currentLineCount,
           createdAt: serverTimestamp(),
           type: "canvas-note",
           storageSize: storageSize,
@@ -312,8 +515,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         // Clear buffer and reset counter
         lineBuffer.length = 0;
-        currentLineCount = 0;
-        updateLineCounter();
+        updateDrawingAreaInfo();
         updateStorageInfo();
 
         showTooltip("Note saved successfully! 🎉");
@@ -358,29 +560,123 @@ document.addEventListener("DOMContentLoaded", () => {
       // Clear canvas
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+      // Reset to draw mode
+      isErasing = false;
+      canvas.style.cursor = "crosshair";
+      canvas.style.border = "1px solid #ccc";
+      canvas.style.boxShadow = "none";
+
+      // Redraw drawing area boundary
+      drawDrawingAreaBoundary();
+
       // Reset counters and buffers
       lineBuffer.length = 0;
-      currentLineCount = 0;
-      updateLineCounter();
+      updateDrawingAreaInfo();
       updateStorageInfo();
 
-      showTooltip("Canvas reset!");
+      // Update mode indicator and button
+      updateModeIndicator();
+      const toggleBtn = document.getElementById("toggleModeBtn");
+      if (toggleBtn) {
+        toggleBtn.textContent = "🧽 Erase";
+        toggleBtn.title = "Switch to erase mode";
+        toggleBtn.style.background = "transparent";
+        toggleBtn.style.borderColor = "#ff9800";
+        toggleBtn.style.color = "#ff9800";
+      }
+
+      showTooltip("Canvas reset! Back to draw mode.");
+      console.log("Canvas.js: Canvas reset completed");
     };
 
     const toggleDrawMode = () => {
+      console.log(
+        "Canvas.js: Toggling draw mode from",
+        isErasing ? "erase" : "draw",
+        "to",
+        isErasing ? "draw" : "erase"
+      );
+
       isErasing = !isErasing;
-      canvas.style.cursor = isErasing ? "cell" : "crosshair";
+
+      // Update cursor based on mode
+      if (isErasing) {
+        canvas.style.cursor = "crosshair";
+        canvas.style.border = "2px solid #ff4444";
+        canvas.style.boxShadow = "0 0 10px rgba(255, 68, 68, 0.3)";
+      } else {
+        canvas.style.cursor = "crosshair";
+        canvas.style.border = "1px solid #ccc";
+        canvas.style.boxShadow = "none";
+      }
+
       updateModeIndicator();
 
       const toggleBtn = document.getElementById("toggleModeBtn");
       if (toggleBtn) {
-        toggleBtn.textContent = isErasing ? "✏️ Draw" : "🧽 Erase";
-        toggleBtn.title = isErasing
-          ? "Switch to draw mode"
-          : "Switch to erase mode";
+        if (isErasing) {
+          toggleBtn.textContent = "✏️ Draw";
+          toggleBtn.title = "Switch to draw mode";
+          toggleBtn.style.background = "rgba(255, 0, 0, 0.2)";
+          toggleBtn.style.borderColor = "#ff4444";
+          toggleBtn.style.color = "#ff4444";
+        } else {
+          toggleBtn.textContent = "🧽 Erase";
+          toggleBtn.title = "Switch to erase mode";
+          toggleBtn.style.background = "transparent";
+          toggleBtn.style.borderColor = "#ff9800";
+          toggleBtn.style.color = "#ff9800";
+        }
+
+        console.log(
+          "Canvas.js: Updated toggle button text to:",
+          toggleBtn.textContent
+        );
+      } else {
+        console.warn("Canvas.js: Toggle button not found for mode update");
       }
 
-      showTooltip(isErasing ? "Eraser mode on" : "Draw mode on");
+      showTooltip(
+        isErasing
+          ? "🧽 Eraser mode active - Click and drag to erase"
+          : "✏️ Draw mode active - Click and drag to draw"
+      );
+      console.log("Canvas.js: Draw mode toggled successfully");
+    };
+
+    const toggleDrawingAreaType = () => {
+      console.log("Canvas.js: Toggling drawing area type");
+
+      // Clear current canvas and redraw boundary
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Toggle the drawing area type
+      if (DRAWING_AREA_TYPE === "rectangle") {
+        DRAWING_AREA_TYPE = "circle";
+      } else {
+        DRAWING_AREA_TYPE = "rectangle";
+      }
+
+      // Recalculate and redraw
+      calculateDrawingArea();
+      drawDrawingAreaBoundary();
+      updateDrawingAreaInfo();
+
+      // Update button text
+      const toggleAreaBtn = document.getElementById("toggleAreaBtn");
+      if (toggleAreaBtn) {
+        const isCircle = DRAWING_AREA_TYPE === "circle";
+        toggleAreaBtn.textContent = isCircle ? "⭕ Circle" : "⬜ Rectangle";
+        toggleAreaBtn.title = isCircle
+          ? "Switch to rectangular drawing area"
+          : "Switch to circular drawing area";
+      }
+
+      showTooltip(`Switched to ${DRAWING_AREA_TYPE} drawing area!`);
+      console.log(
+        "Canvas.js: Drawing area type toggled to:",
+        DRAWING_AREA_TYPE
+      );
     };
 
     const handleCanvasClick = (e) => {
@@ -436,6 +732,27 @@ document.addEventListener("DOMContentLoaded", () => {
     canvas.addEventListener("mouseout", stopDrawing);
     canvas.addEventListener("click", handleCanvasClick);
 
+    // Keyboard shortcuts for eraser
+    document.addEventListener("keydown", (e) => {
+      if (
+        e.key.toLowerCase() === "e" &&
+        canvasModal.style.display === "block"
+      ) {
+        e.preventDefault();
+        console.log("Canvas.js: E key pressed - toggling eraser mode");
+        toggleDrawMode();
+      } else if (
+        e.key.toLowerCase() === "d" &&
+        canvasModal.style.display === "block"
+      ) {
+        e.preventDefault();
+        console.log("Canvas.js: D key pressed - toggling draw mode");
+        if (isErasing) {
+          toggleDrawMode();
+        }
+      }
+    });
+
     // Touch events for mobile
     canvas.addEventListener("touchstart", (e) => {
       e.preventDefault();
@@ -460,37 +777,7 @@ document.addEventListener("DOMContentLoaded", () => {
       stopDrawing();
     });
 
-    // Add event listeners for canvas control buttons
-    const saveCanvasBtn = document.getElementById("saveCanvasBtn");
-    const resetCanvasBtn = document.getElementById("resetCanvasBtn");
-    const toggleModeBtn = document.getElementById("toggleModeBtn");
-
-    if (saveCanvasBtn) {
-      saveCanvasBtn.addEventListener("click", (e) => {
-        console.log("Canvas.js: Save button clicked");
-        e.preventDefault();
-        e.stopPropagation();
-        saveCanvasToNotes();
-      });
-    }
-
-    if (resetCanvasBtn) {
-      resetCanvasBtn.addEventListener("click", (e) => {
-        console.log("Canvas.js: Reset button clicked");
-        e.preventDefault();
-        e.stopPropagation();
-        resetCanvas();
-      });
-    }
-
-    if (toggleModeBtn) {
-      toggleModeBtn.addEventListener("click", (e) => {
-        console.log("Canvas.js: Toggle mode button clicked");
-        e.preventDefault();
-        e.stopPropagation();
-        toggleDrawMode();
-      });
-    }
+    // Canvas control button event listeners will be set up in openCanvas()
 
     const openCanvas = () => {
       console.log("Canvas.js: Opening canvas modal");
@@ -502,8 +789,88 @@ document.addEventListener("DOMContentLoaded", () => {
         modalBody.insertBefore(canvasControls, modalBody.firstChild);
       }
 
+      // Set up canvas control button event listeners AFTER buttons are in DOM
+      const saveCanvasBtn = document.getElementById("saveCanvasBtn");
+      const resetCanvasBtn = document.getElementById("resetCanvasBtn");
+      const toggleModeBtn = document.getElementById("toggleModeBtn");
+      const toggleAreaBtn = document.getElementById("toggleAreaBtn");
+
+      console.log("Canvas.js: Found buttons:", {
+        saveCanvasBtn: !!saveCanvasBtn,
+        resetCanvasBtn: !!resetCanvasBtn,
+        toggleModeBtn: !!toggleModeBtn,
+        toggleAreaBtn: !!toggleAreaBtn,
+      });
+
+      if (saveCanvasBtn) {
+        console.log("Canvas.js: Setting up save button listener");
+        saveCanvasBtn.addEventListener("click", (e) => {
+          console.log("Canvas.js: Save button clicked");
+          e.preventDefault();
+          e.stopPropagation();
+          saveCanvasToNotes();
+        });
+        // Add visual feedback
+        saveCanvasBtn.style.boxShadow = "0 0 10px rgba(76, 175, 80, 0.5)";
+      } else {
+        console.warn("Canvas.js: Save button not found");
+      }
+
+      if (resetCanvasBtn) {
+        console.log("Canvas.js: Setting up reset button listener");
+        resetCanvasBtn.addEventListener("click", (e) => {
+          console.log("Canvas.js: Reset button clicked");
+          e.preventDefault();
+          e.stopPropagation();
+          resetCanvas();
+        });
+        // Add visual feedback
+        resetCanvasBtn.style.boxShadow = "0 0 10px rgba(244, 67, 54, 0.5)";
+      } else {
+        console.warn("Canvas.js: Reset button not found");
+      }
+
+      if (toggleModeBtn) {
+        console.log("Canvas.js: Setting up toggle mode button listener");
+        toggleModeBtn.addEventListener("click", (e) => {
+          console.log("Canvas.js: Toggle mode button clicked");
+          e.preventDefault();
+          e.stopPropagation();
+          toggleDrawMode();
+        });
+        // Add visual feedback
+        toggleModeBtn.style.boxShadow = "0 0 10px rgba(255, 152, 0, 0.5)";
+      } else {
+        console.warn("Canvas.js: Toggle mode button not found");
+      }
+
+      if (toggleAreaBtn) {
+        console.log("Canvas.js: Setting up toggle area button listener");
+        toggleAreaBtn.addEventListener("click", (e) => {
+          console.log("Canvas.js: Toggle area button clicked");
+          e.preventDefault();
+          e.stopPropagation();
+          toggleDrawingAreaType();
+        });
+        // Add visual feedback
+        toggleAreaBtn.style.boxShadow = "0 0 10px rgba(156, 39, 176, 0.5)";
+      } else {
+        console.warn("Canvas.js: Toggle area button not found");
+      }
+
       resizeCanvas();
-      updateLineCounter();
+
+      // NEW: Initialize drawing area and draw boundary
+      calculateDrawingArea();
+      drawDrawingAreaBoundary();
+      updateDrawingAreaInfo();
+
+      // Ensure proper initial state
+      isErasing = false;
+      canvas.style.cursor = "crosshair";
+      canvas.style.border = "1px solid #ccc";
+      canvas.style.boxShadow = "none";
+
       updateModeIndicator();
       updateStorageInfo();
 
@@ -519,9 +886,9 @@ document.addEventListener("DOMContentLoaded", () => {
           );
         });
 
-      console.log("Canvas.js: Storage optimizations active:");
-      console.log(`- Max lines: ${MAX_LINES}`);
-      console.log(`- Max line length: ${MAX_LINE_LENGTH}px`);
+      console.log("Canvas.js: Spatial drawing limits active:");
+      console.log(`- Drawing area padding: ${DRAWING_AREA_PADDING}px`);
+      console.log(`- Min drawing area size: ${MIN_DRAWING_AREA_SIZE}px`);
       console.log(`- Max notes per user: ${MAX_NOTES_PER_USER}`);
       console.log(
         `- Max storage size: ${(MAX_STORAGE_SIZE / 1024).toFixed(1)}KB`
@@ -532,7 +899,7 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log(`- Line width: ${isErasing ? 25 : 6}px`);
 
       showTooltip(
-        "Draw mode active. Use buttons or double-click to toggle modes."
+        "Draw within the blue boundary! Use buttons, double-click, or press E/D keys to toggle modes."
       );
       console.log("Canvas.js: Canvas modal opened successfully");
     };

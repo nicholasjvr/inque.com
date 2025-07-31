@@ -270,7 +270,10 @@
             </div>
             <div class="form-group">
               <label for="loginPassword">Password</label>
-              <input type="password" id="loginPassword" placeholder="Enter your password" required>
+              <div class="password-input-container">
+                <input type="password" id="loginPassword" placeholder="Enter your password" required>
+                <button type="button" class="password-toggle" id="loginPasswordToggle">👁️</button>
+              </div>
             </div>
             <div class="form-options">
               <label class="checkbox-label">
@@ -278,9 +281,12 @@
                 <span class="checkmark"></span>
                 Remember me
               </label>
-              <a href="#" class="forgot-password">Forgot password?</a>
+              <a href="#" class="forgot-password" id="forgotPasswordLink">Forgot password?</a>
             </div>
-            <button type="submit" class="auth-submit-btn">Sign In</button>
+            <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">
+              <span class="btn-text">Sign In</span>
+              <span class="btn-loader" style="display: none;">⏳</span>
+            </button>
             
             <div class="social-login">
               <div class="divider">
@@ -290,6 +296,10 @@
                 <button type="button" class="social-btn google-btn" id="googleLoginBtn">
                   <span class="social-icon">🔍</span>
                   Google
+                </button>
+                <button type="button" class="social-btn github-btn" id="githubLoginBtn">
+                  <span class="social-icon">🐙</span>
+                  GitHub
                 </button>
               </div>
             </div>
@@ -302,26 +312,77 @@
           <!-- Sign Up Form -->
           <form id="signUpForm" class="auth-form" style="display: none;">
             <div class="form-group">
+              <label for="signUpDisplayName">Display Name</label>
+              <input type="text" id="signUpDisplayName" placeholder="Enter your display name" required>
+            </div>
+            <div class="form-group">
+              <label for="signUpUsername">Username</label>
+              <input type="text" id="signUpUsername" placeholder="Choose a username" required>
+              <div class="username-availability" id="usernameAvailability"></div>
+            </div>
+            <div class="form-group">
               <label for="signUpEmail">Email Address</label>
               <input type="email" id="signUpEmail" placeholder="Enter your email" required>
             </div>
             <div class="form-group">
               <label for="signUpPassword">Password</label>
-              <input type="password" id="signUpPassword" placeholder="Create a password" required>
+              <div class="password-input-container">
+                <input type="password" id="signUpPassword" placeholder="Create a password" required>
+                <button type="button" class="password-toggle" id="signUpPasswordToggle">👁️</button>
+              </div>
               <div class="password-strength" id="passwordStrength"></div>
             </div>
             <div class="form-group">
               <label for="confirmPassword">Confirm Password</label>
-              <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+              <div class="password-input-container">
+                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+                <button type="button" class="password-toggle" id="confirmPasswordToggle">👁️</button>
+              </div>
             </div>
+            <div class="form-group">
+              <label for="signUpBio">Bio (Optional)</label>
+              <textarea id="signUpBio" placeholder="Tell us about yourself..." rows="2"></textarea>
+            </div>
+            
+            <!-- Social Links Section -->
+            <div class="social-links-section">
+              <h4>Social Links (Optional)</h4>
+              <div class="social-links-grid">
+                <div class="form-group">
+                  <label for="signUpTwitter">Twitter</label>
+                  <input type="url" id="signUpTwitter" placeholder="https://twitter.com/username">
+                </div>
+                <div class="form-group">
+                  <label for="signUpInstagram">Instagram</label>
+                  <input type="url" id="signUpInstagram" placeholder="https://instagram.com/username">
+                </div>
+                <div class="form-group">
+                  <label for="signUpGithub">GitHub</label>
+                  <input type="url" id="signUpGithub" placeholder="https://github.com/username">
+                </div>
+                <div class="form-group">
+                  <label for="signUpWebsite">Website</label>
+                  <input type="url" id="signUpWebsite" placeholder="https://yourwebsite.com">
+                </div>
+              </div>
+            </div>
+            
             <div class="form-options">
               <label class="checkbox-label">
                 <input type="checkbox" id="agreeTerms" required>
                 <span class="checkmark"></span>
                 I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
               </label>
+              <label class="checkbox-label">
+                <input type="checkbox" id="emailNotifications" checked>
+                <span class="checkmark"></span>
+                Receive email notifications
+              </label>
             </div>
-            <button type="submit" class="auth-submit-btn">Create Account</button>
+            <button type="submit" class="auth-submit-btn" id="signUpSubmitBtn">
+              <span class="btn-text">Create Account</span>
+              <span class="btn-loader" style="display: none;">⏳</span>
+            </button>
             
             <div class="social-login">
               <div class="divider">
@@ -332,10 +393,29 @@
                   <span class="social-icon">🔍</span>
                   Google
                 </button>
+                <button type="button" class="social-btn github-btn" id="githubSignUpBtn">
+                  <span class="social-icon">🐙</span>
+                  GitHub
+                </button>
               </div>
             </div>
             <p class="auth-switch">
               Already have an account? <a href="#" id="showLogin">Sign in</a>
+            </p>
+          </form>
+
+          <!-- Forgot Password Form -->
+          <form id="forgotPasswordForm" class="auth-form" style="display: none;">
+            <div class="form-group">
+              <label for="forgotPasswordEmail">Email Address</label>
+              <input type="email" id="forgotPasswordEmail" placeholder="Enter your email" required>
+            </div>
+            <button type="submit" class="auth-submit-btn" id="forgotPasswordSubmitBtn">
+              <span class="btn-text">Send Reset Link</span>
+              <span class="btn-loader" style="display: none;">⏳</span>
+            </button>
+            <p class="auth-switch">
+              Remember your password? <a href="#" id="showLoginFromForgot">Sign in</a>
             </p>
           </form>
         </div>
