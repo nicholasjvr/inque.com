@@ -54,7 +54,7 @@ const storage = getStorage(app);
 DEBUG.log("Firebase services initialized successfully");
 
 // Export instances for other modules to use
-export { db, auth, storage };
+export { db, auth, storage, onAuthStateChanged };
 
 // --- Example: Firestore Page View Counter ---
 async function logPageView() {

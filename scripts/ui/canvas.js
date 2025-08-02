@@ -735,14 +735,18 @@ document.addEventListener("DOMContentLoaded", () => {
     // Keyboard shortcuts for eraser
     document.addEventListener("keydown", (e) => {
       if (
+        e.key &&
         e.key.toLowerCase() === "e" &&
+        canvasModal &&
         canvasModal.style.display === "block"
       ) {
         e.preventDefault();
         console.log("Canvas.js: E key pressed - toggling eraser mode");
         toggleDrawMode();
       } else if (
+        e.key &&
         e.key.toLowerCase() === "d" &&
+        canvasModal &&
         canvasModal.style.display === "block"
       ) {
         e.preventDefault();

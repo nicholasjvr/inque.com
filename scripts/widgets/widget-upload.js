@@ -2,6 +2,7 @@
 class WidgetUploadManager {
   constructor() {
     this.currentUploads = new Map();
+    this.uploadingSlots = new Set(); // Track uploading slots
     this.maxFileSize = 50 * 1024 * 1024; // 50MB
     this.allowedTypes = [
       "text/html",
@@ -73,10 +74,20 @@ class WidgetUploadManager {
         this.handleFiles(files, area);
       });
 
-      // Click to upload
-      area.addEventListener("click", () => {
+      // Click to upload - prevent multiple triggers
+      area.addEventListener("click", (e) => {
+        // Don't trigger if clicking on file list or buttons
+        if (
+          e.target.closest(".file-list") ||
+          e.target.closest(".widget-actions")
+        ) {
+          return;
+        }
+
         const fileInput = area.querySelector('input[type="file"]');
         if (fileInput) {
+          // Reset the file input to allow selecting the same file again
+          fileInput.value = "";
           fileInput.click();
         }
       });
@@ -87,6 +98,12 @@ class WidgetUploadManager {
   handleFiles(files, uploadArea) {
     const slot = uploadArea.closest(".widget-slot").dataset.slot;
     this.log("Handling files for slot", { slot, fileCount: files.length });
+
+    // Prevent multiple simultaneous uploads for the same slot
+    if (this.uploadingSlots.has(slot)) {
+      this.log("Upload already in progress for slot", { slot });
+      return;
+    }
 
     // Validate files
     const validFiles = this.validateFiles(files);
@@ -228,6 +245,9 @@ class WidgetUploadManager {
       fileCount: files.length,
     });
 
+    // Mark slot as uploading
+    this.uploadingSlots.add(slot);
+
     try {
       // Get widget metadata
       const title =
@@ -290,6 +310,9 @@ class WidgetUploadManager {
       if (progressContainer) {
         progressContainer.remove();
       }
+
+      // Mark slot as no longer uploading
+      this.uploadingSlots.delete(slot);
     }
   }
 
@@ -330,20 +353,30 @@ class WidgetUploadManager {
 
   // Upload single file to storage
   async uploadFileToStorage(file, uploadId) {
-    const { ref, uploadBytes, getDownloadURL } = await import(
-      "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js"
-    );
-    const { storage } = await import("../core/firebase-core.js");
+    try {
+      this.log("Importing Firebase Storage modules");
+      const { ref, uploadBytes, getDownloadURL } = await import(
+        "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js"
+      );
+      this.log("Importing Firebase Core");
+      const { storage } = await import("../../../core/firebase-core.js");
+      this.log("Firebase imports successful", { storage: !!storage });
 
-    const fileRef = ref(storage, `uploads/${uploadId}/${file.name}`);
-    await uploadBytes(fileRef, file);
-    return await getDownloadURL(fileRef);
+      const fileRef = ref(storage, `uploads/${uploadId}/${file.name}`);
+      await uploadBytes(fileRef, file);
+      return await getDownloadURL(fileRef);
+    } catch (error) {
+      this.error("Failed to import Firebase modules", error);
+      throw error;
+    }
   }
 
   // Save widget to database
   async saveWidgetToDatabase(widgetData) {
     try {
-      const { db, auth } = await import("../core/firebase-core.js");
+      this.log("Importing Firebase Firestore modules");
+      const { db, auth } = await import("../../../core/firebase-core.js");
+      this.log("Firebase imports successful", { db: !!db, auth: !!auth });
       const { doc, setDoc, serverTimestamp, updateDoc, arrayUnion } =
         await import(
           "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
@@ -466,6 +499,13 @@ class WidgetUploadManager {
       input.addEventListener("change", (e) => {
         const files = Array.from(e.target.files);
         const uploadArea = input.closest(".widget-upload-area");
+
+        // Prevent processing if no files selected
+        if (files.length === 0) {
+          return;
+        }
+
+        this.log("File input change detected", { fileCount: files.length });
         this.handleFiles(files, uploadArea);
       });
     });
