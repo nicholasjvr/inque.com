@@ -8,6 +8,10 @@ import {
   query,
   where,
   getDocs,
+  arrayUnion,
+  arrayRemove,
+  setDoc,
+  deleteDoc,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref,
@@ -19,12 +23,25 @@ import {
 /**
  * Widget Display System
  * Handles displaying user widgets in iframes and managing widget metadata
+ * Updated to work with new widget data model
  */
 
 export class WidgetDisplay {
   constructor() {
     this.currentUser = null;
-    this.widgetSlots = {};
+    this.userWidgets = []; // Array of widget IDs
+    this.widgetData = {}; // Cache for widget metadata
+    this.debugMode = true;
+  }
+
+  log(message, data = null) {
+    if (this.debugMode) {
+      console.log(`[WidgetDisplay] ${message}`, data);
+    }
+  }
+
+  error(message, error = null) {
+    console.error(`[WidgetDisplay] ${message}`, error);
   }
 
   /**
@@ -33,12 +50,14 @@ export class WidgetDisplay {
   async init() {
     this.currentUser = auth.currentUser;
     if (!this.currentUser) {
-      console.log("No user logged in for widget display");
+      this.log("No user logged in for widget display");
       return;
     }
 
+    this.log("Initializing widget display system");
     await this.loadUserWidgets();
     this.setupWidgetSlots();
+    this.setupProfileMenuIntegration();
   }
 
   /**
@@ -49,11 +68,35 @@ export class WidgetDisplay {
       const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        this.widgetSlots = userData.widgets || {};
-        console.log("Loaded widget slots:", this.widgetSlots);
+        this.userWidgets = userData.widgets || [];
+        this.log("Loaded user widgets", {
+          widgetCount: this.userWidgets.length,
+        });
+
+        // Load widget metadata for all user widgets
+        await this.loadWidgetMetadata();
       }
     } catch (error) {
-      console.error("Error loading user widgets:", error);
+      this.error("Error loading user widgets", error);
+    }
+  }
+
+  /**
+   * Load metadata for all user widgets
+   */
+  async loadWidgetMetadata() {
+    try {
+      for (const widgetId of this.userWidgets) {
+        const widgetDoc = await getDoc(doc(db, "widgets", widgetId));
+        if (widgetDoc.exists()) {
+          this.widgetData[widgetId] = widgetDoc.data();
+        }
+      }
+      this.log("Loaded widget metadata", {
+        widgetCount: Object.keys(this.widgetData).length,
+      });
+    } catch (error) {
+      this.error("Error loading widget metadata", error);
     }
   }
 
@@ -74,15 +117,21 @@ export class WidgetDisplay {
    * Render a specific widget slot
    */
   async renderWidgetSlot(container, slotNumber) {
-    const slotKey = `app-widget-${slotNumber}`;
-    const widgetData = this.widgetSlots[slotKey];
+    // Find widget for this slot
+    const widgetForSlot = Object.values(this.widgetData).find(
+      (widget) => widget.slot === parseInt(slotNumber)
+    );
 
-    if (widgetData && widgetData.files && widgetData.files["index.html"]) {
+    if (
+      widgetForSlot &&
+      widgetForSlot.files &&
+      widgetForSlot.files["index.html"]
+    ) {
       // Widget exists - show iframe
       this.showWidgetIframe(
         container,
-        widgetData.files["index.html"],
-        widgetData
+        widgetForSlot.files["index.html"],
+        widgetForSlot
       );
     } else {
       // No widget - show upload interface
@@ -99,15 +148,23 @@ export class WidgetDisplay {
         <div class="widget-header">
           <h3>${widgetData.title || "Untitled Widget"}</h3>
           <div class="widget-actions">
-            <button class="btn btn-secondary" onclick="editWidget(${
-              widgetData.slot
-            })">
+            <button class="btn btn-secondary edit-widget-btn" data-widget-id="${
+              widgetData.id
+            }">
               <span class="material-icons">edit</span>
               Edit
             </button>
-            <button class="btn btn-secondary" onclick="previewWidget('${htmlUrl}')">
+            <button class="btn btn-secondary preview-widget-btn" data-widget-id="${
+              widgetData.id
+            }">
               <span class="material-icons">open_in_new</span>
               Full View
+            </button>
+            <button class="btn btn-danger delete-widget-btn" data-widget-id="${
+              widgetData.id
+            }">
+              <span class="material-icons">delete</span>
+              Delete
             </button>
           </div>
         </div>
@@ -117,19 +174,30 @@ export class WidgetDisplay {
             class="widget-iframe"
             frameborder="0"
             sandbox="allow-scripts allow-same-origin allow-forms"
-            title="Widget ${widgetData.slot}"
+            title="Widget ${widgetData.title}"
           ></iframe>
         </div>
         <div class="widget-info">
           <p><strong>Description:</strong> ${
-            widgetData.desc || "No description"
+            widgetData.description || "No description"
+          }</p>
+          <p><strong>Category:</strong> ${widgetData.category || "General"}</p>
+          <p><strong>Tags:</strong> ${
+            widgetData.tags?.join(", ") || "No tags"
           }</p>
           <p><strong>Last Updated:</strong> ${new Date(
-            widgetData.updated
+            widgetData.updatedAt?.toDate() || widgetData.updatedAt
           ).toLocaleDateString()}</p>
+          <div class="widget-stats">
+            <span class="stat">👁️ ${widgetData.stats?.views || 0} views</span>
+            <span class="stat">❤️ ${widgetData.stats?.likes || 0} likes</span>
+            <span class="stat">📤 ${widgetData.stats?.shares || 0} shares</span>
+          </div>
         </div>
       </div>
     `;
+
+    this.setupWidgetActionHandlers(container);
   }
 
   /**
@@ -149,9 +217,11 @@ export class WidgetDisplay {
           </div>
         </div>
         <div class="upload-form" style="display: none;">
-          <input type="text" placeholder="Widget Title" class="widget-title-input">
-          <textarea placeholder="Widget Description" class="widget-desc-input" rows="3"></textarea>
-          <button class="btn btn-primary" onclick="uploadWidget(${slotNumber})">
+          <input type="text" placeholder="Widget Title" class="widget-title-input" data-slot="${slotNumber}">
+          <textarea placeholder="Widget Description" class="widget-desc-input" data-slot="${slotNumber}" rows="3"></textarea>
+          <input type="text" placeholder="Category (e.g., game, tool, art)" class="widget-category-input" data-slot="${slotNumber}">
+          <input type="text" placeholder="Tags (comma separated)" class="widget-tags-input" data-slot="${slotNumber}">
+          <button class="btn btn-primary upload-widget-btn" data-slot="${slotNumber}">
             <span class="material-icons">upload</span>
             Upload Widget
           </button>
@@ -203,6 +273,12 @@ export class WidgetDisplay {
     uploadArea.addEventListener("click", () => {
       fileInput.click();
     });
+
+    // Upload button
+    const uploadBtn = container.querySelector(".upload-widget-btn");
+    uploadBtn.addEventListener("click", () => {
+      this.uploadWidget(slotNumber);
+    });
   }
 
   /**
@@ -230,39 +306,69 @@ export class WidgetDisplay {
     const fileInput = container.querySelector(`#widgetFiles${slotNumber}`);
     const titleInput = container.querySelector(".widget-title-input");
     const descInput = container.querySelector(".widget-desc-input");
+    const categoryInput = container.querySelector(".widget-category-input");
+    const tagsInput = container.querySelector(".widget-tags-input");
 
     if (!fileInput.files.length) {
-      alert("Please select files to upload");
+      this.showToast("Please select files to upload", "error");
       return;
     }
 
     const title = titleInput.value.trim() || "Untitled Widget";
-    const desc = descInput.value.trim() || "";
+    const description = descInput.value.trim() || "";
+    const category = categoryInput.value.trim() || "general";
+    const tags = tagsInput.value
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag);
 
     try {
+      this.log("Starting widget upload", { slot: slotNumber, title });
+
       // Upload files to storage
       const fileURLs = await this.uploadFilesToStorage(
         fileInput.files,
         slotNumber
       );
 
-      // Save widget metadata to Firestore
-      await this.saveWidgetMetadata(slotNumber, {
+      // Create widget document
+      const widgetId = `widget_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+      const widgetData = {
+        id: widgetId,
         title,
-        desc,
+        description,
+        category,
+        tags,
         files: fileURLs,
-        updated: new Date(),
-        slot: slotNumber,
-      });
+        slot: parseInt(slotNumber),
+        isPublic: true,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        stats: {
+          views: 0,
+          likes: 0,
+          shares: 0,
+          downloads: 0,
+        },
+      };
+
+      // Save to widgets collection
+      await this.saveWidgetToDatabase(widgetData);
+
+      // Add widget ID to user profile
+      await this.addWidgetToUserProfile(widgetId);
 
       // Refresh the widget display
       await this.loadUserWidgets();
       this.renderWidgetSlot(container, slotNumber);
 
-      console.log(`Widget uploaded successfully to slot ${slotNumber}`);
+      this.showToast(`Widget "${title}" uploaded successfully!`, "success");
+      this.log("Widget upload completed successfully", { widgetId });
     } catch (error) {
-      console.error("Error uploading widget:", error);
-      alert("Upload failed: " + error.message);
+      this.error("Error uploading widget", error);
+      this.showToast("Upload failed: " + error.message, "error");
     }
   }
 
@@ -271,12 +377,14 @@ export class WidgetDisplay {
    */
   async uploadFilesToStorage(files, slotNumber) {
     const fileURLs = {};
-    const slotKey = `app-widget-${slotNumber}`;
+    const widgetId = `widget_${Date.now()}_${Math.random()
+      .toString(36)
+      .substr(2, 9)}`;
 
     for (const file of files) {
       const storageRef = ref(
         storage,
-        `users/${this.currentUser.uid}/${slotKey}/${file.name}`
+        `users/${this.currentUser.uid}/widgets/${widgetId}/${file.name}`
       );
 
       // Upload file
@@ -286,7 +394,7 @@ export class WidgetDisplay {
       const downloadURL = await getDownloadURL(storageRef);
       fileURLs[file.name] = downloadURL;
 
-      console.log(`Uploaded ${file.name} to ${slotKey}`);
+      this.log(`Uploaded ${file.name} to widget ${widgetId}`);
     }
 
     return fileURLs;
@@ -295,53 +403,340 @@ export class WidgetDisplay {
   /**
    * Save widget metadata to Firestore
    */
-  async saveWidgetMetadata(slotNumber, metadata) {
-    const slotKey = `app-widget-${slotNumber}`;
+  async saveWidgetToDatabase(widgetData) {
+    try {
+      await setDoc(doc(db, "widgets", widgetData.id), widgetData);
+      this.log("Widget saved to database", { widgetId: widgetData.id });
+    } catch (error) {
+      this.error("Failed to save widget to database", error);
+      throw error;
+    }
+  }
 
-    await updateDoc(doc(db, "users", this.currentUser.uid), {
-      [`widgets.${slotKey}`]: metadata,
-    });
+  /**
+   * Add widget ID to user profile
+   */
+  async addWidgetToUserProfile(widgetId) {
+    try {
+      await updateDoc(doc(db, "users", this.currentUser.uid), {
+        widgets: arrayUnion(widgetId),
+      });
+      this.log("Widget ID added to user profile", { widgetId });
+    } catch (error) {
+      this.error("Failed to add widget to user profile", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Setup widget action handlers
+   */
+  setupWidgetActionHandlers(container) {
+    // Edit widget
+    const editBtn = container.querySelector(".edit-widget-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", (e) => {
+        const widgetId = e.target.closest(".edit-widget-btn").dataset.widgetId;
+        this.editWidget(widgetId);
+      });
+    }
+
+    // Preview widget
+    const previewBtn = container.querySelector(".preview-widget-btn");
+    if (previewBtn) {
+      previewBtn.addEventListener("click", (e) => {
+        const widgetId = e.target.closest(".preview-widget-btn").dataset
+          .widgetId;
+        this.previewWidget(widgetId);
+      });
+    }
+
+    // Delete widget
+    const deleteBtn = container.querySelector(".delete-widget-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        const widgetId =
+          e.target.closest(".delete-widget-btn").dataset.widgetId;
+        this.deleteWidget(widgetId);
+      });
+    }
   }
 
   /**
    * Preview widget in modal
    */
-  previewWidget(htmlUrl) {
-    const modal = document.getElementById("widgetModal");
-    const iframe = document.getElementById("widgetFrame");
-
-    if (modal && iframe) {
-      iframe.src = htmlUrl;
-      modal.style.display = "block";
+  previewWidget(widgetId) {
+    const widgetData = this.widgetData[widgetId];
+    if (!widgetData || !widgetData.files["index.html"]) {
+      this.showToast("Widget not found or invalid", "error");
+      return;
     }
+
+    // Create modal if it doesn't exist
+    let modal = document.getElementById("widgetPreviewModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "widgetPreviewModal";
+      modal.className = "modal";
+      modal.innerHTML = `
+        <div class="modal-content widget-preview-modal">
+          <div class="modal-header">
+            <h3>${widgetData.title}</h3>
+            <button class="close-modal">×</button>
+          </div>
+          <div class="modal-body">
+            <iframe 
+              src="${widgetData.files["index.html"]}" 
+              class="widget-preview-iframe"
+              frameborder="0"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+              title="Widget Preview"
+            ></iframe>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+
+      // Setup close functionality
+      const closeBtn = modal.querySelector(".close-modal");
+      closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
+      });
+
+      // Close on outside click
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) {
+          modal.style.display = "none";
+        }
+      });
+    }
+
+    // Update modal content
+    modal.querySelector("h3").textContent = widgetData.title;
+    modal.querySelector("iframe").src = widgetData.files["index.html"];
+    modal.style.display = "block";
   }
 
   /**
    * Edit widget
    */
-  editWidget(slotNumber) {
+  editWidget(widgetId) {
+    const widgetData = this.widgetData[widgetId];
+    if (!widgetData) {
+      this.showToast("Widget not found", "error");
+      return;
+    }
+
     // Open edit interface
     const container = document.querySelector(
-      `[data-widget-slot="${slotNumber}"]`
+      `[data-widget-slot="${widgetData.slot}"]`
     );
-    this.showUploadInterface(container, slotNumber);
+    if (container) {
+      this.showUploadInterface(container, widgetData.slot);
+
+      // Pre-fill form with existing data
+      const titleInput = container.querySelector(".widget-title-input");
+      const descInput = container.querySelector(".widget-desc-input");
+      const categoryInput = container.querySelector(".widget-category-input");
+      const tagsInput = container.querySelector(".widget-tags-input");
+
+      if (titleInput) titleInput.value = widgetData.title || "";
+      if (descInput) descInput.value = widgetData.description || "";
+      if (categoryInput) categoryInput.value = widgetData.category || "";
+      if (tagsInput) tagsInput.value = widgetData.tags?.join(", ") || "";
+    }
+  }
+
+  /**
+   * Delete widget
+   */
+  async deleteWidget(widgetId) {
+    const widgetData = this.widgetData[widgetId];
+    if (!widgetData) {
+      this.showToast("Widget not found", "error");
+      return;
+    }
+
+    if (!confirm(`Are you sure you want to delete "${widgetData.title}"?`)) {
+      return;
+    }
+
+    try {
+      // Remove from widgets collection
+      await deleteDoc(doc(db, "widgets", widgetId));
+
+      // Remove from user profile
+      await updateDoc(doc(db, "users", this.currentUser.uid), {
+        widgets: arrayRemove(widgetId),
+      });
+
+      // Refresh display
+      await this.loadUserWidgets();
+      this.setupWidgetSlots();
+
+      this.showToast(
+        `Widget "${widgetData.title}" deleted successfully`,
+        "success"
+      );
+      this.log("Widget deleted successfully", { widgetId });
+    } catch (error) {
+      this.error("Error deleting widget", error);
+      this.showToast("Failed to delete widget: " + error.message, "error");
+    }
+  }
+
+  /**
+   * Setup profile menu integration
+   */
+  setupProfileMenuIntegration() {
+    // Update profile menu to show widget count
+    this.updateProfileMenuWidgetCount();
+
+    // Add widget management to profile menu
+    this.addWidgetManagementToProfile();
+  }
+
+  /**
+   * Update profile menu widget count
+   */
+  updateProfileMenuWidgetCount() {
+    const profileMenu = document.querySelector(".profile-menu");
+    if (profileMenu) {
+      const widgetCountElement = profileMenu.querySelector(".widget-count");
+      if (widgetCountElement) {
+        widgetCountElement.textContent = this.userWidgets.length;
+      } else {
+        // Create widget count element if it doesn't exist
+        const countElement = document.createElement("div");
+        countElement.className = "widget-count";
+        countElement.textContent = this.userWidgets.length;
+        profileMenu.appendChild(countElement);
+      }
+    }
+  }
+
+  /**
+   * Add widget management to profile menu
+   */
+  addWidgetManagementToProfile() {
+    const profileMenu = document.querySelector(".profile-menu");
+    if (profileMenu && !profileMenu.querySelector(".widget-management")) {
+      const widgetSection = document.createElement("div");
+      widgetSection.className = "widget-management";
+      widgetSection.innerHTML = `
+        <h4>My Widgets (${this.userWidgets.length})</h4>
+        <div class="widget-list">
+          ${
+            this.userWidgets.length === 0
+              ? '<p>No widgets yet. <a href="#" class="upload-widget-link">Upload your first widget!</a></p>'
+              : this.userWidgets
+                  .map((widgetId) => {
+                    const widget = this.widgetData[widgetId];
+                    return widget
+                      ? `
+                <div class="widget-item" data-widget-id="${widgetId}">
+                  <div class="widget-info">
+                    <h5>${widget.title}</h5>
+                    <p>${widget.description || "No description"}</p>
+                    <span class="widget-category">${widget.category}</span>
+                  </div>
+                  <div class="widget-actions">
+                    <button class="btn btn-sm preview-widget-btn" data-widget-id="${widgetId}">Preview</button>
+                    <button class="btn btn-sm edit-widget-btn" data-widget-id="${widgetId}">Edit</button>
+                    <button class="btn btn-sm btn-danger delete-widget-btn" data-widget-id="${widgetId}">Delete</button>
+                  </div>
+                </div>
+              `
+                      : "";
+                  })
+                  .join("")
+          }
+        </div>
+      `;
+      profileMenu.appendChild(widgetSection);
+
+      // Setup event listeners for profile menu widgets
+      this.setupProfileMenuEventListeners(widgetSection);
+    }
+  }
+
+  /**
+   * Setup event listeners for profile menu widgets
+   */
+  setupProfileMenuEventListeners(widgetSection) {
+    // Preview buttons
+    widgetSection.querySelectorAll(".preview-widget-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const widgetId = e.target.dataset.widgetId;
+        this.previewWidget(widgetId);
+      });
+    });
+
+    // Edit buttons
+    widgetSection.querySelectorAll(".edit-widget-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const widgetId = e.target.dataset.widgetId;
+        this.editWidget(widgetId);
+      });
+    });
+
+    // Delete buttons
+    widgetSection.querySelectorAll(".delete-widget-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const widgetId = e.target.dataset.widgetId;
+        this.deleteWidget(widgetId);
+      });
+    });
+
+    // Upload widget link
+    const uploadLink = widgetSection.querySelector(".upload-widget-link");
+    if (uploadLink) {
+      uploadLink.addEventListener("click", (e) => {
+        e.preventDefault();
+        // Scroll to first empty widget slot
+        const emptySlot = document.querySelector("[data-widget-slot]");
+        if (emptySlot) {
+          emptySlot.scrollIntoView({ behavior: "smooth" });
+        }
+      });
+    }
+  }
+
+  /**
+   * Show toast notification
+   */
+  showToast(message, type = "info") {
+    if (window.showToast) {
+      window.showToast(message, type);
+    } else {
+      console.log(`[${type.toUpperCase()}] ${message}`);
+    }
   }
 }
 
-// Global functions for HTML onclick handlers
-window.previewWidget = function (htmlUrl) {
-  const widgetDisplay = new WidgetDisplay();
-  widgetDisplay.previewWidget(htmlUrl);
+// Global functions for HTML onclick handlers (for backward compatibility)
+window.previewWidget = function (widgetId) {
+  if (window.widgetDisplay) {
+    window.widgetDisplay.previewWidget(widgetId);
+  }
 };
 
 window.uploadWidget = function (slotNumber) {
-  const widgetDisplay = new WidgetDisplay();
-  widgetDisplay.uploadWidget(slotNumber);
+  if (window.widgetDisplay) {
+    window.widgetDisplay.uploadWidget(slotNumber);
+  }
 };
 
-window.editWidget = function (slotNumber) {
-  const widgetDisplay = new WidgetDisplay();
-  widgetDisplay.editWidget(slotNumber);
+window.editWidget = function (widgetId) {
+  if (window.widgetDisplay) {
+    window.widgetDisplay.editWidget(widgetId);
+  }
+};
+
+window.deleteWidget = function (widgetId) {
+  if (window.widgetDisplay) {
+    window.widgetDisplay.deleteWidget(widgetId);
+  }
 };
 
 // Initialize widget display when user is authenticated
@@ -353,8 +748,10 @@ auth.onAuthStateChanged((user) => {
     if (!widgetDisplay) {
       widgetDisplay = new WidgetDisplay();
       widgetDisplay.init();
+      window.widgetDisplay = widgetDisplay; // Make globally accessible
     }
   } else {
     widgetDisplay = null;
+    window.widgetDisplay = null;
   }
 });

@@ -72,6 +72,20 @@ try {
   DEBUG.error("Error importing social features", error);
 }
 
+// Import enhanced widget display system
+DEBUG.log("Importing enhanced widget display system");
+try {
+  import("./scripts/widgets/widget-display.js")
+    .then(() => {
+      DEBUG.log("Enhanced widget display system imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import enhanced widget display system", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing enhanced widget display system", error);
+}
+
 // Import timeline and widget management
 DEBUG.log("Importing timeline-manager.js");
 try {

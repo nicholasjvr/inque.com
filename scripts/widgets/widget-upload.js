@@ -343,10 +343,11 @@ class WidgetUploadManager {
   // Save widget to database
   async saveWidgetToDatabase(widgetData) {
     try {
-      const { db } = await import("../core/firebase-core.js");
-      const { doc, setDoc, serverTimestamp } = await import(
-        "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
-      );
+      const { db, auth } = await import("../core/firebase-core.js");
+      const { doc, setDoc, serverTimestamp, updateDoc, arrayUnion } =
+        await import(
+          "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+        );
 
       const widgetId = `widget_${Date.now()}_${Math.random()
         .toString(36)
@@ -365,7 +366,16 @@ class WidgetUploadManager {
         },
       };
 
+      // Save widget to widgets collection
       await setDoc(doc(db, "widgets", widgetId), widgetDoc);
+
+      // Add widget ID to user profile
+      if (auth.currentUser) {
+        await updateDoc(doc(db, "users", auth.currentUser.uid), {
+          widgets: arrayUnion(widgetId),
+        });
+        this.log("Widget ID added to user profile", { widgetId });
+      }
 
       return { success: true, widgetId };
     } catch (error) {
