@@ -763,7 +763,7 @@ editWidgetForm.addEventListener('submit', (e) => {
 import { db, auth, storage } from "../scripts/auth/auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-import { uploadWidgetToSlot } from '../scripts/upload/upload.js';
+import { uploadWidgetFiles } from '../scripts/upload/cloud-upload.js';
 import { saveWidgetSlotMetadata } from '../scripts/widgets/project-manager.js';
 
 const editProfileModal = document.getElementById('editProfileModal');
@@ -778,6 +778,13 @@ let currentPhotoURL = null;
 // Enhanced profile photo handling
 const profilePhotoPreview = document.getElementById('profilePhotoPreview');
 const currentPhoto = document.querySelector('.current-photo');
+
+// Debug modal elements
+console.log('[EDIT PROFILE DEBUG] Modal elements:', {
+  editProfileModal: !!editProfileModal,
+  editProfileCloseBtns: editProfileCloseBtns.length,
+  editProfileQuickBtn: !!editProfileQuickBtn
+});
 
 // Set up photo click handler
 if (currentPhoto) {
@@ -849,9 +856,19 @@ async function prefillProfileForm() {
 const uploadWidgetBtns = document.querySelectorAll('.upload-widget-btn');
 const widgetFileInputs = document.querySelectorAll('.widget-file-input');
 
+// Track upload states to prevent multiple uploads
+const uploadStates = new Map();
+
 uploadWidgetBtns.forEach(btn => {
   btn.addEventListener('click', async () => {
     const slot = btn.getAttribute('data-slot');
+    
+    // Prevent multiple uploads for the same slot
+    if (uploadStates.get(slot)) {
+      console.log(`[UPLOAD] Upload already in progress for slot ${slot}`);
+      return;
+    }
+    
     const fileInput = document.querySelector(`.widget-file-input[data-slot="${slot}"]`);
     const titleInput = document.querySelector(`.widget-title-input[data-slot="${slot}"]`);
     const descInput = document.querySelector(`.widget-desc-input[data-slot="${slot}"]`);
@@ -870,28 +887,26 @@ uploadWidgetBtns.forEach(btn => {
     const title = titleInput.value.trim() || 'Untitled Widget';
     const desc = descInput.value.trim() || '';
     
+    // Set upload state
+    uploadStates.set(slot, true);
     btn.textContent = 'Uploading...';
     btn.disabled = true;
     
     try {
-      // Check if user is authenticated
-      const user = auth.currentUser;
-      if (!user) {
-        alert('Please log in to upload files.');
-        return;
-      }
-      
       console.log(`Starting upload for slot ${slot}...`);
       
-      // Use the imported uploadWidgetToSlot function
-      const fileURLs = await uploadWidgetToSlot(fileInput.files, slot);
-      console.log('Files uploaded successfully:', fileURLs);
+      // Use the new Cloud Functions upload system
+      const result = await uploadWidgetFiles(fileInput.files, slot, {
+        title,
+        description: desc
+      });
+      console.log('Files uploaded successfully via Cloud Functions:', result);
       
       // Save metadata using the imported function
       await saveWidgetSlotMetadata(`app-widget-${slot}`, {
         title,
         desc,
-        files: fileURLs,
+        files: result.files,
         updated: new Date(),
       });
       console.log('Metadata saved successfully');
@@ -907,6 +922,14 @@ uploadWidgetBtns.forEach(btn => {
         fileInput.value = '';
         titleInput.value = '';
         descInput.value = '';
+        
+        // Clear file list
+        const uploadArea = fileInput.closest('.widget-upload-area');
+        const fileList = uploadArea.querySelector('.file-list');
+        if (fileList) fileList.remove();
+        
+        const placeholder = uploadArea.querySelector('.upload-placeholder p');
+        placeholder.textContent = 'Drop files here or click to upload';
       }, 2000);
       
     } catch (error) {
@@ -920,6 +943,9 @@ uploadWidgetBtns.forEach(btn => {
         btn.disabled = false;
         btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
       }, 2000);
+    } finally {
+      // Clear upload state
+      uploadStates.delete(slot);
     }
   });
 });
@@ -954,27 +980,93 @@ widgetFileInputs.forEach(input => {
       placeholder.textContent = `${files.length} file(s) selected`;
     }
   });
+  
+  // Click to upload - prevent multiple triggers
+  uploadArea.addEventListener('click', (e) => {
+    // Prevent triggering if clicking on file list, buttons, or inputs
+    if (e.target.closest('.file-list') || 
+        e.target.closest('.action-buttons') ||
+        e.target.closest('input') ||
+        e.target.closest('button')) {
+      return;
+    }
+    
+    // Reset file input to allow re-selecting same files
+    input.value = '';
+    input.click();
+  });
 });
 
 if (editProfileQuickBtn) {
   editProfileQuickBtn.addEventListener('click', () => {
+    console.log('[EDIT PROFILE] Quick button clicked');
     prefillProfileForm();
-    editProfileModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
+    if (editProfileModal) {
+      editProfileModal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+      console.log('[EDIT PROFILE] Modal opened successfully');
+    } else {
+      console.error('[EDIT PROFILE] Modal element not found');
+    }
   });
 }
 
 editProfileCloseBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    editProfileModal.style.display = 'none';
-    document.body.style.overflow = '';
+  console.log('[EDIT PROFILE] Setting up close button listener for:', btn);
+  
+  // Test if button is clickable
+  btn.style.cursor = 'pointer';
+  btn.style.pointerEvents = 'auto';
+  
+  btn.addEventListener('click', (e) => {
+    console.log('[EDIT PROFILE] Close button clicked', e);
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (editProfileModal) {
+      editProfileModal.style.display = 'none';
+      document.body.style.overflow = '';
+      console.log('[EDIT PROFILE] Modal closed successfully');
+    } else {
+      console.error('[EDIT PROFILE] Modal element not found');
+    }
   });
 });
 
-window.addEventListener('click', (e) => {
-  if (e.target === editProfileModal) {
+console.log('[EDIT PROFILE] Found close buttons:', editProfileCloseBtns.length);
+
+// Test function to manually close modal
+window.testCloseModal = () => {
+  console.log('[EDIT PROFILE] Testing manual modal close');
+  if (editProfileModal) {
     editProfileModal.style.display = 'none';
     document.body.style.overflow = '';
+    console.log('[EDIT PROFILE] Modal closed manually');
+  } else {
+    console.error('[EDIT PROFILE] Modal not found for manual close');
+  }
+};
+
+// Test function to manually open modal
+window.testOpenModal = () => {
+  console.log('[EDIT PROFILE] Testing manual modal open');
+  if (editProfileModal) {
+    editProfileModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    console.log('[EDIT PROFILE] Modal opened manually');
+  } else {
+    console.error('[EDIT PROFILE] Modal not found for manual open');
+  }
+};
+
+window.addEventListener('click', (e) => {
+  if (e.target === editProfileModal) {
+    console.log('[EDIT PROFILE] Modal backdrop clicked');
+    if (editProfileModal) {
+      editProfileModal.style.display = 'none';
+      document.body.style.overflow = '';
+      console.log('[EDIT PROFILE] Modal closed via backdrop');
+    }
   }
 });
 
@@ -1013,8 +1105,12 @@ const saveAllSettingsBtn = document.getElementById('saveAllSettings');
 
 if (saveAllSettingsBtn) {
   saveAllSettingsBtn.addEventListener('click', async () => {
+    console.log('[EDIT PROFILE] Save button clicked');
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) {
+      console.log('[EDIT PROFILE] No user logged in');
+      return;
+    }
     
     // Show loading state
     saveAllSettingsBtn.textContent = 'Saving...';
@@ -1028,13 +1124,17 @@ if (saveAllSettingsBtn) {
       // If a new photo is selected, upload it
       if (editPhotoInput.files && editPhotoInput.files[0]) {
         try {
-          const file = editPhotoInput.files[0];
-          const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
-          await uploadBytes(storageRef, file);
-          photoURL = await getDownloadURL(storageRef);
-          console.log('Profile photo uploaded successfully');
+          console.log('[EDIT PROFILE] Uploading profile photo via Cloud Functions');
+          
+          // Import and use Cloud Functions for profile photo upload
+          const { uploadProfilePhoto } = await import('./scripts/upload/cloud-upload.js');
+          const result = await uploadProfilePhoto(editPhotoInput.files[0]);
+          
+          photoURL = result.photoURL;
+          console.log('Profile photo uploaded successfully via Cloud Functions');
         } catch (storageError) {
-          console.warn('Failed to upload profile photo:', storageError);
+          console.warn('Failed to upload profile photo via Cloud Functions:', storageError);
+          // Continue without photo upload - don't fail the entire profile update
         }
       }
       
@@ -1065,7 +1165,8 @@ if (saveAllSettingsBtn) {
       setTimeout(() => {
         editProfileModal.style.display = 'none';
         document.body.style.overflow = '';
-        location.reload();
+        // Update UI dynamically instead of reloading
+        updateProfileDisplay();
       }, 1500);
       
     } catch (error) {
@@ -1077,6 +1178,42 @@ if (saveAllSettingsBtn) {
       saveAllSettingsBtn.disabled = false;
     }
   });
+}
+
+// Update profile display dynamically
+function updateProfileDisplay() {
+  // Update profile banner if it exists
+  const profileName = document.querySelector('.profile-name');
+  const profileBio = document.querySelector('.profile-bio');
+  const profilePhoto = document.querySelector('.profile-photo');
+  
+  if (profileName && editProfileName) {
+    profileName.textContent = editProfileName.value.trim();
+  }
+  
+  if (profileBio && editProfileBio) {
+    profileBio.textContent = editProfileBio.value.trim();
+  }
+  
+  // Update sidebar user info if it exists
+  const sidebarUserName = document.querySelector('.sidebar-user-name');
+  if (sidebarUserName && editProfileName) {
+    sidebarUserName.textContent = editProfileName.value.trim();
+  }
+  
+  // Update profile photo if a new one was uploaded
+  if (editPhotoInput.files && editPhotoInput.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      if (profilePhoto) {
+        profilePhoto.style.backgroundImage = `url(${e.target.result})`;
+      }
+      if (sidebarAvatar) {
+        sidebarAvatar.style.backgroundImage = `url(${e.target.result})`;
+      }
+    };
+    reader.readAsDataURL(editPhotoInput.files[0]);
+  }
 }
 
 // Legacy form handler (for backward compatibility)
@@ -1092,13 +1229,16 @@ if (editProfileForm) {
     // If a new photo is selected, upload it
     if (editPhotoInput.files && editPhotoInput.files[0]) {
       try {
-        const file = editPhotoInput.files[0];
-        const storageRef = ref(storage, `users/${user.uid}/profile-photo.jpg`);
-        await uploadBytes(storageRef, file);
-        photoURL = await getDownloadURL(storageRef);
-        console.log('Profile photo uploaded successfully');
+        console.log('[EDIT PROFILE] Uploading profile photo via Cloud Functions (legacy)');
+        
+        // Import and use Cloud Functions for profile photo upload
+        const { uploadProfilePhoto } = await import('./scripts/upload/cloud-upload.js');
+        const result = await uploadProfilePhoto(editPhotoInput.files[0]);
+        
+        photoURL = result.photoURL;
+        console.log('Profile photo uploaded successfully via Cloud Functions (legacy)');
       } catch (storageError) {
-        console.warn('Failed to upload profile photo:', storageError);
+        console.warn('Failed to upload profile photo via Cloud Functions (legacy):', storageError);
         // Continue without photo upload - don't fail the entire profile update
       }
     }
@@ -1112,8 +1252,9 @@ if (editProfileForm) {
       });
       editProfileModal.style.display = 'none';
       document.body.style.overflow = '';
-      alert('Profile updated!');
-      location.reload();
+      showToast('Profile updated successfully! 🎉', 'success');
+      // Update UI dynamically instead of reloading
+      updateProfileDisplay();
     } catch (error) {
       console.error('Failed to update profile:', error);
       alert('Failed to update profile. Please try again.');

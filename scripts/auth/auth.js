@@ -1543,10 +1543,16 @@ document.addEventListener("DOMContentLoaded", () => {
         case "newWidget":
           showToast("Opening widget creation...", "info");
           closeSidebar(); // Close sidebar before opening modal
-          // Open edit profile modal
+          // Open edit profile modal which contains the widget upload functionality
+          const editProfileModal = document.querySelector("#editProfileModal");
           if (editProfileModal) {
             editProfileModal.style.display = "block";
             document.body.style.overflow = "hidden";
+            console.log(
+              "[QUICK ACTION] Edit profile modal opened for widget creation"
+            );
+          } else {
+            showToast("Edit profile modal not found", "error");
           }
           break;
         case "shareProfile":

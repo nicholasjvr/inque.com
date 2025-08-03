@@ -6,5 +6,10 @@ service firebase.storage {
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+    
+    // Allow authenticated users to upload widget files
+    match /uploads/{uploadId}/{allPaths=**} {
+      allow read, write: if request.auth != null;
+    }
   }
 }
