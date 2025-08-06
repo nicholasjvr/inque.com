@@ -215,11 +215,14 @@
 
       <!-- Only ONE main script, loaded as a module -->
       <script type="module" src="main.js"></script>
-      <script type="module" src="scripts/ui/canvas.js"></script>
-      <script type="module" src="scripts/widgets/widget-display.js"></script>
+              <script type="module" src="scripts/ui/canvas.js"></script>
+        <script type="module" src="scripts/widgets/widget-display.js"></script>
+        <script type="module" src="scripts/widgets/widget-upload.js"></script>
+        <script type="module" src="scripts/widgets/widget-preview.js"></script>
+        <script type="module" src="scripts/timeline-manager.js"></script>
 
       <!-- Widget Preview Modal -->
-      <div id="widgetModal" class="modal">
+      <div id="widgetModal" class="modal" style="z-index: 1060;">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title">Widget Preview</h2>
@@ -504,71 +507,6 @@
   }
 })();
 </script>
-
-<!-- Add Edit Widget Modal -->
-<div id="editWidgetModal" class="modal">
-  <div class="modal-content edit-widget-modal-content">
-    <div class="modal-header">
-      <h2 class="modal-title">Edit Widget Properties</h2>
-      <span class="close-button edit-widget-close">&times;</span>
-    </div>
-    <div class="modal-body">
-      <form id="editWidgetForm" class="edit-widget-form">
-        <div class="form-group">
-          <label for="widgetTitle">Widget Title</label>
-          <input type="text" id="widgetTitle" name="widgetTitle" placeholder="Enter widget title" required />
-        </div>
-        <div class="form-group">
-          <label for="widgetDescription">Description</label>
-          <textarea id="widgetDescription" name="widgetDescription" placeholder="Enter description" rows="3"></textarea>
-        </div>
-        <div class="form-group">
-          <label for="widgetColor">Color</label>
-          <input type="color" id="widgetColor" name="widgetColor" />
-        </div>
-        <div class="edit-actions">
-          <button type="submit" class="primary-btn">Save</button>
-          <button type="button" class="secondary-btn edit-widget-close">Cancel</button>
-        </div>
-      </form>
-    </div>
-  </div>
-</div>
-
-<script>
-// Edit Widget Modal logic
-const editWidgetModal = document.getElementById('editWidgetModal');
-const editWidgetForm = document.getElementById('editWidgetForm');
-const editWidgetCloseBtns = document.querySelectorAll('.edit-widget-close');
-const editWidgetBtns = document.querySelectorAll('.edit-widget-btn');
-
-editWidgetBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    editWidgetModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-  });
-});
-editWidgetCloseBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    editWidgetModal.style.display = 'none';
-    document.body.style.overflow = '';
-  });
-});
-window.addEventListener('click', (e) => {
-  if (e.target === editWidgetModal) {
-    editWidgetModal.style.display = 'none';
-    document.body.style.overflow = '';
-  }
-});
-editWidgetForm.addEventListener('submit', (e) => {
-  e.preventDefault();
-  // For demo: just close modal
-  editWidgetModal.style.display = 'none';
-  document.body.style.overflow = '';
-  // You can add your save logic here!
-});
-</script>
-
 <!-- Enhanced Profile & Settings Modal -->
 <div id="editProfileModal" class="modal">
   <div class="modal-content edit-profile-modal-content">
@@ -584,10 +522,11 @@ editWidgetForm.addEventListener('submit', (e) => {
         <!-- Profile Section -->
         <div class="settings-section">
           <div class="section-header">
-            <h3>👤 Profile Information</h3>
+            <h3>Profile Information</h3>
             <p class="section-description">Customize your public profile and personal details</p>
           </div>
-          
+
+          <div class="profile-info-grid"></div>
           <div class="profile-settings-grid">
             <!-- Profile Photo -->
             <div class="profile-photo-section">
@@ -647,22 +586,11 @@ editWidgetForm.addEventListener('submit', (e) => {
             
             <div class="setting-item">
               <div class="setting-info">
-                <h4>Auto-save</h4>
-                <p>Automatically save changes to your widgets</p>
+                <h4>Alerts</h4>
+                <p>notifications</p>
               </div>
               <label class="toggle-switch">
                 <input type="checkbox" id="autoSave" checked>
-                <span class="toggle-slider"></span>
-              </label>
-            </div>
-            
-            <div class="setting-item">
-              <div class="setting-info">
-                <h4>Sidebar Sliding Effect</h4>
-                <p>Enable swipe and drag gestures for the sidebar drawer</p>
-              </div>
-              <label class="toggle-switch">
-                <input type="checkbox" id="sidebarSliding" checked>
                 <span class="toggle-slider"></span>
               </label>
             </div>
@@ -694,7 +622,13 @@ editWidgetForm.addEventListener('submit', (e) => {
                   <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
                   <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
                 </div>
-                <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
+                <div class="widget-slot-actions">
+                  <button type="button" class="preview-widget-btn" data-slot="1" title="Preview files">
+                    <span class="btn-icon">👁️</span>
+                    Preview
+                  </button>
+                  <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
+                </div>
               </div>
             </div>
             
@@ -715,7 +649,13 @@ editWidgetForm.addEventListener('submit', (e) => {
                   <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
                   <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
                 </div>
-                <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+                <div class="widget-slot-actions">
+                  <button type="button" class="preview-widget-btn" data-slot="2" title="Preview files">
+                    <span class="btn-icon">👁️</span>
+                    Preview
+                  </button>
+                  <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+                </div>
               </div>
             </div>
             
@@ -736,7 +676,13 @@ editWidgetForm.addEventListener('submit', (e) => {
                   <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
                   <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
                 </div>
-                <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
+                <div class="widget-slot-actions">
+                  <button type="button" class="preview-widget-btn" data-slot="3" title="Preview files">
+                    <span class="btn-icon">👁️</span>
+                    Preview
+                  </button>
+                  <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
+                </div>
               </div>
             </div>
           </div>
@@ -747,6 +693,10 @@ editWidgetForm.addEventListener('submit', (e) => {
           <button type="submit" class="primary-btn" id="saveAllSettings">
             <span class="btn-icon">💾</span>
             Save All Changes
+          </button>
+          <button type="button" class="secondary-btn" id="testCloudFunctions">
+            <span class="btn-icon">🔧</span>
+            Test Cloud Functions
           </button>
           <button type="button" class="secondary-btn edit-profile-close-button">
             <span class="btn-icon">✕</span>
@@ -759,6 +709,7 @@ editWidgetForm.addEventListener('submit', (e) => {
     </div>
   </div>
 </div>
+
 <script type="module">
 import { db, auth, storage } from "../scripts/auth/auth.js";
 import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
@@ -778,13 +729,6 @@ let currentPhotoURL = null;
 // Enhanced profile photo handling
 const profilePhotoPreview = document.getElementById('profilePhotoPreview');
 const currentPhoto = document.querySelector('.current-photo');
-
-// Debug modal elements
-console.log('[EDIT PROFILE DEBUG] Modal elements:', {
-  editProfileModal: !!editProfileModal,
-  editProfileCloseBtns: editProfileCloseBtns.length,
-  editProfileQuickBtn: !!editProfileQuickBtn
-});
 
 // Set up photo click handler
 if (currentPhoto) {
@@ -852,212 +796,83 @@ async function prefillProfileForm() {
   }
 }
 
-// Widget upload functionality
-const uploadWidgetBtns = document.querySelectorAll('.upload-widget-btn');
-const widgetFileInputs = document.querySelectorAll('.widget-file-input');
+// Test Cloud Functions connection
+async function testCloudFunctions() {
+  console.log('[DEBUG] Testing Cloud Functions connection...');
+  try {
+    const { testConnection } = await import('./scripts/upload/cloud-upload.js');
+    const result = await testConnection();
+    console.log('[DEBUG] Cloud Functions test result:', result);
+    return result;
+  } catch (error) {
+    console.error('[DEBUG] Cloud Functions test failed:', error);
+    return { success: false, error: error.message };
+  }
+}
 
-// Track upload states to prevent multiple uploads
-const uploadStates = new Map();
+// Comprehensive debug function
+async function debugCloudFunctions() {
+  console.log('[DEBUG] Starting comprehensive Cloud Functions debug...');
+  
+  try {
+    // Test 1: Check if Firebase is initialized
+    console.log('[DEBUG] Test 1: Checking Firebase initialization...');
+    const { auth } = await import('./core/firebase-core.js');
+    console.log('[DEBUG] Firebase auth available:', !!auth);
+    
+    // Test 2: Check if user is authenticated
+    console.log('[DEBUG] Test 2: Checking authentication...');
+    const user = auth.currentUser;
+    console.log('[DEBUG] User authenticated:', !!user);
+    if (user) {
+      console.log('[DEBUG] User ID:', user.uid);
+    }
+    
+    // Test 3: Test Cloud Functions connection
+    console.log('[DEBUG] Test 3: Testing Cloud Functions...');
+    const { testConnection } = await import('./scripts/upload/cloud-upload.js');
+    const cfResult = await testConnection();
+    console.log('[DEBUG] Cloud Functions test result:', cfResult);
+    
+    return {
+      success: cfResult,
+      firebaseInitialized: !!auth,
+      userAuthenticated: !!user,
+      cloudFunctionsWorking: cfResult
+    };
+  } catch (error) {
+    console.error('[DEBUG] Debug failed:', error);
+    return { 
+      success: false, 
+      error: error.message,
+      stack: error.stack 
+    };
+  }
+}
 
-uploadWidgetBtns.forEach(btn => {
-  btn.addEventListener('click', async () => {
-    const slot = btn.getAttribute('data-slot');
+// Add test button event listener
+const testCloudFunctionsBtn = document.getElementById('testCloudFunctions');
+if (testCloudFunctionsBtn) {
+  testCloudFunctionsBtn.addEventListener('click', async () => {
+    console.log('[DEBUG] Test Cloud Functions button clicked');
+    const result = await debugCloudFunctions();
+    console.log('[DEBUG] Comprehensive debug result:', result);
     
-    // Prevent multiple uploads for the same slot
-    if (uploadStates.get(slot)) {
-      console.log(`[UPLOAD] Upload already in progress for slot ${slot}`);
-      return;
-    }
-    
-    const fileInput = document.querySelector(`.widget-file-input[data-slot="${slot}"]`);
-    const titleInput = document.querySelector(`.widget-title-input[data-slot="${slot}"]`);
-    const descInput = document.querySelector(`.widget-desc-input[data-slot="${slot}"]`);
-    
-    if (!fileInput.files.length) {
-      alert('Please select files to upload.');
-      return;
-    }
-    
-    // Validate files
-    if (window.validateWidgetFiles && !window.validateWidgetFiles(fileInput.files)) {
-      alert('Invalid file type selected. Allowed: html, js, css, png, jpg, jpeg, gif, svg, json.');
-      return;
-    }
-    
-    const title = titleInput.value.trim() || 'Untitled Widget';
-    const desc = descInput.value.trim() || '';
-    
-    // Set upload state
-    uploadStates.set(slot, true);
-    btn.textContent = 'Uploading...';
-    btn.disabled = true;
-    
-    try {
-      console.log(`Starting upload for slot ${slot}...`);
-      
-      // Use the new Cloud Functions upload system
-      const result = await uploadWidgetFiles(fileInput.files, slot, {
-        title,
-        description: desc
-      });
-      console.log('Files uploaded successfully via Cloud Functions:', result);
-      
-      // Save metadata using the imported function
-      await saveWidgetSlotMetadata(`app-widget-${slot}`, {
-        title,
-        desc,
-        files: result.files,
-        updated: new Date(),
-      });
-      console.log('Metadata saved successfully');
-      
-      btn.textContent = `Uploaded to Slot ${slot}!`;
-      btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
-      
-      // Reset form after successful upload
-      setTimeout(() => {
-        btn.textContent = `Upload to Slot ${slot}`;
-        btn.disabled = false;
-        btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
-        fileInput.value = '';
-        titleInput.value = '';
-        descInput.value = '';
-        
-        // Clear file list
-        const uploadArea = fileInput.closest('.widget-upload-area');
-        const fileList = uploadArea.querySelector('.file-list');
-        if (fileList) fileList.remove();
-        
-        const placeholder = uploadArea.querySelector('.upload-placeholder p');
-        placeholder.textContent = 'Drop files here or click to upload';
-      }, 2000);
-      
-    } catch (error) {
-      console.error('Upload error:', error);
-      btn.textContent = 'Upload Failed';
-      btn.style.background = 'linear-gradient(45deg, #f44336, #d32f2f)';
-      alert('Upload failed: ' + error.message);
-      
-      setTimeout(() => {
-        btn.textContent = `Upload to Slot ${slot}`;
-        btn.disabled = false;
-        btn.style.background = 'linear-gradient(45deg, #4caf50, #45a049)';
-      }, 2000);
-    } finally {
-      // Clear upload state
-      uploadStates.delete(slot);
-    }
-  });
-});
-
-// Drag and drop functionality for widget uploads
-widgetFileInputs.forEach(input => {
-  const uploadArea = input.closest('.widget-upload-area');
-  
-  uploadArea.addEventListener('dragover', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = 'var(--primary-color)';
-    uploadArea.style.background = 'rgba(0, 240, 255, 0.1)';
-  });
-  
-  uploadArea.addEventListener('dragleave', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = '#555';
-    uploadArea.style.background = '#0f0f0f';
-  });
-  
-  uploadArea.addEventListener('drop', (e) => {
-    e.preventDefault();
-    uploadArea.style.borderColor = '#555';
-    uploadArea.style.background = '#0f0f0f';
-    
-    const files = e.dataTransfer.files;
-    input.files = files;
-    
-    // Show selected files
-    const placeholder = uploadArea.querySelector('.upload-placeholder p');
-    if (files.length > 0) {
-      placeholder.textContent = `${files.length} file(s) selected`;
-    }
-  });
-  
-  // Click to upload - prevent multiple triggers
-  uploadArea.addEventListener('click', (e) => {
-    // Prevent triggering if clicking on file list, buttons, or inputs
-    if (e.target.closest('.file-list') || 
-        e.target.closest('.action-buttons') ||
-        e.target.closest('input') ||
-        e.target.closest('button')) {
-      return;
-    }
-    
-    // Reset file input to allow re-selecting same files
-    input.value = '';
-    input.click();
-  });
-});
-
-if (editProfileQuickBtn) {
-  editProfileQuickBtn.addEventListener('click', () => {
-    console.log('[EDIT PROFILE] Quick button clicked');
-    prefillProfileForm();
-    if (editProfileModal) {
-      editProfileModal.style.display = 'block';
-      document.body.style.overflow = 'hidden';
-      console.log('[EDIT PROFILE] Modal opened successfully');
+    if (result.success) {
+      alert('✅ All systems working!\n\nFirebase: ✅\nAuth: ✅\nCloud Functions: ✅');
     } else {
-      console.error('[EDIT PROFILE] Modal element not found');
+      let errorMsg = '❌ Debug failed:\n\n';
+      if (!result.firebaseInitialized) errorMsg += 'Firebase: ❌\n';
+      if (!result.userAuthenticated) errorMsg += 'Auth: ❌\n';
+      if (!result.cloudFunctionsWorking) errorMsg += 'Cloud Functions: ❌\n';
+      if (result.error) errorMsg += '\nError: ' + result.error;
+      
+      alert(errorMsg);
     }
   });
 }
 
-editProfileCloseBtns.forEach(btn => {
-  console.log('[EDIT PROFILE] Setting up close button listener for:', btn);
-  
-  // Test if button is clickable
-  btn.style.cursor = 'pointer';
-  btn.style.pointerEvents = 'auto';
-  
-  btn.addEventListener('click', (e) => {
-    console.log('[EDIT PROFILE] Close button clicked', e);
-    e.preventDefault();
-    e.stopPropagation();
-    
-    if (editProfileModal) {
-      editProfileModal.style.display = 'none';
-      document.body.style.overflow = '';
-      console.log('[EDIT PROFILE] Modal closed successfully');
-    } else {
-      console.error('[EDIT PROFILE] Modal element not found');
-    }
-  });
-});
-
-console.log('[EDIT PROFILE] Found close buttons:', editProfileCloseBtns.length);
-
-// Test function to manually close modal
-window.testCloseModal = () => {
-  console.log('[EDIT PROFILE] Testing manual modal close');
-  if (editProfileModal) {
-    editProfileModal.style.display = 'none';
-    document.body.style.overflow = '';
-    console.log('[EDIT PROFILE] Modal closed manually');
-  } else {
-    console.error('[EDIT PROFILE] Modal not found for manual close');
-  }
-};
-
-// Test function to manually open modal
-window.testOpenModal = () => {
-  console.log('[EDIT PROFILE] Testing manual modal open');
-  if (editProfileModal) {
-    editProfileModal.style.display = 'block';
-    document.body.style.overflow = 'hidden';
-    console.log('[EDIT PROFILE] Modal opened manually');
-  } else {
-    console.error('[EDIT PROFILE] Modal not found for manual open');
-  }
-};
+// Widget upload functionality is now handled by scripts/widgets/widget-upload.js
 
 window.addEventListener('click', (e) => {
   if (e.target === editProfileModal) {

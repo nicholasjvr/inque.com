@@ -248,77 +248,21 @@ class SocialAuthManager {
     }
   }
 
-  // Enhanced widget upload system
+  // Widget upload functionality is now handled by WidgetUploadManager
+  // This method is kept for backward compatibility but delegates to the upload manager
   async uploadWidget(widgetData) {
-    try {
-      this.isLoading = true;
-      this.log("Starting widget upload", { title: widgetData.title });
+    this.log("Widget upload requested, delegating to WidgetUploadManager");
 
-      if (!this.currentUser) {
-        throw new Error("User must be logged in to upload widgets");
-      }
-
-      const userId = this.currentUser.uid;
-      const widgetId = this.generateWidgetId();
-      const timestamp = Date.now();
-
-      // Upload widget files to storage
-      const fileUrls = await this.uploadWidgetFiles(
-        widgetData.files,
-        userId,
-        widgetId
+    // Import the upload manager if not already available
+    if (!window.widgetUploadManager) {
+      const { default: widgetUploadManager } = await import(
+        "../widgets/widget-upload.js"
       );
-
-      // Create widget document
-      const widgetDoc = {
-        id: widgetId,
-        userId: userId,
-        title: widgetData.title,
-        description: widgetData.description,
-        category: widgetData.category || "general",
-        tags: widgetData.tags || [],
-        files: fileUrls,
-        thumbnail:
-          widgetData.thumbnail ||
-          fileUrls.find((url) => url.includes(".png") || url.includes(".jpg")),
-        isPublic: widgetData.isPublic !== false,
-        isFeatured: false,
-        stats: {
-          views: 0,
-          likes: 0,
-          shares: 0,
-          downloads: 0,
-        },
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
-      };
-
-      // Save to Firestore
-      await setDoc(doc(db, "widgets", widgetId), widgetDoc);
-
-      // Update user's widget count
-      await updateDoc(doc(db, "users", userId), {
-        "stats.widgetsCreated": arrayUnion(1),
-        widgets: arrayUnion(widgetId),
-      });
-
-      // Create upload notification
-      await this.createNotification(userId, {
-        type: "widget_upload",
-        title: "Widget uploaded! 🎨",
-        message: `Your widget "${widgetData.title}" has been successfully uploaded.`,
-        icon: "🎨",
-        data: { widgetId, action: "view_widget" },
-      });
-
-      this.log("Widget upload completed successfully");
-      return { success: true, widgetId, widget: widgetDoc };
-    } catch (error) {
-      this.error("Widget upload failed", error);
-      return { success: false, error: this.getUserFriendlyError(error) };
-    } finally {
-      this.isLoading = false;
+      window.widgetUploadManager = widgetUploadManager;
     }
+
+    // Delegate to the upload manager
+    return await window.widgetUploadManager.handleWidgetUpload(widgetData);
   }
 
   // Social features
@@ -849,111 +793,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Add local notification (for immediate feedback)
-  const addLocalNotification = (message, type = "info") => {
-    const notificationItem = document.createElement("div");
-    notificationItem.className = `notification-item ${type} local`;
-    notificationItem.innerHTML = `
-      <div class="notification-content">
-        <div class="notification-header">
-          <span class="notification-icon">🔔</span>
-          <span class="notification-title">System</span>
-        </div>
-        <div class="notification-message">${message}</div>
-        <div class="notification-time">Just now</div>
-      </div>
-      <button class="notification-close" aria-label="Dismiss notification">&times;</button>
-    `;
-
-    // Remove empty notification if it exists
-    const emptyNotification = notificationList.querySelector(
-      ".empty-notification"
-    );
-    if (emptyNotification) {
-      emptyNotification.remove();
-    }
-
-    notificationList.insertBefore(
-      notificationItem,
-      notificationList.firstChild
-    );
-
-    // Update notification count
-    const currentCount = parseInt(notificationCount.textContent || "0") + 1;
-    if (notificationCount) {
-      notificationCount.textContent = currentCount;
-      notificationCount.style.display = "inline-block";
-    }
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      if (notificationItem.parentNode) {
-        notificationItem.remove();
-        const newCount = Math.max(0, currentCount - 1);
-        if (notificationCount) {
-          notificationCount.textContent = newCount;
-          notificationCount.style.display =
-            newCount > 0 ? "inline-block" : "none";
-        }
-
-        // Show empty message if no notifications
-        if (notificationList.children.length === 0) {
-          const emptyItem = document.createElement("div");
-          emptyItem.className = "notification-item empty-notification";
-          emptyItem.innerHTML =
-            '<span class="notification-text">No new notifications</span>';
-          notificationList.appendChild(emptyItem);
-        }
-      }
-    }, 5000);
-
-    // Add close button handler
-    const closeBtn = notificationItem.querySelector(".notification-close");
-    closeBtn.addEventListener("click", () => {
-      notificationItem.remove();
-    });
-  };
-
-  // Create sample notifications for testing
-  const createSampleNotifications = async (userId) => {
-    const sampleNotifications = [
-      {
-        type: "mention",
-        title: "You were mentioned",
-        message: "@developer mentioned you in their latest post",
-        icon: "👋",
-        data: { postId: "sample-post-1", mentionedBy: "developer" },
-      },
-      {
-        type: "like",
-        title: "New like",
-        message: 'Someone liked your widget "Quote Builder"',
-        icon: "❤️",
-        data: { postId: "sample-post-2", likedBy: "user123" },
-      },
-      {
-        type: "follow",
-        title: "New follower",
-        message: "designer_pro joined your followers",
-        icon: "👥",
-        data: { followerId: "designer_pro" },
-      },
-      {
-        type: "widget",
-        title: "Widget featured",
-        message: 'Your widget "Quote Builder" was featured on the homepage',
-        icon: "⭐",
-        data: {
-          widgetId: "quote-builder",
-          widgetPath: "widgets/app-widget-1/widget.html",
-        },
-      },
-    ];
-
-    for (const notification of sampleNotifications) {
-      await createNotification(userId, notification);
-    }
-  };
-
   const updateProfileBanner = (profileData, isLoggedIn = false) => {
     currentUserProfile = profileData;
 
@@ -1079,57 +918,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // Quick Actions Event Listeners (moved to end of file to avoid duplicate)
-
-  // Notification Functions
-  const addNotification = (message, type = "info") => {
-    const notificationItem = document.createElement("div");
-    notificationItem.className = `notification-item ${type}`;
-    notificationItem.innerHTML = `<span class="notification-text">${message}</span>`;
-
-    // Remove empty notification if it exists
-    const emptyNotification = notificationList.querySelector(
-      ".empty-notification"
-    );
-    if (emptyNotification) {
-      emptyNotification.remove();
-    }
-
-    notificationList.insertBefore(
-      notificationItem,
-      notificationList.firstChild
-    );
-
-    // Update notification count
-    const currentCount = notificationList.children.length;
-    if (notificationCount) {
-      notificationCount.textContent = currentCount;
-      notificationCount.style.display =
-        currentCount > 0 ? "inline-block" : "none";
-    }
-
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-      if (notificationItem.parentNode) {
-        notificationItem.remove();
-        const newCount = notificationList.children.length;
-        if (notificationCount) {
-          notificationCount.textContent = newCount;
-          notificationCount.style.display =
-            newCount > 0 ? "inline-block" : "none";
-        }
-
-        // Show empty message if no notifications
-        if (newCount === 0) {
-          const emptyItem = document.createElement("div");
-          emptyItem.className = "notification-item empty-notification";
-          emptyItem.innerHTML =
-            '<span class="notification-text">No new notifications</span>';
-          notificationList.appendChild(emptyItem);
-        }
-      }
-    }, 5000);
-  };
-
   // Toggle forms
   showSignUp.addEventListener("click", (e) => {
     e.preventDefault();

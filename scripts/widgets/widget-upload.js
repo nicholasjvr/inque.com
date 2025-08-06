@@ -2,7 +2,7 @@
 // This module now uses serverless functions for better performance and reliability
 
 import cloudUploadManager from "../upload/cloud-upload.js";
-import { auth } from "../../../core/firebase-core.js";
+import widgetPreviewManager from "./widget-preview.js";
 
 class WidgetUploadManager {
   constructor() {
@@ -48,6 +48,16 @@ class WidgetUploadManager {
         e.preventDefault();
         e.stopPropagation();
         this.handleUploadButtonClick(btn);
+      });
+    });
+
+    // Preview buttons
+    const previewButtons = document.querySelectorAll(".preview-widget-btn");
+    previewButtons.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        this.handlePreviewButtonClick(btn);
       });
     });
 
@@ -115,6 +125,9 @@ class WidgetUploadManager {
     if (files.length > 0) {
       this.log("Files selected", { count: files.length });
       this.updateFileList(fileInput, files);
+
+      // Show preview of selected files
+      widgetPreviewManager.handleFiles(files);
     }
   }
 
@@ -152,6 +165,21 @@ class WidgetUploadManager {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  async handlePreviewButtonClick(button) {
+    const slot = button.getAttribute("data-slot");
+    const fileInput = document.querySelector(
+      `.widget-file-input[data-slot="${slot}"]`
+    );
+
+    if (!fileInput.files.length) {
+      this.showToast("Please select files to preview.", "warning");
+      return;
+    }
+
+    this.log("Showing preview for slot", { slot });
+    await widgetPreviewManager.handleFiles(fileInput.files);
   }
 
   async handleUploadButtonClick(button) {
@@ -218,6 +246,14 @@ class WidgetUploadManager {
         `Successfully uploaded ${result.files.length} files! 🎉`,
         "success"
       );
+
+      // Refresh widget display to show the new widget
+      if (window.widgetDisplay) {
+        this.log("Refreshing widget display...");
+        await window.widgetDisplay.loadUserWidgets();
+        window.widgetDisplay.setupWidgetSlots();
+        this.log("Widget display refreshed.");
+      }
 
       // Reset form after successful upload
       setTimeout(() => {
@@ -286,6 +322,33 @@ class WidgetUploadManager {
     } catch (error) {
       this.error("Failed to get download URLs", error);
       throw error;
+    }
+  }
+
+  // Handle widget upload from other modules (for backward compatibility)
+  async handleWidgetUpload(widgetData) {
+    try {
+      this.log("Handling widget upload from auth module", {
+        title: widgetData.title,
+      });
+
+      // Use Cloud Functions for upload
+      const result = await cloudUploadManager.uploadWidgetFiles(
+        widgetData.files,
+        "slot-upload", // Generic slot for programmatic uploads
+        {
+          title: widgetData.title,
+          description: widgetData.description || "",
+          category: widgetData.category || "general",
+          tags: widgetData.tags || [],
+        }
+      );
+
+      this.log("Widget upload completed successfully", result);
+      return { success: true, widgetId: result.widgetId, widget: result };
+    } catch (error) {
+      this.error("Widget upload failed", error);
+      return { success: false, error: error.message };
     }
   }
 }

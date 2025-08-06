@@ -9,8 +9,9 @@ import { auth } from "../../core/firebase-core.js";
 
 class CloudUploadManager {
   constructor() {
-    this.functions = getFunctions();
-    this.log("Cloud Upload Manager initialized");
+    // Initialize with the correct region
+    this.functions = getFunctions(undefined, "us-central1");
+    this.log("Cloud Upload Manager initialized with region: us-central1");
   }
 
   log(message, data = null) {
@@ -172,6 +173,18 @@ class CloudUploadManager {
       return true;
     } catch (error) {
       this.error("Cloud Functions connection test failed", error);
+
+      // Provide more detailed error information
+      if (error.code === "functions/unavailable") {
+        this.error("Cloud Functions are not available - check deployment");
+      } else if (error.code === "functions/unauthenticated") {
+        this.error("Authentication required for Cloud Functions");
+      } else if (error.code === "functions/permission-denied") {
+        this.error("Permission denied for Cloud Functions");
+      } else {
+        this.error("Unknown Cloud Functions error", error);
+      }
+
       return false;
     }
   }

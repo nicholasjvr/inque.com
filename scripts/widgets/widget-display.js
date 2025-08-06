@@ -297,134 +297,28 @@ export class WidgetDisplay {
   }
 
   /**
-   * Upload widget files to storage
+   * Upload functionality is now handled by WidgetUploadManager
+   * This method is kept for backward compatibility but delegates to the upload manager
    */
   async uploadWidget(slotNumber) {
-    const container = document.querySelector(
-      `[data-widget-slot="${slotNumber}"]`
+    this.log("Widget upload requested, delegating to WidgetUploadManager");
+
+    // Import the upload manager if not already available
+    if (!window.widgetUploadManager) {
+      const { default: widgetUploadManager } = await import(
+        "./widget-upload.js"
+      );
+      window.widgetUploadManager = widgetUploadManager;
+    }
+
+    // Trigger upload through the upload manager
+    const button = document.querySelector(
+      `.upload-widget-btn[data-slot="${slotNumber}"]`
     );
-    const fileInput = container.querySelector(`#widgetFiles${slotNumber}`);
-    const titleInput = container.querySelector(".widget-title-input");
-    const descInput = container.querySelector(".widget-desc-input");
-    const categoryInput = container.querySelector(".widget-category-input");
-    const tagsInput = container.querySelector(".widget-tags-input");
-
-    if (!fileInput.files.length) {
-      this.showToast("Please select files to upload", "error");
-      return;
-    }
-
-    const title = titleInput.value.trim() || "Untitled Widget";
-    const description = descInput.value.trim() || "";
-    const category = categoryInput.value.trim() || "general";
-    const tags = tagsInput.value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-
-    try {
-      this.log("Starting widget upload", { slot: slotNumber, title });
-
-      // Upload files to storage
-      const fileURLs = await this.uploadFilesToStorage(
-        fileInput.files,
-        slotNumber
-      );
-
-      // Create widget document
-      const widgetId = `widget_${Date.now()}_${Math.random()
-        .toString(36)
-        .substr(2, 9)}`;
-      const widgetData = {
-        id: widgetId,
-        title,
-        description,
-        category,
-        tags,
-        files: fileURLs,
-        slot: parseInt(slotNumber),
-        isPublic: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-        stats: {
-          views: 0,
-          likes: 0,
-          shares: 0,
-          downloads: 0,
-        },
-      };
-
-      // Save to widgets collection
-      await this.saveWidgetToDatabase(widgetData);
-
-      // Add widget ID to user profile
-      await this.addWidgetToUserProfile(widgetId);
-
-      // Refresh the widget display
-      await this.loadUserWidgets();
-      this.renderWidgetSlot(container, slotNumber);
-
-      this.showToast(`Widget "${title}" uploaded successfully!`, "success");
-      this.log("Widget upload completed successfully", { widgetId });
-    } catch (error) {
-      this.error("Error uploading widget", error);
-      this.showToast("Upload failed: " + error.message, "error");
-    }
-  }
-
-  /**
-   * Upload files to Firebase Storage
-   */
-  async uploadFilesToStorage(files, slotNumber) {
-    const fileURLs = {};
-    const widgetId = `widget_${Date.now()}_${Math.random()
-      .toString(36)
-      .substr(2, 9)}`;
-
-    for (const file of files) {
-      const storageRef = ref(
-        storage,
-        `users/${this.currentUser.uid}/widgets/${widgetId}/${file.name}`
-      );
-
-      // Upload file
-      const snapshot = await uploadBytes(storageRef, file);
-
-      // Get download URL
-      const downloadURL = await getDownloadURL(storageRef);
-      fileURLs[file.name] = downloadURL;
-
-      this.log(`Uploaded ${file.name} to widget ${widgetId}`);
-    }
-
-    return fileURLs;
-  }
-
-  /**
-   * Save widget metadata to Firestore
-   */
-  async saveWidgetToDatabase(widgetData) {
-    try {
-      await setDoc(doc(db, "widgets", widgetData.id), widgetData);
-      this.log("Widget saved to database", { widgetId: widgetData.id });
-    } catch (error) {
-      this.error("Failed to save widget to database", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Add widget ID to user profile
-   */
-  async addWidgetToUserProfile(widgetId) {
-    try {
-      await updateDoc(doc(db, "users", this.currentUser.uid), {
-        widgets: arrayUnion(widgetId),
-      });
-      this.log("Widget ID added to user profile", { widgetId });
-    } catch (error) {
-      this.error("Failed to add widget to user profile", error);
-      throw error;
+    if (button) {
+      await window.widgetUploadManager.handleUploadButtonClick(button);
+    } else {
+      this.error("Upload button not found for slot", { slotNumber });
     }
   }
 
