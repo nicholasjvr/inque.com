@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Profile • inque</title>
+    <link rel="stylesheet" href="../core/styles.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .editor-container {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .editor-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .editor-card {
+        background: #111;
+        border: 1px solid #222;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .editor-card h3 {
+        margin: 0 0 8px 0;
+      }
+      .sortable-ghost {
+        opacity: 0.5;
+      }
+      .sortable-chosen {
+        outline: 2px dashed #6cf;
+      }
+      .section-handle {
+        cursor: grab;
+        font-size: 20px;
+        user-select: none;
+      }
+      .topbar-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .primary {
+        background: #3b82f6;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      .secondary {
+        background: #1f2937;
+        color: #cbd5e1;
+        border: 1px solid #334155;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="editor-container">
+      <div class="editor-header">
+        <h2>Edit Profile & Dashboard</h2>
+        <div class="topbar-actions">
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="backBtn" class="secondary">Back</button>
+        </div>
+      </div>
+      <div id="sections" class="editor-grid">
+        <div class="editor-card" data-section="profile">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Profile Information</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <div class="form-group">
+            <label>Display Name</label
+            ><input id="editName" type="text" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label>Bio</label
+            ><textarea
+              id="editBio"
+              rows="3"
+              placeholder="Tell us about yourself..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Photo</label
+            ><input id="editPhotoFile" type="file" accept="image/*" />
+          </div>
+        </div>
+        <div class="editor-card" data-section="settings">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Account Settings</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <label
+            ><input type="checkbox" id="setEmail" checked /> Email
+            notifications</label
+          ><br />
+          <label
+            ><input type="checkbox" id="setPublic" checked /> Public
+            profile</label
+          ><br />
+          <label
+            ><input type="checkbox" id="setAutoSave" checked /> Alerts</label
+          >
+        </div>
+        <div class="editor-card" data-section="widgets">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Widget Showcase</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <p>
+            Manage your widget slots from the home page modal for uploads;
+            reordering support will be added here.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/modular/sortable.esm.js";
+      import { auth, db, onAuthStateChanged } from "../core/firebase-core.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+      import { uploadProfilePhoto } from "../scripts/upload/cloud-upload.js";
+
+      console.log("[PROFILE EDIT] Initializing editor");
+      const sectionsEl = document.getElementById("sections");
+      const saveBtn = document.getElementById("saveBtn");
+      const backBtn = document.getElementById("backBtn");
+      const nameEl = document.getElementById("editName");
+      const bioEl = document.getElementById("editBio");
+      const photoEl = document.getElementById("editPhotoFile");
+
+      // Enable drag-and-drop reordering of cards
+      Sortable.create(sectionsEl, {
+        handle: ".section-handle",
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        chosenClass: "sortable-chosen",
+        onEnd: () => console.log("[PROFILE EDIT] Sections reordered"),
+      });
+
+      async function loadProfile() {
+        console.log("[PROFILE EDIT] Loading profile");
+        const user = auth.currentUser;
+        if (!user) return;
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          nameEl.value = data.name || data.displayName || "";
+          bioEl.value = data.bio || "";
+        }
+      }
+
+      async function saveProfile() {
+        const user = auth.currentUser;
+        if (!user) return;
+        const name = nameEl.value.trim();
+        const payload = {
+          name,
+          displayName: name,
+          bio: bioEl.value.trim(),
+          updatedAt: new Date(),
+        };
+        if (photoEl.files && photoEl.files[0]) {
+          console.log("[PROFILE EDIT] Uploading new profile photo");
+          try {
+            const res = await uploadProfilePhoto(photoEl.files[0]);
+            payload.photoURL = res.photoURL;
+          } catch (e) {
+            console.warn("[PROFILE EDIT] Photo upload failed", e);
+          }
+        }
+        await updateDoc(doc(db, "users", user.uid), payload);
+        console.log("[PROFILE EDIT] Profile saved");
+        alert("Saved!");
+      }
+
+      backBtn.addEventListener("click", () => {
+        history.length > 1
+          ? history.back()
+          : (window.location.href = "../index.html");
+      });
+      saveBtn.addEventListener("click", saveProfile);
+
+      // Wait for auth to be ready
+      if (auth.currentUser) {
+        console.log("[PROFILE EDIT] Auth ready, user present");
+        loadProfile();
+      } else {
+        console.log("[PROFILE EDIT] Waiting for auth state…");
+        const unsub = onAuthStateChanged(auth, (user) => {
+          unsub();
+          if (!user) {
+            console.log("[PROFILE EDIT] No user, redirecting");
+            window.location.href = "../index.html";
+          } else {
+            console.log("[PROFILE EDIT] User detected, loading profile");
+            loadProfile();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>

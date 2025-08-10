@@ -3033,6 +3033,57 @@ footer {
     overflow-y: auto;
 }
 
+/* --- Widget Studio Modal --- */
+.widget-studio-modal-content {
+    max-width: 900px;
+    width: 95vw;
+    height: 90vh;
+    overflow-y: auto;
+}
+
+.widget-studio-container {
+    padding: 20px;
+}
+
+.widget-management-actions {
+    text-align: center;
+    padding: 20px;
+}
+
+.open-widget-studio-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.open-widget-studio-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.section-note {
+    margin-top: 12px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.studio-actions {
+    display: flex;
+    justify-content: center;
+    padding: 20px 0;
+    border-top: 1px solid var(--border-color);
+    margin-top: 20px;
+}
+
 /* --- Edit Widget Modal --- */
 .edit-widget-modal-content {
     max-width: 400px;
@@ -4467,6 +4518,16 @@ footer {
         gap: 16px;
     }
 
+    .widget-studio-modal-content {
+        width: 98%;
+        max-height: 95vh;
+        margin: 10px auto;
+    }
+
+    .widget-studio-container {
+        padding: 12px;
+    }
+
     .settings-actions {
         flex-direction: column;
         gap: 12px;
@@ -4504,6 +4565,16 @@ footer {
 
     .widget-upload-area {
         padding: 16px;
+    }
+
+    .widget-studio-modal-content {
+        width: 98%;
+        max-height: 95vh;
+        margin: 5px auto;
+    }
+
+    .widget-studio-container {
+        padding: 10px;
     }
 }
 

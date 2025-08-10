@@ -111,12 +111,13 @@
 
     <!-- Profile Info Section -->
     <div class="profile-info-section">
-      <div class="profile-header">
-        <h3 class="profile-name" id="profileName">Welcome</h3>
-        <div class="profile-status" id="profileStatus">
-          <span class="status-badge guest">Guest</span>
+        <div class="profile-header">
+          <h3 class="profile-name" id="profileName">Welcome</h3>
+          <div class="profile-status" id="profileStatus">
+            <span class="status-badge guest">Guest</span>
+          </div>
+          <button id="profileLoginBtn" class="profile-action-btn" style="display: none; margin-left: auto;">Login</button>
         </div>
-      </div>
       
       <p class="profile-bio" id="profileBio">Explore the world of inque</p>
       
@@ -222,7 +223,7 @@
         <script type="module" src="scripts/timeline-manager.js"></script>
 
       <!-- Widget Preview Modal -->
-      <div id="widgetModal" class="modal" style="z-index: 1060;">
+      <div id="widgetModal" class="modal" style="z-index: 4000;">
         <div class="modal-content">
           <div class="modal-header">
             <h2 class="modal-title">Widget Preview</h2>
@@ -443,27 +444,22 @@
 
 <script>
   // Profile navigation buttons
-  const profileNavBtns = document.querySelectorAll('.nav-btn');
+  const profileNavBtns = document.querySelectorAll('.nav-btn[data-page]');
   profileNavBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       const page = btn.getAttribute('data-page');
+      if (!page) return;
       console.log(`Navigating to: ${page}`);
-      
       switch(page) {
         case 'about':
-          // Navigate to about page
           window.location.href = 'core/personal/about.html';
           break;
         case 'explore':
-          // Navigate to explore page
           window.location.href = 'pages/explore.html';
           break;
         case 'inventory':
-          // Navigate to inventory page
           window.location.href = 'pages/inventory.html';
           break;
-        default:
-          console.log('Unknown page:', page);
       }
     });
   });
@@ -477,6 +473,38 @@
     // For now, just show an alert. In the future, this will open a comprehensive tutorial
     alert('Tutorial feature coming soon! This will explain everything about inque.');
   });
+</script>
+
+<script>
+  // Profile banner login button behavior
+  (function() {
+    const loginBtn = document.getElementById('profileLoginBtn');
+    if (!loginBtn) return;
+    // Defer auth import to avoid blocking paint
+    import('./scripts/auth/auth.js').then((mod) => {
+      const { auth } = mod;
+      const update = () => {
+        const user = auth.currentUser;
+        loginBtn.style.display = user ? 'none' : 'inline-flex';
+      };
+      update();
+      auth.onAuthStateChanged(() => {
+        console.log('[PROFILE LOGIN] Auth state changed');
+        update();
+      });
+      loginBtn.addEventListener('click', () => {
+        console.log('[PROFILE LOGIN] Login button clicked');
+        // Signal existing auth flow; your auth.js can listen for this
+        window.dispatchEvent(new CustomEvent('request-login-from-profile'));
+        // Fallback: show the auth modal if listener not wired
+        const authModal = document.getElementById('authModal');
+        if (authModal) {
+          authModal.style.display = 'block';
+          document.body.style.overflow = 'hidden';
+        }
+      });
+    }).catch(err => console.warn('[PROFILE LOGIN] Setup failed', err));
+  })();
 </script>
 
 <script>
@@ -597,94 +625,18 @@
           </div>
         </div>
         
-        <!-- Widget Management -->
+        <!-- Widget Management Link -->
         <div class="settings-section">
           <div class="section-header">
-            <h3>🎨 Widget Showcase</h3>
-            <p class="section-description">Upload and manage your interactive widgets</p>
+            <h3>🎨 Widget Management</h3>
+            <p class="section-description">Manage your widget showcase and uploads</p>
           </div>
-          
-          <div class="widget-showcase-grid">
-            <div class="widget-slot" data-slot="1">
-              <div class="slot-header">
-                <h4>Slot 1</h4>
-                <span class="slot-status">Available</span>
-              </div>
-              <div class="widget-slot-content">
-                <div class="widget-upload-area">
-                  <input type="file" class="widget-file-input" data-slot="1" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                  <div class="upload-placeholder">
-                    <span class="upload-icon">📁</span>
-                    <p>Drop files here or click to upload</p>
-                  </div>
-                </div>
-                <div class="widget-slot-info">
-                  <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
-                  <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
-                </div>
-                <div class="widget-slot-actions">
-                  <button type="button" class="preview-widget-btn" data-slot="1" title="Preview files">
-                    <span class="btn-icon">👁️</span>
-                    Preview
-                  </button>
-                  <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="widget-slot" data-slot="2">
-              <div class="slot-header">
-                <h4>Slot 2</h4>
-                <span class="slot-status">Available</span>
-              </div>
-              <div class="widget-slot-content">
-                <div class="widget-upload-area">
-                  <input type="file" class="widget-file-input" data-slot="2" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                  <div class="upload-placeholder">
-                    <span class="upload-icon">📁</span>
-                    <p>Drop files here or click to upload</p>
-                  </div>
-                </div>
-                <div class="widget-slot-info">
-                  <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
-                  <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
-                </div>
-                <div class="widget-slot-actions">
-                  <button type="button" class="preview-widget-btn" data-slot="2" title="Preview files">
-                    <span class="btn-icon">👁️</span>
-                    Preview
-                  </button>
-                  <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
-                </div>
-              </div>
-            </div>
-            
-            <div class="widget-slot" data-slot="3">
-              <div class="slot-header">
-                <h4>Slot 3</h4>
-                <span class="slot-status">Available</span>
-              </div>
-              <div class="widget-slot-content">
-                <div class="widget-upload-area">
-                  <input type="file" class="widget-file-input" data-slot="3" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json">
-                  <div class="upload-placeholder">
-                    <span class="upload-icon">📁</span>
-                    <p>Drop files here or click to upload</p>
-                  </div>
-                </div>
-                <div class="widget-slot-info">
-                  <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
-                  <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
-                </div>
-                <div class="widget-slot-actions">
-                  <button type="button" class="preview-widget-btn" data-slot="3" title="Preview files">
-                    <span class="btn-icon">👁️</span>
-                    Preview
-                  </button>
-                  <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
-                </div>
-              </div>
-            </div>
+          <div class="widget-management-actions">
+            <button type="button" class="open-widget-studio-btn" onclick="openWidgetStudio()">
+              <span class="btn-icon">🎨</span>
+              Open Widget Studio
+            </button>
+            <p class="section-note">Use the Widget Studio to upload, preview, and manage your interactive widgets</p>
           </div>
         </div>
         
@@ -701,6 +653,116 @@
           <button type="button" class="secondary-btn edit-profile-close-button">
             <span class="btn-icon">✕</span>
             Cancel
+          </button>
+        </div>
+        
+      </div>
+      
+    </div>
+  </div>
+</div>
+
+<!-- Widget Studio Modal -->
+<div id="widgetStudioModal" class="modal">
+  <div class="modal-content widget-studio-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">🎨 Widget Studio</h2>
+      <span class="close-button widget-studio-close-button">&times;</span>
+    </div>
+    <div class="modal-body">
+      
+      <!-- Widget Studio Layout -->
+      <div class="widget-studio-container">
+        
+        <!-- Widget Showcase Grid -->
+        <div class="widget-showcase-grid">
+          <div class="widget-slot" data-slot="1">
+            <div class="slot-header">
+              <h4>Slot 1</h4>
+              <span class="slot-status">Available</span>
+            </div>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="1" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="1" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="1" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <div class="widget-slot-actions">
+                <button type="button" class="preview-widget-btn" data-slot="1" title="Preview files">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-widget-btn" data-slot="1">Upload to Slot 1</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="widget-slot" data-slot="2">
+            <div class="slot-header">
+              <h4>Slot 2</h4>
+              <span class="slot-status">Available</span>
+            </div>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="2" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="2" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="2" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <div class="widget-slot-actions">
+                <button type="button" class="preview-widget-btn" data-slot="2" title="Preview files">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-widget-btn" data-slot="2">Upload to Slot 2</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="widget-slot" data-slot="3">
+            <div class="slot-header">
+              <h4>Slot 3</h4>
+              <span class="slot-status">Available</span>
+            </div>
+            <div class="widget-slot-content">
+              <div class="widget-upload-area">
+                <input type="file" class="widget-file-input" data-slot="3" multiple accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp">
+                <div class="upload-placeholder">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                </div>
+              </div>
+              <div class="widget-slot-info">
+                <input type="text" class="widget-title-input" data-slot="3" placeholder="Widget Title">
+                <textarea class="widget-desc-input" data-slot="3" placeholder="Widget Description" rows="2"></textarea>
+              </div>
+              <div class="widget-slot-actions">
+                <button type="button" class="preview-widget-btn" data-slot="3" title="Preview files">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-widget-btn" data-slot="3">Upload to Slot 3</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Studio Actions -->
+        <div class="studio-actions">
+          <button type="button" class="secondary-btn widget-studio-close-button">
+            <span class="btn-icon">✕</span>
+            Close Studio
           </button>
         </div>
         
@@ -734,6 +796,98 @@ const currentPhoto = document.querySelector('.current-photo');
 if (currentPhoto) {
   currentPhoto.addEventListener('click', () => {
     editPhotoInput.click();
+  });
+}
+
+// Wire close buttons for the Edit Profile modal
+if (editProfileCloseBtns && editProfileCloseBtns.length) {
+  editProfileCloseBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      console.log('[EDIT PROFILE] Close button clicked');
+      if (editProfileModal) {
+        editProfileModal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('[EDIT PROFILE] Modal closed via close button');
+      }
+    });
+  });
+}
+
+// Widget Studio Modal Functions
+function openWidgetStudio() {
+  console.log('[WIDGET STUDIO] Opening widget studio modal...');
+  const widgetStudioModal = document.getElementById('widgetStudioModal');
+  if (widgetStudioModal) {
+    widgetStudioModal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+    console.log('[WIDGET STUDIO] Modal opened successfully');
+    
+    // Initialize widget studio components
+    initializeWidgetStudio();
+  } else {
+    console.error('[WIDGET STUDIO] Modal not found');
+  }
+}
+
+function initializeWidgetStudio() {
+  console.log('[WIDGET STUDIO] Initializing widget studio components...');
+  
+  // Check if widget upload areas exist
+  const uploadAreas = document.querySelectorAll('.widget-upload-area');
+  console.log(`[WIDGET STUDIO] Found ${uploadAreas.length} widget upload areas`);
+  
+  // Check if preview buttons exist
+  const previewBtns = document.querySelectorAll('.preview-widget-btn');
+  console.log(`[WIDGET STUDIO] Found ${previewBtns.length} preview buttons`);
+  
+  // Check if upload buttons exist
+  const uploadBtns = document.querySelectorAll('.upload-widget-btn');
+  console.log(`[WIDGET STUDIO] Found ${uploadBtns.length} upload buttons`);
+  
+  console.log('[WIDGET STUDIO] Widget studio initialization complete');
+}
+
+// Wire close buttons for the Widget Studio modal
+const widgetStudioCloseBtns = document.querySelectorAll('.widget-studio-close-button');
+if (widgetStudioCloseBtns && widgetStudioCloseBtns.length) {
+  widgetStudioCloseBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      console.log('[WIDGET STUDIO] Close button clicked');
+      const widgetStudioModal = document.getElementById('widgetStudioModal');
+      if (widgetStudioModal) {
+        widgetStudioModal.style.display = 'none';
+        document.body.style.overflow = '';
+        console.log('[WIDGET STUDIO] Modal closed via close button');
+      }
+    });
+  });
+}
+
+// Navigate to full-page editor from quick and sidebar buttons
+const sidebarEditProfileBtn = document.getElementById('sidebarEditProfileBtn');
+function goToFullProfileEditor() {
+  if (auth && auth.currentUser) {
+    console.log('[EDIT PROFILE] Navigating to full-page editor');
+    window.location.href = 'pages/profile-edit.html';
+  } else {
+    console.log('[EDIT PROFILE] Not authenticated, opening auth modal');
+    const authModal = document.getElementById('authModal');
+    if (authModal) {
+      authModal.style.display = 'block';
+      document.body.style.overflow = 'hidden';
+    }
+  }
+}
+if (editProfileQuickBtn) {
+  editProfileQuickBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    goToFullProfileEditor();
+  });
+}
+if (sidebarEditProfileBtn) {
+  sidebarEditProfileBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    goToFullProfileEditor();
   });
 }
 

@@ -1329,18 +1329,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
       switch (action) {
         case "newWidget":
-          showToast("Opening widget creation...", "info");
+          showToast("Opening Widget Studio...", "info");
           closeSidebar(); // Close sidebar before opening modal
-          // Open edit profile modal which contains the widget upload functionality
-          const editProfileModal = document.querySelector("#editProfileModal");
-          if (editProfileModal) {
-            editProfileModal.style.display = "block";
+          // Open widget studio modal for widget creation
+          const widgetStudioModal =
+            document.querySelector("#widgetStudioModal");
+          if (widgetStudioModal) {
+            widgetStudioModal.style.display = "block";
             document.body.style.overflow = "hidden";
             console.log(
-              "[QUICK ACTION] Edit profile modal opened for widget creation"
+              "[QUICK ACTION] Widget Studio modal opened for widget creation"
             );
           } else {
-            showToast("Edit profile modal not found", "error");
+            showToast("Widget Studio modal not found", "error");
           }
           break;
         case "shareProfile":

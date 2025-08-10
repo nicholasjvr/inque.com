@@ -10,6 +10,7 @@
 const { Buffer } = require("buffer");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
+const { randomUUID } = require("crypto");
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -32,6 +33,7 @@ const allowedTypes = [
   "image/jpeg",
   "image/gif",
   "image/svg+xml",
+  "image/webp",
   "text/javascript",
   "application/x-javascript",
 ];
@@ -46,6 +48,7 @@ const allowedExtensions = [
   ".gif",
   ".svg",
   ".json",
+  ".webp",
 ];
 
 function validateFile(file) {
@@ -106,8 +109,9 @@ exports.uploadWidgetFiles = functions
             .bucket()
             .file(`uploads/${uploadId}/${file.name}`);
 
-          // Upload file
+          // Upload file with Firebase download token metadata
           const buffer = Buffer.from(file.data, "base64");
+          const token = randomUUID();
           await fileRef.save(buffer, {
             metadata: {
               contentType: file.type || "application/octet-stream",
@@ -115,19 +119,19 @@ exports.uploadWidgetFiles = functions
                 uploadedBy: userId,
                 slot: slot,
                 originalName: file.name,
+                firebaseStorageDownloadTokens: token,
               },
             },
           });
 
-          // Get download URL
-          const downloadURL = await fileRef.getSignedUrl({
-            action: "read",
-            expires: "03-01-2500", // Far future expiration
-          });
+          // Construct Firebase Storage download URL using token
+          const bucketName = fileRef.bucket.name;
+          const encodedPath = encodeURIComponent(fileRef.name);
+          const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
 
           uploadResults.push({
             fileName: file.name,
-            downloadURL: downloadURL[0],
+            downloadURL: downloadURL,
             size: buffer.length,
             type: file.type,
           });
@@ -247,15 +251,23 @@ exports.uploadProfilePhoto = functions
         },
       });
 
-      // Get download URL
-      const downloadURL = await fileRef.getSignedUrl({
-        action: "read",
-        expires: "03-01-2500",
+      // Add Firebase download token and construct URL
+      const token = randomUUID();
+      await fileRef.setMetadata({
+        metadata: {
+          uploadedBy: userId,
+          originalName: file.name,
+          firebaseStorageDownloadTokens: token,
+        },
       });
+
+      const bucketName = fileRef.bucket.name;
+      const encodedPath = encodeURIComponent(fileRef.name);
+      const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
 
       // Update user profile in Firestore
       await db.collection("users").doc(userId).update({
-        photoURL: downloadURL[0],
+        photoURL: downloadURL,
         updatedAt: admin.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -265,7 +277,7 @@ exports.uploadProfilePhoto = functions
 
       return {
         success: true,
-        photoURL: downloadURL[0],
+        photoURL: downloadURL,
         message: "Profile photo uploaded successfully",
       };
     } catch (error) {
@@ -391,29 +403,16 @@ exports.getWidgetDownloadUrls = functions
       }
 
       const widgetData = widgetDoc.data();
-      const downloadUrls = [];
 
-      // Generate fresh download URLs for all files
-      for (const file of widgetData.files) {
-        const fileName = file.fileName;
-        const fileRef = storage
-          .bucket()
-          .file(`uploads/${widgetData.uploadId}/${fileName}`);
-
-        const [url] = await fileRef.getSignedUrl({
-          action: "read",
-          expires: "03-01-2500",
-        });
-
-        downloadUrls.push({
-          fileName: fileName,
-          downloadURL: url,
-          type: file.type,
-        });
-      }
+      // Return the stored download URLs (token-based) to avoid signed URL permissions
+      const downloadUrls = (widgetData.files || []).map((f) => ({
+        fileName: f.fileName,
+        downloadURL: f.downloadURL,
+        type: f.type,
+      }));
 
       console.log(
-        `[GET DOWNLOAD URLS] Generated ${downloadUrls.length} download URLs`
+        `[GET DOWNLOAD URLS] Returning ${downloadUrls.length} stored download URLs`
       );
 
       return {
