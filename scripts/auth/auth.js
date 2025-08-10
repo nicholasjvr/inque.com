@@ -1396,6 +1396,18 @@ document.addEventListener("DOMContentLoaded", () => {
             showToast("Please log in to test upload functionality.", "info");
           }
           break;
+        case "openChatbot":
+          closeSidebar(); // Close sidebar before opening chatbot
+          showToast("Opening AI Assistant...", "info");
+          // Open chatbot modal
+          if (typeof openChatbot === "function") {
+            openChatbot();
+            console.log("[QUICK ACTION] AI Assistant opened successfully");
+          } else {
+            showToast("AI Assistant not available", "error");
+            console.error("[QUICK ACTION] openChatbot function not found");
+          }
+          break;
         default:
           showToast(`Action "${action}" not implemented yet.`, "warning");
       }

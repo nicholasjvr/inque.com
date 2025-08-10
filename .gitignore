@@ -78,3 +78,7 @@ node_modules/
 # Firebase config files with sensitive data
 firebase-config.js
 firebase-keys.js
+
+# AI/Genkit API keys
+genkit-api-key.js
+ai-keys.js

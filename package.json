@@ -19,8 +19,11 @@
   },
   "homepage": "https://github.com/nicholasjvr/nicholasjvr.github.io#readme",
   "dependencies": {
+    "@genkit-ai/googleai": "^1.16.0",
+    "@google/genai": "^1.13.0",
     "body-parser": "^2.2.0",
     "express": "^5.1.0",
-    "firebase": "^11.10.0"
+    "firebase": "^11.10.0",
+    "genkit": "^1.16.0"
   }
 }
