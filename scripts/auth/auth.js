@@ -1,3 +1,21 @@
+/**
+ * Enhanced Authentication System with Social Features
+ *
+ * This file has been refactored to:
+ * 1. Consolidate all auth logic into the SocialAuthManager class
+ * 2. Remove duplicate functions and cross-references
+ * 3. Add comprehensive debug logging for easier debugging
+ * 4. Centralize DOM element management
+ * 5. Provide unified UI update methods
+ *
+ * Key improvements:
+ * - Single source of truth for DOM elements
+ * - Unified notification system
+ * - Consolidated UI updates
+ * - Better separation of concerns
+ * - Enhanced error handling and logging
+ */
+
 import { auth, db, storage } from "../../core/firebase-core.js";
 import {
   createUserWithEmailAndPassword,
@@ -45,6 +63,20 @@ class SocialAuthManager {
     this.isLoading = false;
     this.authStateListeners = [];
     this.debugMode = true;
+    this.hasShownWelcomeThisSession = false;
+
+    // Cache DOM elements
+    this.domElements = {};
+    this.notificationUnsubscribe = null;
+
+    // Initialize DOM elements when DOM is ready
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", () => {
+        this.initializeDOMElements();
+      });
+    } else {
+      this.initializeDOMElements();
+    }
   }
 
   // Debug logging utility
@@ -56,6 +88,56 @@ class SocialAuthManager {
 
   error(message, error = null) {
     console.error(`[SOCIAL AUTH ERROR] ${message}`, error || "");
+  }
+
+  // Initialize DOM element references
+  initializeDOMElements() {
+    this.log("Initializing DOM element references");
+
+    this.domElements = {
+      // Auth Modal
+      authModal: document.getElementById("authModal"),
+      authCloseBtn: document.querySelector(".auth-close-button"),
+      loginForm: document.getElementById("loginForm"),
+      signUpForm: document.getElementById("signUpForm"),
+      showSignUp: document.getElementById("showSignUp"),
+      showLogin: document.getElementById("showLogin"),
+      authModalTitle: document.getElementById("authModalTitle"),
+      googleLoginBtn: document.getElementById("googleLoginBtn"),
+      githubLoginBtn: document.getElementById("githubSignUpBtn"),
+
+      // Profile Elements
+      profilePicContainer: document.querySelector(".profile-pic-container"),
+      profileName: document.querySelector(".profile-name"),
+      profileBio: document.querySelector(".profile-bio"),
+      profileLvl: document.getElementById("profileLvl"),
+      profileType: document.getElementById("profileType"),
+      profileRole: document.getElementById("profileRole"),
+      profileStatusIndicator: document.getElementById("profileStatusIndicator"),
+      profileStatus: document.getElementById("profileStatus"),
+
+      // Sidebar Elements
+      sidebarAvatar: document.querySelector(".sidebar-avatar"),
+      sidebarUserName: document.querySelector(".sidebar-user-name"),
+      sidebarUserEmail: document.querySelector(".sidebar-user-email"),
+      sidebarUserStatus: document.querySelector(".sidebar-user-status"),
+      sidebarStatusDot: document.querySelector(".status-dot"),
+      sidebarLoginBtn: document.getElementById("sidebarLoginBtn"),
+      sidebarUserActions: document.getElementById("sidebarUserActions"),
+      sidebarEditProfileBtn: document.getElementById("sidebarEditProfileBtn"),
+      sidebarLogoutBtn: document.getElementById("sidebarLogoutBtn"),
+      sidebarStats: document.querySelector(".sidebar-stats"),
+      sidebarLvl: document.getElementById("sidebarLvl"),
+      sidebarType: document.getElementById("sidebarType"),
+      sidebarRole: document.getElementById("sidebarRole"),
+
+      // Notification Elements
+      notificationCount: document.getElementById("notificationCount"),
+      notificationList: document.getElementById("notificationList"),
+      markAllReadBtn: document.getElementById("markAllReadBtn"),
+    };
+
+    this.log("DOM elements initialized", Object.keys(this.domElements));
   }
 
   // Initialize the auth system
@@ -75,12 +157,38 @@ class SocialAuthManager {
 
       // Notify listeners
       this.authStateListeners.forEach((listener) => listener(user));
+
+      // Dispatch custom event for main.js to listen to
+      this.dispatchAuthStateEvent(user);
     });
 
     // Set up DOM event listeners
     this.setupEventListeners();
 
     this.log("Social Auth Manager initialized");
+  }
+
+  // Dispatch custom auth state change event
+  dispatchAuthStateEvent(user) {
+    const isNewLogin = user && !this.hasShownWelcomeThisSession;
+
+    if (user) {
+      this.hasShownWelcomeThisSession = true;
+    }
+
+    const event = new CustomEvent("auth-state-changed", {
+      detail: {
+        user,
+        isNewLogin,
+        timestamp: Date.now(),
+      },
+    });
+
+    window.dispatchEvent(event);
+    this.log("Auth state change event dispatched", {
+      userId: user?.uid,
+      isNewLogin,
+    });
   }
 
   // Enhanced registration with social features
@@ -382,8 +490,10 @@ class SocialAuthManager {
 
       await addDoc(collection(db, "notifications"), notification);
       this.log("Notification created", notification);
+      return notification;
     } catch (error) {
       this.error("Error creating notification", error);
+      throw error;
     }
   }
 
@@ -493,6 +603,7 @@ class SocialAuthManager {
       if (userDoc.exists()) {
         this.userProfile = userDoc.data();
         this.updateUIForLoggedInUser();
+        this.setupNotificationListener(user.uid);
       }
     } catch (error) {
       this.error("Error handling user login", error);
@@ -503,23 +614,433 @@ class SocialAuthManager {
     this.log("Handling user logout");
     this.userProfile = null;
     this.updateUIForLoggedOutUser();
+
+    // Clean up notification listener
+    if (this.notificationUnsubscribe) {
+      this.notificationUnsubscribe();
+    }
   }
 
   updateUIForLoggedInUser() {
-    // Update UI elements for logged in user
     this.log("Updating UI for logged in user");
-    // Implementation will be added
+    // Use the unified methods
+    if (this.userProfile) {
+      this.updateProfileBanner(this.userProfile, true);
+      this.updateSidebarUserInfo(
+        this.userProfile,
+        true,
+        this.currentUser?.email
+      );
+    }
   }
 
   updateUIForLoggedOutUser() {
-    // Update UI elements for logged out user
     this.log("Updating UI for logged out user");
-    // Implementation will be added
+    const defaultProfile = {
+      name: "Welcome to inque!",
+      bio: "This is a space to create, share, and display your interactive projects. Sign up to start building your personal widget dashboard.",
+      lvl: "LVL • ?",
+      type: "TYPE • ?",
+      role: "ROLE • GUEST",
+      photoURL: this.getDefaultAvatar(),
+    };
+
+    this.updateProfileBanner(defaultProfile, false);
+    this.updateSidebarUserInfo(defaultProfile, false);
+  }
+
+  // Unified UI update methods
+  updateProfileBanner(profileData, isLoggedIn = false) {
+    this.log("Updating profile banner", { isLoggedIn, profileData });
+
+    const {
+      profileName,
+      profileBio,
+      profileLvl,
+      profileType,
+      profileRole,
+      profilePicContainer,
+      profileStatusIndicator,
+      profileStatus,
+    } = this.domElements;
+
+    this.log("DOM elements found", {
+      profileName: !!profileName,
+      profileBio: !!profileBio,
+      profileLvl: !!profileLvl,
+      profileType: !!profileType,
+      profileRole: !!profileRole,
+      profilePicContainer: !!profilePicContainer,
+      profileStatusIndicator: !!profileStatusIndicator,
+      profileStatus: !!profileStatus,
+    });
+
+    if (profileName) {
+      profileName.textContent = profileData.name;
+      this.log("Updated profile name", profileData.name);
+    }
+    if (profileBio) {
+      profileBio.textContent = profileData.bio;
+      this.log("Updated profile bio", profileData.bio);
+    }
+    if (profileLvl) {
+      profileLvl.textContent = profileData.lvl.replace("LVL • ", "");
+      this.log("Updated profile level", profileData.lvl);
+    }
+    if (profileType) {
+      profileType.textContent = profileData.type.replace("TYPE • ", "");
+      this.log("Updated profile type", profileData.type);
+    }
+    if (profileRole) {
+      profileRole.textContent = profileData.role.replace("ROLE • ", "");
+      this.log("Updated profile role", profileData.role);
+    }
+
+    if (profilePicContainer) {
+      profilePicContainer.style.backgroundImage = `url(${
+        profileData.photoURL || this.getDefaultAvatar()
+      })`;
+      this.log("Updated profile picture", profileData.photoURL);
+    }
+
+    if (profileStatusIndicator) {
+      profileStatusIndicator.className = `profile-status-indicator ${
+        isLoggedIn ? "online" : "offline"
+      }`;
+      this.log("Updated status indicator", isLoggedIn ? "online" : "offline");
+    }
+
+    if (profileStatus) {
+      const statusBadge = profileStatus.querySelector(".status-badge");
+      if (statusBadge) {
+        statusBadge.className = `status-badge ${isLoggedIn ? "user" : "guest"}`;
+        statusBadge.textContent = isLoggedIn ? "User" : "Guest";
+        this.log("Updated status badge", isLoggedIn ? "user" : "guest");
+      }
+    }
+
+    this.log("Profile banner update completed");
+  }
+
+  updateSidebarUserInfo(profileData, isLoggedIn = false, userEmail = null) {
+    this.log("Updating sidebar user info", {
+      isLoggedIn,
+      profileData,
+      userEmail,
+    });
+
+    const {
+      sidebarAvatar,
+      sidebarUserName,
+      sidebarUserEmail,
+      sidebarUserStatus,
+      sidebarStatusDot,
+      sidebarLoginBtn,
+      sidebarUserActions,
+      sidebarStats,
+      sidebarLvl,
+      sidebarType,
+      sidebarRole,
+    } = this.domElements;
+
+    this.log("Sidebar DOM elements found", {
+      sidebarAvatar: !!sidebarAvatar,
+      sidebarUserName: !!sidebarUserName,
+      sidebarUserEmail: !!sidebarUserEmail,
+      sidebarUserStatus: !!sidebarUserStatus,
+      sidebarStatusDot: !!sidebarStatusDot,
+      sidebarLoginBtn: !!sidebarLoginBtn,
+      sidebarUserActions: !!sidebarUserActions,
+      sidebarStats: !!sidebarStats,
+      sidebarLvl: !!sidebarLvl,
+      sidebarType: !!sidebarType,
+      sidebarRole: !!sidebarRole,
+    });
+
+    if (sidebarAvatar) {
+      sidebarAvatar.style.backgroundImage = `url(${
+        profileData.photoURL || this.getDefaultAvatar()
+      })`;
+      this.log("Updated sidebar avatar", profileData.photoURL);
+    }
+
+    if (sidebarUserName) {
+      sidebarUserName.textContent = isLoggedIn ? profileData.name : "Guest";
+      this.log(
+        "Updated sidebar user name",
+        isLoggedIn ? profileData.name : "Guest"
+      );
+    }
+
+    if (sidebarUserEmail) {
+      if (isLoggedIn && userEmail) {
+        sidebarUserEmail.textContent = userEmail;
+        sidebarUserEmail.style.display = "block";
+        this.log("Updated sidebar email", userEmail);
+      } else {
+        sidebarUserEmail.style.display = "none";
+        this.log("Hidden sidebar email");
+      }
+    }
+
+    if (sidebarUserStatus && sidebarStatusDot) {
+      sidebarUserStatus.innerHTML = isLoggedIn
+        ? '<span class="status-dot logged-in"></span> Logged in'
+        : '<span class="status-dot guest"></span> Not logged in';
+    }
+
+    if (sidebarLoginBtn) {
+      sidebarLoginBtn.style.display = isLoggedIn ? "none" : "block";
+    }
+
+    if (sidebarUserActions) {
+      sidebarUserActions.style.display = isLoggedIn ? "block" : "none";
+    }
+
+    if (sidebarStats) {
+      sidebarStats.style.display = isLoggedIn ? "block" : "none";
+    }
+
+    if (sidebarLvl)
+      sidebarLvl.textContent = isLoggedIn
+        ? profileData.lvl.replace("LVL • ", "")
+        : "?";
+    if (sidebarType)
+      sidebarType.textContent = isLoggedIn
+        ? profileData.type.replace("TYPE • ", "")
+        : "?";
+    if (sidebarRole)
+      sidebarRole.textContent = isLoggedIn
+        ? profileData.role.replace("ROLE • ", "")
+        : "GUEST";
+
+    this.log("Sidebar user info update completed");
+  }
+
+  // Notification system methods
+  async markNotificationAsRead(notificationId) {
+    try {
+      const notificationRef = doc(db, "notifications", notificationId);
+      await updateDoc(notificationRef, { read: true });
+      this.log("Notification marked as read", { notificationId });
+    } catch (error) {
+      this.error("Error marking notification as read", error);
+    }
+  }
+
+  async markAllNotificationsAsRead(userId) {
+    try {
+      const notificationsQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", userId),
+        where("read", "==", false)
+      );
+
+      const querySnapshot = await getDocs(notificationsQuery);
+      const updatePromises = querySnapshot.docs.map((doc) =>
+        updateDoc(doc.ref, { read: true })
+      );
+
+      await Promise.all(updatePromises);
+      this.log("All notifications marked as read");
+    } catch (error) {
+      this.error("Error marking all notifications as read", error);
+    }
+  }
+
+  setupNotificationListener(userId) {
+    this.log("Setting up notification listener", { userId });
+
+    // Clean up previous listener if exists
+    if (this.notificationUnsubscribe) {
+      this.notificationUnsubscribe();
+    }
+
+    const { notificationCount, notificationList, markAllReadBtn } =
+      this.domElements;
+
+    const notificationsQuery = query(
+      collection(db, "notifications"),
+      where("userId", "==", userId),
+      orderBy("timestamp", "desc"),
+      limit(20)
+    );
+
+    this.notificationUnsubscribe = onSnapshot(
+      notificationsQuery,
+      (snapshot) => {
+        // Clear current notifications
+        if (notificationList) notificationList.innerHTML = "";
+
+        let unreadCount = 0;
+        let hasNotifications = false;
+
+        snapshot.forEach((doc) => {
+          const notification = { id: doc.id, ...doc.data() };
+          hasNotifications = true;
+
+          if (!notification.read) {
+            unreadCount++;
+          }
+
+          // Create notification element
+          const notificationItem = this.createNotificationElement(notification);
+          if (notificationList) notificationList.appendChild(notificationItem);
+        });
+
+        // Update notification count
+        if (notificationCount) {
+          notificationCount.textContent = unreadCount;
+          notificationCount.style.display =
+            unreadCount > 0 ? "inline-block" : "none";
+        }
+
+        // Show/hide mark all as read button
+        if (markAllReadBtn) {
+          markAllReadBtn.style.display =
+            unreadCount > 0 ? "inline-block" : "none";
+        }
+
+        // Show empty state if no notifications
+        if (!hasNotifications && notificationList) {
+          const emptyItem = document.createElement("div");
+          emptyItem.className = "notification-item empty-notification";
+          emptyItem.innerHTML =
+            '<span class="notification-text">No new notifications</span>';
+          notificationList.appendChild(emptyItem);
+        }
+      },
+      (error) => {
+        this.error("Error listening to notifications", error);
+      }
+    );
+  }
+
+  createNotificationElement(notification) {
+    const notificationItem = document.createElement("div");
+    notificationItem.className = `notification-item ${notification.type} ${
+      notification.read ? "read" : "unread"
+    }`;
+    notificationItem.dataset.notificationId = notification.id;
+
+    const timestamp = notification.timestamp
+      ? new Date(notification.timestamp.toDate()).toLocaleString()
+      : "Just now";
+
+    notificationItem.innerHTML = `
+      <div class="notification-content">
+        <div class="notification-header">
+          <span class="notification-icon">${notification.icon}</span>
+          <span class="notification-title">${notification.title}</span>
+          ${!notification.read ? '<span class="unread-indicator"></span>' : ""}
+        </div>
+        <div class="notification-message">${notification.message}</div>
+        <div class="notification-time">${timestamp}</div>
+      </div>
+      <button class="notification-close" aria-label="Dismiss notification">&times;</button>
+    `;
+
+    // Add click handler to mark as read
+    notificationItem.addEventListener("click", (e) => {
+      if (!e.target.classList.contains("notification-close")) {
+        this.markNotificationAsRead(notification.id);
+        this.handleNotificationAction(notification);
+      }
+    });
+
+    // Add close button handler
+    const closeBtn = notificationItem.querySelector(".notification-close");
+    closeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      notificationItem.remove();
+    });
+
+    return notificationItem;
+  }
+
+  handleNotificationAction(notification) {
+    this.log("Handling notification action", { type: notification.type });
+
+    switch (notification.type) {
+      case "mention":
+        if (notification.data.postId) {
+          this.log("Navigate to post:", notification.data.postId);
+        }
+        break;
+      case "like":
+        if (notification.data.postId) {
+          this.log("Navigate to liked post:", notification.data.postId);
+        }
+        break;
+      case "follow":
+        if (notification.data.followerId) {
+          this.log(
+            "Navigate to follower profile:",
+            notification.data.followerId
+          );
+        }
+        break;
+      case "widget":
+        if (notification.data.widgetId) {
+          this.log("Open widget:", notification.data.widgetId);
+        }
+        break;
+      default:
+        this.log("Notification clicked:", notification);
+    }
+  }
+
+  // Toast notification utility
+  showToast(message, type = "info", duration = 5000) {
+    this.log("Showing toast", { message, type, duration });
+
+    const toastContainer = document.getElementById("toast-container");
+    if (!toastContainer) {
+      this.log("Toast container not found");
+      return;
+    }
+
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+      <span class="toast-message">${message}</span>
+      <button class="toast-close">&times;</button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Trigger animation
+    setTimeout(() => toast.classList.add("show"), 100);
+
+    // Auto remove
+    const autoRemove = setTimeout(() => {
+      toast.classList.remove("show");
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    }, duration);
+
+    // Manual close
+    const closeBtn = toast.querySelector(".toast-close");
+    closeBtn.addEventListener("click", () => {
+      clearTimeout(autoRemove);
+      toast.classList.remove("show");
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
+    });
   }
 }
 
 // Initialize the enhanced auth system
 const socialAuth = new SocialAuthManager();
+
+// Expose for debugging (remove in production)
+window.socialAuth = socialAuth;
 
 document.addEventListener("DOMContentLoaded", () => {
   socialAuth.init();
@@ -593,362 +1114,96 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   // ===== NOTIFICATION SYSTEM =====
+  // Note: Notification methods are now handled by the SocialAuthManager class
 
-  // Create a new notification in Firestore
-  const createNotification = async (userId, notificationData) => {
-    try {
-      const notification = {
-        userId: userId,
-        type: notificationData.type || "system",
-        title: notificationData.title,
-        message: notificationData.message,
-        read: false,
-        timestamp: serverTimestamp(),
-        data: notificationData.data || {},
-        icon: notificationData.icon || "🔔",
-      };
+  // Mark notification as read - now handled by SocialAuthManager class
 
-      await addDoc(collection(db, "notifications"), notification);
-      console.log("Notification created:", notification);
-    } catch (error) {
-      console.error("Error creating notification:", error);
-    }
-  };
+  // Mark all notifications as read - now handled by SocialAuthManager class
 
-  // Mark notification as read
-  const markNotificationAsRead = async (notificationId) => {
-    try {
-      const notificationRef = doc(db, "notifications", notificationId);
-      await updateDoc(notificationRef, { read: true });
-    } catch (error) {
-      console.error("Error marking notification as read:", error);
-    }
-  };
+  // Set up real-time notification listener - now handled by SocialAuthManager class
 
-  // Mark all notifications as read
-  const markAllNotificationsAsRead = async (userId) => {
-    try {
-      const notificationsQuery = query(
-        collection(db, "notifications"),
-        where("userId", "==", userId),
-        where("read", "==", false)
-      );
+  // Create notification element - now handled by SocialAuthManager class
 
-      const querySnapshot = await getDocs(notificationsQuery);
-      const updatePromises = querySnapshot.docs.map((doc) =>
-        updateDoc(doc.ref, { read: true })
-      );
-
-      await Promise.all(updatePromises);
-      console.log("All notifications marked as read");
-    } catch (error) {
-      console.error("Error marking all notifications as read:", error);
-    }
-  };
-
-  // Set up real-time notification listener
-  const setupNotificationListener = (userId) => {
-    // Clean up previous listener if exists
-    if (notificationUnsubscribe) {
-      notificationUnsubscribe();
-    }
-
-    const notificationsQuery = query(
-      collection(db, "notifications"),
-      where("userId", "==", userId),
-      orderBy("timestamp", "desc"),
-      limit(20)
-    );
-
-    notificationUnsubscribe = onSnapshot(
-      notificationsQuery,
-      (snapshot) => {
-        // Clear current notifications
-        notificationList.innerHTML = "";
-
-        let unreadCount = 0;
-        let hasNotifications = false;
-
-        snapshot.forEach((doc) => {
-          const notification = { id: doc.id, ...doc.data() };
-          hasNotifications = true;
-
-          if (!notification.read) {
-            unreadCount++;
-          }
-
-          // Create notification element
-          const notificationItem = createNotificationElement(notification);
-          notificationList.appendChild(notificationItem);
-        });
-
-        // Update notification count
-        if (notificationCount) {
-          notificationCount.textContent = unreadCount;
-          notificationCount.style.display =
-            unreadCount > 0 ? "inline-block" : "none";
-        }
-
-        // Show/hide mark all as read button
-        if (markAllReadBtn) {
-          markAllReadBtn.style.display =
-            unreadCount > 0 ? "inline-block" : "none";
-        }
-
-        // Show empty state if no notifications
-        if (!hasNotifications) {
-          const emptyItem = document.createElement("div");
-          emptyItem.className = "notification-item empty-notification";
-          emptyItem.innerHTML =
-            '<span class="notification-text">No new notifications</span>';
-          notificationList.appendChild(emptyItem);
-        }
-      },
-      (error) => {
-        console.error("Error listening to notifications:", error);
-      }
-    );
-  };
-
-  // Create notification element
-  const createNotificationElement = (notification) => {
-    const notificationItem = document.createElement("div");
-    notificationItem.className = `notification-item ${notification.type} ${
-      notification.read ? "read" : "unread"
-    }`;
-    notificationItem.dataset.notificationId = notification.id;
-
-    const timestamp = notification.timestamp
-      ? new Date(notification.timestamp.toDate()).toLocaleString()
-      : "Just now";
-
-    notificationItem.innerHTML = `
-      <div class="notification-content">
-        <div class="notification-header">
-          <span class="notification-icon">${notification.icon}</span>
-          <span class="notification-title">${notification.title}</span>
-          ${!notification.read ? '<span class="unread-indicator"></span>' : ""}
-        </div>
-        <div class="notification-message">${notification.message}</div>
-        <div class="notification-time">${timestamp}</div>
-      </div>
-      <button class="notification-close" aria-label="Dismiss notification">&times;</button>
-    `;
-
-    // Add click handler to mark as read
-    notificationItem.addEventListener("click", (e) => {
-      if (!e.target.classList.contains("notification-close")) {
-        markNotificationAsRead(notification.id);
-        handleNotificationAction(notification);
-      }
-    });
-
-    // Add close button handler
-    const closeBtn = notificationItem.querySelector(".notification-close");
-    closeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      notificationItem.remove();
-    });
-
-    return notificationItem;
-  };
-
-  // Handle notification actions based on type
-  const handleNotificationAction = (notification) => {
-    switch (notification.type) {
-      case "mention":
-        // Navigate to the post where user was mentioned
-        if (notification.data.postId) {
-          console.log("Navigate to post:", notification.data.postId);
-          // window.location.href = `/post/${notification.data.postId}`;
-        }
-        break;
-      case "like":
-        // Navigate to the liked post
-        if (notification.data.postId) {
-          console.log("Navigate to liked post:", notification.data.postId);
-          // window.location.href = `/post/${notification.data.postId}`;
-        }
-        break;
-      case "follow":
-        // Navigate to the follower's profile
-        if (notification.data.followerId) {
-          console.log(
-            "Navigate to follower profile:",
-            notification.data.followerId
-          );
-          // window.location.href = `/?user=${notification.data.followerId}`;
-        }
-        break;
-      case "widget":
-        // Open the widget
-        if (notification.data.widgetId) {
-          console.log("Open widget:", notification.data.widgetId);
-          // openWidgetModal(notification.data.widgetPath, notification.data.widgetTitle);
-        }
-        break;
-      default:
-        console.log("Notification clicked:", notification);
-    }
-  };
+  // Handle notification actions - now handled by SocialAuthManager class
 
   // Add local notification (for immediate feedback)
-  const updateProfileBanner = (profileData, isLoggedIn = false) => {
-    currentUserProfile = profileData;
+  // Profile banner updates - now handled by SocialAuthManager class
 
-    // Update profile name
-    if (profileName) {
-      profileName.textContent = profileData.name;
-    }
-
-    // Update profile bio
-    if (profileBio) {
-      profileBio.textContent = profileData.bio;
-    }
-
-    // Update profile stats
-    if (profileLvl) {
-      profileLvl.textContent = profileData.lvl.replace("LVL • ", "");
-    }
-    if (profileType) {
-      profileType.textContent = profileData.type.replace("TYPE • ", "");
-    }
-    if (profileRole) {
-      profileRole.textContent = profileData.role.replace("ROLE • ", "");
-    }
-
-    // Update profile picture
-    if (profilePicContainer) {
-      profilePicContainer.style.backgroundImage = `url(${
-        profileData.photoURL || defaultProfile.photoURL
-      })`;
-    }
-
-    // Update status indicator
-    if (profileStatusIndicator) {
-      if (isLoggedIn) {
-        profileStatusIndicator.className = "profile-status-indicator online";
-      } else {
-        profileStatusIndicator.className = "profile-status-indicator offline";
-      }
-    }
-
-    // Update status badge
-    if (profileStatus) {
-      const statusBadge = profileStatus.querySelector(".status-badge");
-      if (statusBadge) {
-        statusBadge.className = `status-badge ${isLoggedIn ? "user" : "guest"}`;
-        statusBadge.textContent = isLoggedIn ? "User" : "Guest";
-      }
-    }
-
-    // Update sidebar profile pic
-    if (sidebarAvatar) {
-      sidebarAvatar.style.backgroundImage = `url(${
-        profileData.photoURL || defaultProfile.photoURL
-      })`;
-    }
-  };
-
-  const updateSidebarUserInfo = (
-    profileData,
-    isLoggedIn = false,
-    userEmail = null
-  ) => {
-    if (sidebarAvatar) {
-      sidebarAvatar.style.backgroundImage = `url(${
-        profileData.photoURL || defaultProfile.photoURL
-      })`;
-    }
-
-    if (sidebarUserName) {
-      sidebarUserName.textContent = isLoggedIn ? profileData.name : "Guest";
-    }
-
-    // Update email display
-    if (sidebarUserEmail) {
-      if (isLoggedIn && userEmail) {
-        sidebarUserEmail.textContent = userEmail;
-        sidebarUserEmail.style.display = "block";
-      } else {
-        sidebarUserEmail.style.display = "none";
-      }
-    }
-
-    if (sidebarUserStatus && sidebarStatusDot) {
-      if (isLoggedIn) {
-        sidebarUserStatus.innerHTML =
-          '<span class="status-dot logged-in"></span> Logged in';
-      } else {
-        sidebarUserStatus.innerHTML =
-          '<span class="status-dot guest"></span> Not logged in';
-      }
-    }
-
-    // Show/hide correct buttons
-    if (sidebarLoginBtn) {
-      sidebarLoginBtn.style.display = isLoggedIn ? "none" : "block";
-    }
-
-    if (sidebarUserActions) {
-      sidebarUserActions.style.display = isLoggedIn ? "block" : "none";
-    }
-
-    // Show/hide stats section
-    if (sidebarStats) {
-      sidebarStats.style.display = isLoggedIn ? "block" : "none";
-    }
-
-    // Update stats values
-    if (sidebarLvl) {
-      sidebarLvl.textContent = isLoggedIn
-        ? profileData.lvl.replace("LVL • ", "")
-        : "?";
-    }
-    if (sidebarType) {
-      sidebarType.textContent = isLoggedIn
-        ? profileData.type.replace("TYPE • ", "")
-        : "?";
-    }
-    if (sidebarRole) {
-      sidebarRole.textContent = isLoggedIn
-        ? profileData.role.replace("ROLE • ", "")
-        : "GUEST";
-    }
-  };
+  // Sidebar user info updates - now handled by SocialAuthManager class
 
   // Quick Actions Event Listeners (moved to end of file to avoid duplicate)
   // Toggle forms
-  showSignUp.addEventListener("click", (e) => {
-    e.preventDefault();
-    loginForm.style.display = "none";
-    signUpForm.style.display = "block";
-    authModalTitle.textContent = "Sign Up";
-  });
+  if (showSignUp) {
+    showSignUp.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("Switching to sign up form");
+      loginForm.style.display = "none";
+      signUpForm.style.display = "block";
+      forgotPasswordForm.style.display = "none";
+      authModalTitle.textContent = "Sign Up";
+    });
+  }
 
-  showLogin.addEventListener("click", (e) => {
-    e.preventDefault();
-    signUpForm.style.display = "none";
-    loginForm.style.display = "block";
-    authModalTitle.textContent = "Login";
-  });
+  if (showLogin) {
+    showLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("Switching to login form");
+      signUpForm.style.display = "none";
+      loginForm.style.display = "block";
+      forgotPasswordForm.style.display = "none";
+      authModalTitle.textContent = "Login";
+    });
+  }
+
+  // Show login from forgot password form
+  const showLoginFromForgot = document.getElementById("showLoginFromForgot");
+  if (showLoginFromForgot) {
+    showLoginFromForgot.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("Switching from forgot password to login form");
+      forgotPasswordForm.style.display = "none";
+      loginForm.style.display = "block";
+      authModalTitle.textContent = "Login";
+    });
+  }
 
   // Open/Close Modal
   if (sidebarLoginBtn) {
     sidebarLoginBtn.addEventListener("click", () => {
-      authModal.style.display = "block";
+      console.log("[SIDEBAR LOGIN] Login button clicked");
+      if (window.openAuthModal) {
+        window.openAuthModal("login");
+      } else {
+        // Fallback: show the auth modal directly
+        authModal.style.display = "block";
+        document.body.style.overflow = "hidden";
+      }
     });
   }
 
   if (authCloseBtn) {
     authCloseBtn.addEventListener("click", () => {
+      console.log("Closing auth modal");
       authModal.style.display = "none";
+      document.body.style.overflow = "";
     });
   }
 
+  // Close modal when clicking outside
   window.addEventListener("click", (e) => {
     if (e.target === authModal) {
+      console.log("Closing auth modal via outside click");
       authModal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+  });
+
+  // Close modal on escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && authModal.style.display === "block") {
+      console.log("Closing auth modal via escape key");
+      authModal.style.display = "none";
+      document.body.style.overflow = "";
     }
   });
 
@@ -965,45 +1220,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // Toast notification function
-  const showToast = (message, type = "info", duration = 5000) => {
-    const toastContainer = document.getElementById("toast-container");
-    if (!toastContainer) return;
-
-    const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
-    toast.innerHTML = `
-      <span class="toast-message">${message}</span>
-      <button class="toast-close">&times;</button>
-    `;
-
-    toastContainer.appendChild(toast);
-
-    // Trigger animation
-    setTimeout(() => toast.classList.add("show"), 100);
-
-    // Auto remove
-    const autoRemove = setTimeout(() => {
-      toast.classList.remove("show");
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    }, duration);
-
-    // Manual close
-    const closeBtn = toast.querySelector(".toast-close");
-    closeBtn.addEventListener("click", () => {
-      clearTimeout(autoRemove);
-      toast.classList.remove("show");
-      setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
-        }
-      }, 300);
-    });
-  };
+  // Toast notifications - now handled by SocialAuthManager class
 
   // Handle Auth State Changes with better error handling
   onAuthStateChanged(auth, async (user) => {
@@ -1014,12 +1231,14 @@ document.addEventListener("DOMContentLoaded", () => {
       try {
         console.log("User authenticated:", user.uid);
 
-        // Show success toast and close auth modal
-        showToast(
-          `Welcome back, ${user.displayName || user.email}! 🎉`,
-          "success",
-          4000
-        );
+        // Only show welcome toast if this is a new login (not page refresh)
+        if (!window.authState || !window.authState.isInitialized) {
+          socialAuth.showToast(
+            `Welcome back, ${user.displayName || user.email}! 🎉`,
+            "success",
+            4000
+          );
+        }
 
         // Close the auth modal if it's open
         const authModal = document.getElementById("authModal");
@@ -1035,19 +1254,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (userDoc.exists()) {
           console.log("User profile found:", userDoc.data());
           const sidebarProfile = userDoc.data();
-          updateSidebarUserInfo(sidebarProfile, true, user.email);
+          socialAuth.updateSidebarUserInfo(sidebarProfile, true, user.email);
 
           // Show profile banner for viewed profile (could be self or other)
           if (profileUserId) {
             // For now, just show the current user's profile
             // TODO: Implement fetchAndDisplayProfile for viewing other users
-            updateProfileBanner(sidebarProfile, true);
+            socialAuth.updateProfileBanner(sidebarProfile, true);
           } else {
-            updateProfileBanner(sidebarProfile, true);
+            socialAuth.updateProfileBanner(sidebarProfile, true);
           }
 
           // Set up notifications for this user
-          setupNotificationListener(user.uid);
+          socialAuth.setupNotificationListener(user.uid);
         } else {
           console.warn(
             "User profile not found in Firestore, creating default profile"
@@ -1066,18 +1285,25 @@ document.addEventListener("DOMContentLoaded", () => {
           };
 
           await setDoc(doc(db, "users", user.uid), defaultUserProfile);
-          updateSidebarUserInfo(defaultUserProfile, true, user.email);
-          updateProfileBanner(defaultUserProfile, true);
+          socialAuth.updateSidebarUserInfo(
+            defaultUserProfile,
+            true,
+            user.email
+          );
+          socialAuth.updateProfileBanner(defaultUserProfile, true);
         }
       } catch (error) {
         console.error("Error handling auth state change:", error);
-        showToast("Error loading profile. Please refresh the page.", "error");
+        socialAuth.showToast(
+          "Error loading profile. Please refresh the page.",
+          "error"
+        );
       }
     } else {
       // Not logged in
       console.log("User not authenticated");
-      updateSidebarUserInfo(defaultProfile, false);
-      updateProfileBanner(defaultProfile, false);
+      socialAuth.updateSidebarUserInfo(defaultProfile, false);
+      socialAuth.updateProfileBanner(defaultProfile, false);
 
       // Clean up notification listener
       if (notificationUnsubscribe) {
@@ -1107,6 +1333,64 @@ document.addEventListener("DOMContentLoaded", () => {
   if (githubLoginBtn) {
     githubLoginBtn.addEventListener("click", () => {
       handleProviderLogin(new GithubAuthProvider());
+    });
+  }
+
+  // GitHub signup button
+  const githubSignUpBtn = document.getElementById("githubSignUpBtn");
+  if (githubSignUpBtn) {
+    githubSignUpBtn.addEventListener("click", () => {
+      handleProviderLogin(new GithubAuthProvider());
+    });
+  }
+
+  // Google signup button
+  const googleSignUpBtn = document.getElementById("googleSignUpBtn");
+  if (googleSignUpBtn) {
+    googleSignUpBtn.addEventListener("click", () => {
+      handleProviderLogin(new GoogleAuthProvider());
+    });
+  }
+
+  // Forgot Password
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+  if (forgotPasswordForm) {
+    forgotPasswordForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById("forgotPasswordEmail").value;
+
+      try {
+        // Show loading state
+        const submitBtn = forgotPasswordForm.querySelector(".auth-submit-btn");
+        const originalText = submitBtn.textContent;
+        submitBtn.textContent = "Sending...";
+        submitBtn.disabled = true;
+
+        await sendPasswordResetEmail(auth, email);
+
+        socialAuth.showToast(
+          "Password reset email sent! Check your inbox.",
+          "success"
+        );
+
+        // Switch back to login form
+        forgotPasswordForm.style.display = "none";
+        loginForm.style.display = "block";
+        authModalTitle.textContent = "Login";
+      } catch (error) {
+        console.error("Password reset error:", error);
+        let errorMessage = "Failed to send reset email. Please try again.";
+        if (error.code === "auth/user-not-found") {
+          errorMessage = "No account found with this email address.";
+        }
+        socialAuth.showToast(errorMessage, "error");
+      } finally {
+        // Reset button state
+        const submitBtn = forgotPasswordForm.querySelector(".auth-submit-btn");
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
     });
   }
 
@@ -1199,7 +1483,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
             // Create initial notifications
             try {
-              await createNotification(user.uid, {
+              await socialAuth.createNotification(user.uid, {
                 type: "system",
                 title: "Welcome to inque! 🎉",
                 message:
@@ -1214,7 +1498,7 @@ document.addEventListener("DOMContentLoaded", () => {
             }
 
             console.log("Signup completed successfully!");
-            showToast(
+            socialAuth.showToast(
               "Account created successfully! Welcome to inque! 🎉",
               "success",
               5000
@@ -1234,7 +1518,7 @@ document.addEventListener("DOMContentLoaded", () => {
               errorMessage = "Please enter a valid email address.";
             }
 
-            showToast(errorMessage, "error", 5000);
+            socialAuth.showToast(errorMessage, "error", 5000);
           } finally {
             // Reset button state
             submitBtn.textContent = originalText;
@@ -1243,7 +1527,10 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       } catch (error) {
         console.error("reCAPTCHA error:", error);
-        showToast("Please complete the reCAPTCHA verification.", "error");
+        socialAuth.showToast(
+          "Please complete the reCAPTCHA verification.",
+          "error"
+        );
 
         // Reset button state
         const submitBtn = signUpForm.querySelector(".auth-submit-btn");
@@ -1296,11 +1583,29 @@ document.addEventListener("DOMContentLoaded", () => {
   if (markAllReadBtn) {
     markAllReadBtn.addEventListener("click", () => {
       if (auth.currentUser) {
-        markAllNotificationsAsRead(auth.currentUser.uid);
-        showToast("All notifications marked as read!", "success");
+        socialAuth.markAllNotificationsAsRead(auth.currentUser.uid);
+        socialAuth.showToast("All notifications marked as read!", "success");
       } else {
-        showToast("Please log in to mark all notifications as read.", "info");
+        socialAuth.showToast(
+          "Please log in to mark all notifications as read.",
+          "info"
+        );
       }
+    });
+  }
+
+  // Forgot Password Link
+  const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      console.log("Forgot password link clicked");
+
+      // Switch to forgot password form
+      loginForm.style.display = "none";
+      signUpForm.style.display = "none";
+      forgotPasswordForm.style.display = "block";
+      authModalTitle.textContent = "Reset Password";
     });
   }
 
@@ -1329,7 +1634,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       switch (action) {
         case "newWidget":
-          showToast("Opening Widget Studio...", "info");
+          socialAuth.showToast("Opening Widget Studio...", "info");
           closeSidebar(); // Close sidebar before opening modal
           // Open widget studio modal for widget creation
           const widgetStudioModal =
@@ -1341,7 +1646,7 @@ document.addEventListener("DOMContentLoaded", () => {
               "[QUICK ACTION] Widget Studio modal opened for widget creation"
             );
           } else {
-            showToast("Widget Studio modal not found", "error");
+            socialAuth.showToast("Widget Studio modal not found", "error");
           }
           break;
         case "shareProfile":
@@ -1353,63 +1658,74 @@ document.addEventListener("DOMContentLoaded", () => {
             });
           } else {
             navigator.clipboard.writeText(window.location.href);
-            showToast("Profile URL copied to clipboard!", "success");
+            socialAuth.showToast("Profile URL copied to clipboard!", "success");
           }
           break;
         case "settings":
           closeSidebar(); // Close sidebar before opening settings
-          showToast("Settings panel opening...", "info");
+          socialAuth.showToast("Settings panel opening...", "info");
           break;
         case "testNotifications":
           closeSidebar(); // Close sidebar before testing
           if (auth.currentUser) {
-            createSampleNotifications(auth.currentUser.uid);
-            showToast(
-              "Sample notifications created! Check the sidebar.",
-              "success"
+            socialAuth.showToast(
+              "Test notifications feature coming soon!",
+              "info"
             );
           } else {
-            showToast("Please log in to test notifications.", "info");
+            socialAuth.showToast(
+              "Please log in to test notifications.",
+              "info"
+            );
           }
           break;
         case "testUpload":
           closeSidebar(); // Close sidebar before testing upload
           if (auth.currentUser) {
-            showToast("Testing upload functionality...", "info");
+            socialAuth.showToast("Testing upload functionality...", "info");
             // Import and test upload
             import("./upload.js").then(async (uploadModule) => {
               try {
                 const success = await uploadModule.testUpload();
                 if (success) {
-                  showToast("Upload test successful! 🎉", "success");
+                  socialAuth.showToast("Upload test successful! 🎉", "success");
                 } else {
-                  showToast(
+                  socialAuth.showToast(
                     "Upload test failed. Check console for details.",
                     "error"
                   );
                 }
               } catch (error) {
-                showToast(`Upload test failed: ${error.message}`, "error");
+                socialAuth.showToast(
+                  `Upload test failed: ${error.message}`,
+                  "error"
+                );
               }
             });
           } else {
-            showToast("Please log in to test upload functionality.", "info");
+            socialAuth.showToast(
+              "Please log in to test upload functionality.",
+              "info"
+            );
           }
           break;
         case "openChatbot":
           closeSidebar(); // Close sidebar before opening chatbot
-          showToast("Opening AI Assistant...", "info");
+          socialAuth.showToast("Opening AI Assistant...", "info");
           // Open chatbot modal
           if (typeof openChatbot === "function") {
             openChatbot();
             console.log("[QUICK ACTION] AI Assistant opened successfully");
           } else {
-            showToast("AI Assistant not available", "error");
+            socialAuth.showToast("AI Assistant not available", "error");
             console.error("[QUICK ACTION] openChatbot function not found");
           }
           break;
         default:
-          showToast(`Action "${action}" not implemented yet.`, "warning");
+          socialAuth.showToast(
+            `Action "${action}" not implemented yet.`,
+            "warning"
+          );
       }
     });
   });

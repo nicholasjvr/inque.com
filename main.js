@@ -16,6 +16,14 @@ const DEBUG = {
 
 DEBUG.log("Starting enhanced inque social app initialization");
 
+// Global state management for preventing duplicate notifications
+window.authState = {
+  isInitialized: false,
+  lastLoginTime: null,
+  hasShownWelcome: false,
+  currentUser: null,
+};
+
 // Import core Firebase functionality
 DEBUG.log("Importing firebase-core.js");
 try {
@@ -79,6 +87,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   DEBUG.log("DOM Content Loaded - Starting enhanced initialization");
 
   try {
+    // Initialize authentication modal functionality
+    initializeAuthModal();
+
     // Initialize password visibility toggles
     initializePasswordToggles();
 
@@ -91,14 +102,156 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize enhanced UI features
     initializeEnhancedUI();
 
+    // Initialize auth state tracking
+    initializeAuthStateTracking();
+
     DEBUG.log("Enhanced initialization completed successfully");
 
-    // Show welcome message for new users
+    // Show welcome message for new users (only once per session)
     showWelcomeMessage();
   } catch (error) {
     DEBUG.error("Error during enhanced initialization", error);
   }
 });
+
+// Initialize authentication modal functionality
+function initializeAuthModal() {
+  DEBUG.log("Initializing authentication modal functionality");
+
+  // DOM Elements for Auth Modal
+  const authModal = document.getElementById("authModal");
+  const authCloseBtn = document.querySelector(".auth-close-button");
+  const loginForm = document.getElementById("loginForm");
+  const signUpForm = document.getElementById("signUpForm");
+  const showSignUp = document.getElementById("showSignUp");
+  const showLogin = document.getElementById("showLogin");
+  const showLoginFromForgot = document.getElementById("showLoginFromForgot");
+  const authModalTitle = document.getElementById("authModalTitle");
+  const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
+
+  if (!authModal || !authCloseBtn || !loginForm || !signUpForm) {
+    DEBUG.warn("Some auth modal elements not found", {
+      authModal: !!authModal,
+      authCloseBtn: !!authCloseBtn,
+      loginForm: !!loginForm,
+      signUpForm: !!signUpForm,
+    });
+    return;
+  }
+
+  // Toggle forms
+  if (showSignUp) {
+    showSignUp.addEventListener("click", (e) => {
+      e.preventDefault();
+      DEBUG.log("Switching to sign up form");
+      loginForm.style.display = "none";
+      signUpForm.style.display = "block";
+      forgotPasswordForm.style.display = "none";
+      authModalTitle.textContent = "Sign Up";
+    });
+  }
+
+  if (showLogin) {
+    showLogin.addEventListener("click", (e) => {
+      e.preventDefault();
+      DEBUG.log("Switching to login form");
+      signUpForm.style.display = "none";
+      loginForm.style.display = "block";
+      forgotPasswordForm.style.display = "none";
+      authModalTitle.textContent = "Login";
+    });
+  }
+
+  if (showLoginFromForgot) {
+    showLoginFromForgot.addEventListener("click", (e) => {
+      e.preventDefault();
+      DEBUG.log("Switching from forgot password to login form");
+      forgotPasswordForm.style.display = "none";
+      loginForm.style.display = "block";
+      authModalTitle.textContent = "Login";
+    });
+  }
+
+  // Forgot password link
+  if (forgotPasswordLink) {
+    forgotPasswordLink.addEventListener("click", (e) => {
+      e.preventDefault();
+      DEBUG.log("Switching to forgot password form");
+      loginForm.style.display = "none";
+      signUpForm.style.display = "none";
+      forgotPasswordForm.style.display = "block";
+      authModalTitle.textContent = "Reset Password";
+    });
+  }
+
+  // Open/Close Modal
+  if (authCloseBtn) {
+    authCloseBtn.addEventListener("click", () => {
+      DEBUG.log("Closing auth modal");
+      authModal.style.display = "none";
+      document.body.style.overflow = "";
+    });
+  }
+
+  // Close modal when clicking outside
+  window.addEventListener("click", (e) => {
+    if (e.target === authModal) {
+      DEBUG.log("Closing auth modal via outside click");
+      authModal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+  });
+
+  // Close modal on escape key
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && authModal.style.display === "block") {
+      DEBUG.log("Closing auth modal via escape key");
+      authModal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+  });
+
+  DEBUG.log("Authentication modal functionality initialized");
+}
+
+// Initialize auth state tracking to prevent duplicate notifications
+function initializeAuthStateTracking() {
+  DEBUG.log("Initializing auth state tracking");
+
+  // Listen for auth state changes from the auth system
+  window.addEventListener("auth-state-changed", (event) => {
+    const { user, isNewLogin } = event.detail;
+
+    DEBUG.log("Auth state change event received", {
+      userId: user?.uid,
+      isNewLogin,
+      currentState: window.authState.isInitialized,
+    });
+
+    if (user && !window.authState.isInitialized) {
+      // First time login in this session
+      window.authState.isInitialized = true;
+      window.authState.currentUser = user;
+      window.authState.lastLoginTime = Date.now();
+
+      if (isNewLogin) {
+        // Only show welcome message for actual new logins, not page refreshes
+        window.authState.hasShownWelcome = true;
+        DEBUG.log("New login detected, will show welcome message");
+      }
+    } else if (!user) {
+      // User logged out
+      window.authState.isInitialized = false;
+      window.authState.currentUser = null;
+      window.authState.lastLoginTime = null;
+      window.authState.hasShownWelcome = false;
+      DEBUG.log("User logged out, reset auth state");
+    }
+  });
+
+  DEBUG.log("Auth state tracking initialized");
+}
 
 // Initialize password visibility toggles
 function initializePasswordToggles() {
@@ -111,6 +264,7 @@ function initializePasswordToggles() {
       const type = input.type === "password" ? "text" : "password";
       input.type = type;
       toggle.textContent = type === "password" ? "👁️" : "🙈";
+      DEBUG.log("Password visibility toggled", { type });
     });
   });
 
@@ -171,9 +325,12 @@ async function checkUsernameAvailability(username) {
     availabilityDiv.textContent = isAvailable
       ? "Username available"
       : "Username taken";
+
+    DEBUG.log("Username availability checked", { username, isAvailable });
   } catch (error) {
     availabilityDiv.className = "username-availability unavailable";
     availabilityDiv.textContent = "Error checking availability";
+    DEBUG.error("Username availability check failed", error);
   }
 }
 
@@ -197,6 +354,8 @@ function updatePasswordStrength(password) {
   strengthDiv.className = `password-strength ${
     strengthClasses[Math.min(strength - 1, 3)]
   }`;
+
+  strengthDiv.textContent = strengthTexts[Math.min(strength - 1, 3)] || "Weak";
 }
 
 // Validate password confirmation
@@ -319,10 +478,10 @@ function initializeEnhancedUI() {
   DEBUG.log("Enhanced UI features initialized");
 }
 
-// Show welcome message for new users
+// Show welcome message for new users (only once per session)
 function showWelcomeMessage() {
   const isNewUser = sessionStorage.getItem("isNewUser");
-  if (isNewUser) {
+  if (isNewUser && !window.authState.hasShownWelcome) {
     setTimeout(() => {
       window.showToast(
         "Welcome to inque! 🎉 Start by uploading your first widget!",
@@ -330,8 +489,40 @@ function showWelcomeMessage() {
         8000
       );
       sessionStorage.removeItem("isNewUser");
+      window.authState.hasShownWelcome = true;
+      DEBUG.log("Welcome message shown for new user");
     }, 2000);
   }
 }
+
+// Global function to open auth modal (can be called from anywhere)
+window.openAuthModal = function (formType = "login") {
+  DEBUG.log("Opening auth modal", { formType });
+
+  const authModal = document.getElementById("authModal");
+  const loginForm = document.getElementById("loginForm");
+  const signUpForm = document.getElementById("signUpForm");
+  const authModalTitle = document.getElementById("authModalTitle");
+
+  if (authModal && loginForm && signUpForm && authModalTitle) {
+    // Show the appropriate form
+    if (formType === "signup") {
+      loginForm.style.display = "none";
+      signUpForm.style.display = "block";
+      authModalTitle.textContent = "Sign Up";
+    } else {
+      signUpForm.style.display = "none";
+      loginForm.style.display = "block";
+      authModalTitle.textContent = "Login";
+    }
+
+    authModal.style.display = "block";
+    document.body.style.overflow = "hidden";
+
+    DEBUG.log("Auth modal opened successfully", { formType });
+  } else {
+    DEBUG.error("Failed to open auth modal - elements not found");
+  }
+};
 
 DEBUG.log("Enhanced inque social app initialization complete");

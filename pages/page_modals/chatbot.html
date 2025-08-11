@@ -1,0 +1,39 @@
+<!-- AI Chatbot Modal -->
+<div id="chatbotModal" class="modal">
+    <div class="modal-content chatbot-modal-content">
+      <div class="modal-header">
+        <h2 class="modal-title">🤖 AI Assistant</h2>
+        <span class="close-button chatbot-close-button">&times;</span>
+      </div>
+      <div class="modal-body">
+        <div class="chatbot-container">
+          <div class="chat-messages" id="chatMessages">
+            <div class="message ai-message">
+              <div class="message-avatar">🤖</div>
+              <div class="message-content">
+                <p>Hello! I'm your AI assistant. I can help you understand the features of this application, answer questions about widgets, and guide you through the platform. What would you like to know?</p>
+              </div>
+            </div>
+          </div>
+          
+          <div class="chat-input-container">
+            <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything about the application..." maxlength="500">
+            <button id="sendChatBtn" class="send-chat-btn">
+              <span class="btn-icon">📤</span>
+              Send
+            </button>
+          </div>
+          
+          <div class="chat-suggestions">
+            <p class="suggestions-title">Quick questions you can ask:</p>
+            <div class="suggestion-chips">
+              <button class="suggestion-chip" data-question="What is this application about?">What is this application about?</button>
+              <button class="suggestion-chip" data-question="How do I upload a widget?">How do I upload a widget?</button>
+              <button class="suggestion-chip" data-question="What are the main features?">What are the main features?</button>
+              <button class="suggestion-chip" data-question="How do I edit my profile?">How do I edit my profile?</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
