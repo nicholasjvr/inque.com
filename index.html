@@ -179,10 +179,14 @@
 </header>
 
 <main>
+  <!-- ... existing code ... -->
+<button class="quick-action-btn" data-action="openChatbot" onclick="openChatbot(); event.stopPropagation();">
+  <span class="quick-action-icon">🤖</span>
+  <span class="quick-action-text">Ask AI Assistant</span>
+</button>
       <section class="timeline-nav">
         <div class="timeline-3channel">
             <div class="timeline-row top">
-              <!--TO DO: MOVE OPPOSITE DIRECTIONS THAN BOTTOM CHANNE timeline-row bottom-->
               <div class="timeline-event" data-id="1">
                 <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
               </div>
