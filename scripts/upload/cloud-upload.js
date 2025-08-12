@@ -161,34 +161,6 @@ class CloudUploadManager {
     }
   }
 
-  // Test Cloud Functions connection
-  async testConnection() {
-    try {
-      this.log("Testing Cloud Functions connection");
-
-      const testUpload = httpsCallable(this.functions, "testUpload");
-      const result = await testUpload();
-
-      this.log("Cloud Functions connection test successful", result.data);
-      return true;
-    } catch (error) {
-      this.error("Cloud Functions connection test failed", error);
-
-      // Provide more detailed error information
-      if (error.code === "functions/unavailable") {
-        this.error("Cloud Functions are not available - check deployment");
-      } else if (error.code === "functions/unauthenticated") {
-        this.error("Authentication required for Cloud Functions");
-      } else if (error.code === "functions/permission-denied") {
-        this.error("Permission denied for Cloud Functions");
-      } else {
-        this.error("Unknown Cloud Functions error", error);
-      }
-
-      return false;
-    }
-  }
-
   // Validate files before upload
   validateFiles(files) {
     const allowedTypes = [
@@ -295,8 +267,6 @@ export const deleteWidget = (widgetId) =>
 
 export const getWidgetDownloadUrls = (widgetId) =>
   cloudUploadManager.getWidgetDownloadUrls(widgetId);
-
-export const testConnection = () => cloudUploadManager.testConnection();
 
 export const validateFiles = (files) => cloudUploadManager.validateFiles(files);
 

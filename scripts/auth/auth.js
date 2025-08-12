@@ -1075,6 +1075,18 @@ document.addEventListener("DOMContentLoaded", () => {
     ".edit-profile-close-button"
   );
 
+  // Add event listener for edit profile quick button
+  if (editProfileQuickBtn) {
+    editProfileQuickBtn.addEventListener("click", () => {
+      console.log("[PROFILE EDIT] Edit profile quick button clicked");
+      if (window.openEditProfile) {
+        window.openEditProfile();
+      } else {
+        socialAuth.showToast("Edit Profile not available", "error");
+      }
+    });
+  }
+
   // DOM Elements for Sidebar
   const sidebarAvatar = document.querySelector(".sidebar-avatar");
   const sidebarUserName = document.querySelector(".sidebar-user-name");
@@ -1177,6 +1189,18 @@ document.addEventListener("DOMContentLoaded", () => {
         // Fallback: show the auth modal directly
         authModal.style.display = "block";
         document.body.style.overflow = "hidden";
+      }
+    });
+  }
+
+  // Edit Profile button
+  if (sidebarEditProfileBtn) {
+    sidebarEditProfileBtn.addEventListener("click", () => {
+      console.log("[SIDEBAR EDIT PROFILE] Edit profile button clicked");
+      if (window.openEditProfile) {
+        window.openEditProfile();
+      } else {
+        socialAuth.showToast("Edit Profile not available", "error");
       }
     });
   }
@@ -1636,17 +1660,14 @@ document.addEventListener("DOMContentLoaded", () => {
         case "newWidget":
           socialAuth.showToast("Opening Widget Studio...", "info");
           closeSidebar(); // Close sidebar before opening modal
-          // Open widget studio modal for widget creation
-          const widgetStudioModal =
-            document.querySelector("#widgetStudioModal");
-          if (widgetStudioModal) {
-            widgetStudioModal.style.display = "block";
-            document.body.style.overflow = "hidden";
+          // Use global function to open Widget Studio modal
+          if (window.openWidgetStudio) {
+            window.openWidgetStudio();
             console.log(
-              "[QUICK ACTION] Widget Studio modal opened for widget creation"
+              "[QUICK ACTION] Widget Studio modal opened successfully"
             );
           } else {
-            socialAuth.showToast("Widget Studio modal not found", "error");
+            socialAuth.showToast("Widget Studio not available", "error");
           }
           break;
         case "shareProfile":
@@ -1679,36 +1700,7 @@ document.addEventListener("DOMContentLoaded", () => {
             );
           }
           break;
-        case "testUpload":
-          closeSidebar(); // Close sidebar before testing upload
-          if (auth.currentUser) {
-            socialAuth.showToast("Testing upload functionality...", "info");
-            // Import and test upload
-            import("./upload.js").then(async (uploadModule) => {
-              try {
-                const success = await uploadModule.testUpload();
-                if (success) {
-                  socialAuth.showToast("Upload test successful! 🎉", "success");
-                } else {
-                  socialAuth.showToast(
-                    "Upload test failed. Check console for details.",
-                    "error"
-                  );
-                }
-              } catch (error) {
-                socialAuth.showToast(
-                  `Upload test failed: ${error.message}`,
-                  "error"
-                );
-              }
-            });
-          } else {
-            socialAuth.showToast(
-              "Please log in to test upload functionality.",
-              "info"
-            );
-          }
-          break;
+
         case "openChatbot":
           closeSidebar(); // Close sidebar before opening chatbot
           socialAuth.showToast("Opening AI Assistant...", "info");

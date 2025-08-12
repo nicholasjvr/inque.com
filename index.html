@@ -425,6 +425,125 @@
           </div>
         </div>
       </div>
+
+      <!-- Widget Studio Modal -->
+      <div id="widgetStudioModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Widget Studio</h2>
+            <span class="close-button widget-studio-close-button">&times;</span>
+          </div>
+          <div class="modal-body">
+            <div class="widget-studio-content">
+              <div class="studio-section">
+                <h3>Create New Widget</h3>
+                <p>Upload your HTML, CSS, and JavaScript files to create an interactive widget.</p>
+                <div class="file-upload-area">
+                  <input type="file" id="widgetFileInput" multiple accept=".html,.css,.js,.png,.jpg,.jpeg,.gif,.svg,.json" />
+                  <label for="widgetFileInput" class="upload-label">
+                    <span class="upload-icon">📁</span>
+                    <span>Choose files or drag them here</span>
+                  </label>
+                </div>
+                <div class="uploaded-files" id="uploadedFiles"></div>
+                <button class="create-widget-btn" id="createWidgetBtn" disabled>Create Widget</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Edit Profile Modal -->
+      <div id="editProfileModal" class="modal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">Edit Profile</h2>
+            <span class="close-button edit-profile-close-button">&times;</span>
+          </div>
+          <div class="modal-body">
+            <form id="editProfileForm" class="edit-profile-form">
+              <div class="form-group">
+                <label for="editDisplayName">Display Name</label>
+                <input type="text" id="editDisplayName" placeholder="Enter your display name" required>
+              </div>
+              <div class="form-group">
+                <label for="editBio">Bio</label>
+                <textarea id="editBio" placeholder="Tell us about yourself..." rows="3"></textarea>
+              </div>
+              <div class="form-group">
+                <label for="editPhoto">Profile Photo</label>
+                <input type="file" id="editPhoto" accept="image/*">
+                <div class="photo-preview" id="photoPreview"></div>
+              </div>
+              <div class="social-links-section">
+                <h4>Social Links</h4>
+                <div class="social-links-grid">
+                  <div class="form-group">
+                    <label for="editTwitter">Twitter</label>
+                    <input type="url" id="editTwitter" placeholder="https://twitter.com/username">
+                  </div>
+                  <div class="form-group">
+                    <label for="editInstagram">Instagram</label>
+                    <input type="url" id="editInstagram" placeholder="https://instagram.com/username">
+                  </div>
+                  <div class="form-group">
+                    <label for="editGithub">GitHub</label>
+                    <input type="url" id="editGithub" placeholder="https://github.com/username">
+                  </div>
+                  <div class="form-group">
+                    <label for="editWebsite">Website</label>
+                    <input type="url" id="editWebsite" placeholder="https://yourwebsite.com">
+                  </div>
+                </div>
+              </div>
+              <div class="form-actions">
+                <button type="button" class="cancel-btn" id="cancelEditBtn">Cancel</button>
+                <button type="submit" class="save-btn">Save Changes</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- AI Chatbot Modal -->
+      <div id="chatbotModal" class="modal">
+        <div class="modal-content chatbot-modal-content">
+          <div class="modal-header">
+            <h2 class="modal-title">🤖 AI Assistant</h2>
+            <span class="close-button chatbot-close-button">&times;</span>
+          </div>
+          <div class="modal-body">
+            <div class="chatbot-container">
+              <div class="chat-messages" id="chatMessages">
+                <div class="message ai-message">
+                  <div class="message-avatar">🤖</div>
+                  <div class="message-content">
+                    <p>Hello! I'm your AI assistant. I can help you understand the features of this application, answer questions about widgets, and guide you through the platform. What would you like to know?</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="chat-input-container">
+                <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything about the application..." maxlength="500">
+                <button id="sendChatBtn" class="send-chat-btn">
+                  <span class="btn-icon">📤</span>
+                  Send
+                </button>
+              </div>
+              
+              <div class="chat-suggestions">
+                <p class="suggestions-title">Quick questions you can ask:</p>
+                <div class="suggestion-chips">
+                  <button class="suggestion-chip" data-question="What is this application about?">What is this application about?</button>
+                  <button class="suggestion-chip" data-question="How do I upload a widget?">How do I upload a widget?</button>
+                  <button class="suggestion-chip" data-question="What are the main features?">What are the main features?</button>
+                  <button class="suggestion-chip" data-question="How do I edit my profile?">How do I edit my profile?</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>
@@ -439,106 +558,9 @@
   <button id="error-toast-close">&times;</button>
 </div>
 
-<!-- Floating button to expand header if collapsed -->
-<script>
-  const profileNavBtns = document.querySelectorAll('.nav-btn[data-page]');
-  profileNavBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-      const page = btn.getAttribute('data-page');
-      if (!page) return;
-      console.log(`Navigating to: ${page}`);
-      switch(page) {
-        case 'about':
-          window.location.href = 'core/personal/about.html';
-          break;
-        case 'explore':
-          window.location.href = 'pages/explore.html';
-          break;
-        case 'inventory':
-          window.location.href = 'pages/inventory.html';
-          break;
-      }
-    });
-  });
-</script>
 
-<script>
-  // Tutorial button functionality
-  const tutorialBtn = document.getElementById('tutorialBtn');
-  tutorialBtn.addEventListener('click', () => {
-    console.log('Tutorial button clicked');
-    // For now, just show an alert. In the future, this will open a comprehensive tutorial
-    alert('Tutorial feature coming soon! This will explain everything about inque.');
-  });
-</script>
 
-<script>
-  // Profile banner login button behavior
-  (function() {
-    const loginBtn = document.getElementById('profileLoginBtn');
-    if (!loginBtn) return;
-    
-    // Update button visibility based on auth state
-    const updateLoginButton = () => {
-      // Check if user is logged in via the global auth state
-      const isLoggedIn = window.authState && window.authState.isInitialized;
-      loginBtn.style.display = isLoggedIn ? 'none' : 'inline-flex';
-    };
-    
-    // Initial update
-    updateLoginButton();
-    
-    // Listen for auth state changes
-    window.addEventListener('auth-state-changed', () => {
-      console.log('[PROFILE LOGIN] Auth state changed, updating button');
-      updateLoginButton();
-    });
-    
-    // Handle login button click
-    loginBtn.addEventListener('click', () => {
-      console.log('[PROFILE LOGIN] Login button clicked');
-      // Use the global function to open auth modal
-      if (window.openAuthModal) {
-        window.openAuthModal('login');
-      } else {
-        // Fallback: show the auth modal directly
-        const authModal = document.getElementById('authModal');
-        if (authModal) {
-          authModal.style.display = 'block';
-          document.body.style.overflow = 'hidden';
-        }
-      }
-    });
-  })();
-</script>
-
-<script>
-// Profile banner collapse/expand logic
-(function() {
-  const collapseBtn = document.getElementById('collapseProfileBtn');
-  const profileBanner = document.getElementById('profile-banner');
-  const collapseIcon = collapseBtn.querySelector('.collapse-icon');
-  let collapsed = false;
-
-  if (collapseBtn && profileBanner && collapseIcon) {
-    collapseBtn.addEventListener('click', () => {
-      collapsed = !collapsed;
-      if (collapsed) {
-        profileBanner.classList.add('collapsed');
-        profileBanner.style.maxHeight = '120px';
-        profileBanner.style.overflow = 'hidden';
-        collapseBtn.classList.add('collapsed');
-        collapseIcon.textContent = '▲';
-      } else {
-        profileBanner.classList.remove('collapsed');
-        profileBanner.style.maxHeight = 'none';
-        profileBanner.style.overflow = 'visible';
-        collapseBtn.classList.remove('collapsed');
-        collapseIcon.textContent = '▼';
-      }
-    });
-  }
-})();
-</script>
+<!-- Chatbot Script (regular script so openChatbot is global) -->
+<script src="pages/page_modals/modal_scripts/chatbot.js"></script>
 
 

@@ -427,16 +427,3 @@ exports.getWidgetDownloadUrls = functions
       );
     }
   });
-
-// Callable function for connection testing
-exports.testUpload = functions.https.onCall((data, context) => {
-  console.log(
-    "[TEST UPLOAD] Received test call. Authenticated:",
-    !!context.auth
-  );
-  return {
-    success: true,
-    message: "Connection to Cloud Functions is successful!",
-    timestamp: new Date().toISOString(),
-  };
-});

@@ -105,6 +105,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize auth state tracking
     initializeAuthStateTracking();
 
+    // Initialize additional modals
+    initializeAdditionalModals();
+
+    // Initialize header quick actions and sidebar login bindings
+    initializeHeaderQuickActions();
+
     DEBUG.log("Enhanced initialization completed successfully");
 
     // Show welcome message for new users (only once per session)
@@ -251,6 +257,190 @@ function initializeAuthStateTracking() {
   });
 
   DEBUG.log("Auth state tracking initialized");
+}
+
+// Initialize additional modals (Widget Studio, Edit Profile)
+function initializeAdditionalModals() {
+  DEBUG.log("Initializing additional modals");
+
+  // Widget Studio Modal
+  const widgetStudioModal = document.getElementById("widgetStudioModal");
+  const widgetStudioCloseBtn = document.querySelector(
+    ".widget-studio-close-button"
+  );
+
+  if (widgetStudioModal && widgetStudioCloseBtn) {
+    // Close button
+    widgetStudioCloseBtn.addEventListener("click", () => {
+      DEBUG.log("Closing Widget Studio modal");
+      widgetStudioModal.style.display = "none";
+      document.body.style.overflow = "";
+    });
+
+    // Close on outside click
+    window.addEventListener("click", (e) => {
+      if (e.target === widgetStudioModal) {
+        DEBUG.log("Closing Widget Studio modal via outside click");
+        widgetStudioModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && widgetStudioModal.style.display === "block") {
+        DEBUG.log("Closing Widget Studio modal via escape key");
+        widgetStudioModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // File upload functionality
+    const widgetFileInput = document.getElementById("widgetFileInput");
+    const uploadedFiles = document.getElementById("uploadedFiles");
+    const createWidgetBtn = document.getElementById("createWidgetBtn");
+
+    if (widgetFileInput && uploadedFiles && createWidgetBtn) {
+      widgetFileInput.addEventListener("change", (e) => {
+        const files = Array.from(e.target.files);
+        DEBUG.log("Widget files selected", { count: files.length });
+
+        // Clear previous files
+        uploadedFiles.innerHTML = "";
+
+        // Display selected files
+        files.forEach((file) => {
+          const fileItem = document.createElement("div");
+          fileItem.className = "file-item";
+          fileItem.innerHTML = `
+            <span class="file-name">${file.name}</span>
+            <span class="file-size">${(file.size / 1024).toFixed(1)} KB</span>
+            <span class="file-type">${file.type || "Unknown"}</span>
+          `;
+          uploadedFiles.appendChild(fileItem);
+        });
+
+        // Enable create button if files are selected
+        createWidgetBtn.disabled = files.length === 0;
+      });
+
+      // Create widget button
+      createWidgetBtn.addEventListener("click", () => {
+        DEBUG.log("Create widget button clicked");
+        // TODO: Implement widget creation logic
+        window.showToast("Widget creation feature coming soon!", "info");
+      });
+    }
+
+    DEBUG.log("Widget Studio modal initialized");
+  }
+
+  // Edit Profile Modal
+  const editProfileModal = document.getElementById("editProfileModal");
+  const editProfileCloseBtn = document.querySelector(
+    ".edit-profile-close-button"
+  );
+  const editProfileForm = document.getElementById("editProfileForm");
+  const cancelEditBtn = document.getElementById("cancelEditBtn");
+
+  if (editProfileModal && editProfileCloseBtn) {
+    // Close button
+    editProfileCloseBtn.addEventListener("click", () => {
+      DEBUG.log("Closing Edit Profile modal");
+      editProfileModal.style.display = "none";
+      document.body.style.overflow = "";
+    });
+
+    // Cancel button
+    if (cancelEditBtn) {
+      cancelEditBtn.addEventListener("click", () => {
+        DEBUG.log("Canceling profile edit");
+        editProfileModal.style.display = "none";
+        document.body.style.overflow = "";
+      });
+    }
+
+    // Close on outside click
+    window.addEventListener("click", (e) => {
+      if (e.target === editProfileModal) {
+        DEBUG.log("Closing Edit Profile modal via outside click");
+        editProfileModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Close on escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && editProfileModal.style.display === "block") {
+        DEBUG.log("Closing Edit Profile modal via escape key");
+        editProfileModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Form submission
+    if (editProfileForm) {
+      editProfileForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        DEBUG.log("Edit profile form submitted");
+        // TODO: Implement profile update logic
+        window.showToast("Profile update feature coming soon!", "info");
+      });
+    }
+
+    // Photo preview functionality
+    const editPhotoInput = document.getElementById("editPhoto");
+    const photoPreview = document.getElementById("photoPreview");
+
+    if (editPhotoInput && photoPreview) {
+      editPhotoInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            photoPreview.innerHTML = `<img src="${e.target.result}" alt="Profile preview" style="max-width: 100px; border-radius: 50%;" />`;
+          };
+          reader.readAsDataURL(file);
+        }
+      });
+    }
+
+    DEBUG.log("Edit Profile modal initialized");
+  }
+
+  // Global function to open Widget Studio modal
+  window.openWidgetStudio = function () {
+    DEBUG.log("Opening Widget Studio modal");
+    if (widgetStudioModal) {
+      widgetStudioModal.style.display = "block";
+      document.body.style.overflow = "hidden";
+    } else {
+      DEBUG.error("Widget Studio modal not found");
+    }
+  };
+
+  // Global function to open Edit Profile modal
+  window.openEditProfile = function () {
+    DEBUG.log("Opening Edit Profile modal");
+    if (editProfileModal) {
+      editProfileModal.style.display = "block";
+      document.body.style.overflow = "hidden";
+
+      // TODO: Populate form with current user data
+      const editDisplayName = document.getElementById("editDisplayName");
+      const editBio = document.getElementById("editBio");
+
+      if (editDisplayName && window.authState && window.authState.currentUser) {
+        // Populate with current user data
+        editDisplayName.value = window.authState.currentUser.displayName || "";
+        // TODO: Populate other fields
+      }
+    } else {
+      DEBUG.error("Edit Profile modal not found");
+    }
+  };
+
+  DEBUG.log("Additional modals initialization completed");
 }
 
 // Initialize password visibility toggles
@@ -492,6 +682,321 @@ function showWelcomeMessage() {
       window.authState.hasShownWelcome = true;
       DEBUG.log("Welcome message shown for new user");
     }, 2000);
+  }
+}
+
+// Initialize header quick actions and sidebar login bindings
+function initializeHeaderQuickActions() {
+  DEBUG.log("Initializing header quick actions and sidebar login bindings");
+
+  try {
+    // Initialize Tutorial Button
+    const tutorialBtn = document.getElementById("tutorialBtn");
+    if (tutorialBtn) {
+      tutorialBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Tutorial button clicked");
+
+        // Show tutorial information
+        if (window.showToast) {
+          window.showToast(
+            "Tutorial feature coming soon! This will explain everything about inque.",
+            "info",
+            5000
+          );
+        } else {
+          alert(
+            "Tutorial feature coming soon! This will explain everything about inque."
+          );
+        }
+      });
+      DEBUG.log("Tutorial button listener attached successfully");
+    } else {
+      DEBUG.warn("Tutorial button not found in DOM");
+    }
+
+    // Initialize Edit Profile Quick Button
+    const editProfileQuickBtn = document.getElementById("editProfileQuickBtn");
+    if (editProfileQuickBtn) {
+      editProfileQuickBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Edit Profile quick button clicked");
+
+        if (window.openEditProfile) {
+          window.openEditProfile();
+          DEBUG.log("Edit Profile modal opened via global function");
+        } else {
+          DEBUG.warn(
+            "openEditProfile global function not available, using fallback"
+          );
+          const editProfileModal = document.getElementById("editProfileModal");
+          if (editProfileModal) {
+            editProfileModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            DEBUG.log("Edit Profile modal shown via fallback");
+          } else {
+            DEBUG.error("Edit Profile modal not found");
+            if (window.showToast) {
+              window.showToast("Edit Profile not available", "error");
+            }
+          }
+        }
+      });
+      DEBUG.log("Edit Profile quick button listener attached successfully");
+    } else {
+      DEBUG.warn("Edit Profile quick button not found in DOM");
+    }
+
+    // Initialize Sidebar Login Button
+    const sidebarLoginBtn = document.getElementById("sidebarLoginBtn");
+    if (sidebarLoginBtn) {
+      sidebarLoginBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Sidebar Login button clicked");
+
+        if (window.openAuthModal) {
+          window.openAuthModal("login");
+          DEBUG.log("Auth modal opened via global function");
+        } else {
+          DEBUG.warn(
+            "openAuthModal global function not available, using fallback"
+          );
+          const authModal = document.getElementById("authModal");
+          if (authModal) {
+            authModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            DEBUG.log("Auth modal shown via fallback");
+          } else {
+            DEBUG.error("Auth modal not found");
+            if (window.showToast) {
+              window.showToast("Login not available", "error");
+            }
+          }
+        }
+      });
+      DEBUG.log("Sidebar login button listener attached successfully");
+    } else {
+      DEBUG.warn("Sidebar login button not found in DOM");
+    }
+
+    // Initialize AI Assistant Button (if not already handled by quick actions)
+    const aiAssistantBtn = document.querySelector(
+      '[data-action="openChatbot"]'
+    );
+    if (aiAssistantBtn) {
+      aiAssistantBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("AI Assistant button clicked");
+
+        if (typeof openChatbot === "function") {
+          openChatbot();
+          DEBUG.log("AI Assistant opened successfully");
+        } else {
+          DEBUG.error("openChatbot function not found");
+          if (window.showToast) {
+            window.showToast("AI Assistant not available", "error");
+          }
+        }
+      });
+      DEBUG.log("AI Assistant button listener attached successfully");
+    } else {
+      DEBUG.warn("AI Assistant button not found in DOM");
+    }
+
+    // Initialize Profile Navigation Buttons
+    const profileNavBtns = document.querySelectorAll(".nav-btn[data-page]");
+    if (profileNavBtns.length > 0) {
+      profileNavBtns.forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const page = btn.getAttribute("data-page");
+          if (!page) return;
+          DEBUG.log(`Profile navigation button clicked`, { page });
+
+          switch (page) {
+            case "about":
+              window.location.href = "core/personal/about.html";
+              break;
+            case "explore":
+              window.location.href = "pages/explore.html";
+              break;
+            case "inventory":
+              window.location.href = "pages/inventory.html";
+              break;
+            default:
+              DEBUG.warn(`Unknown page navigation`, { page });
+          }
+        });
+      });
+      DEBUG.log(`Profile navigation buttons initialized`, {
+        count: profileNavBtns.length,
+      });
+    } else {
+      DEBUG.warn("Profile navigation buttons not found in DOM");
+    }
+
+    // Initialize Profile Banner Login Button
+    const profileLoginBtn = document.getElementById("profileLoginBtn");
+    if (profileLoginBtn) {
+      // Update button visibility based on auth state
+      const updateLoginButton = () => {
+        const isLoggedIn = window.authState && window.authState.isInitialized;
+        profileLoginBtn.style.display = isLoggedIn ? "none" : "inline-flex";
+        DEBUG.log("Profile login button visibility updated", { isLoggedIn });
+      };
+
+      // Initial update
+      updateLoginButton();
+
+      // Listen for auth state changes
+      window.addEventListener("auth-state-changed", () => {
+        DEBUG.log("Auth state changed, updating profile login button");
+        updateLoginButton();
+      });
+
+      // Handle login button click
+      profileLoginBtn.addEventListener("click", () => {
+        DEBUG.log("Profile login button clicked");
+        if (window.openAuthModal) {
+          window.openAuthModal("login");
+        } else {
+          const authModal = document.getElementById("authModal");
+          if (authModal) {
+            authModal.style.display = "block";
+            document.body.style.overflow = "hidden";
+            DEBUG.log("Auth modal shown via fallback");
+          } else {
+            DEBUG.error("Auth modal not found");
+          }
+        }
+      });
+      DEBUG.log("Profile login button listener attached successfully");
+    } else {
+      DEBUG.warn("Profile login button not found in DOM");
+    }
+
+    // Initialize Profile Banner Collapse/Expand
+    const collapseBtn = document.getElementById("collapseProfileBtn");
+    const profileBanner = document.getElementById("profile-banner");
+    if (collapseBtn && profileBanner) {
+      const collapseIcon = collapseBtn.querySelector(".collapse-icon");
+      let collapsed = false;
+
+      if (collapseIcon) {
+        collapseBtn.addEventListener("click", () => {
+          collapsed = !collapsed;
+          DEBUG.log("Profile banner collapse toggled", { collapsed });
+
+          if (collapsed) {
+            profileBanner.classList.add("collapsed");
+            profileBanner.style.maxHeight = "120px";
+            profileBanner.style.overflow = "hidden";
+            collapseBtn.classList.add("collapsed");
+            collapseIcon.textContent = "▲";
+          } else {
+            profileBanner.classList.remove("collapsed");
+            profileBanner.style.maxHeight = "none";
+            profileBanner.style.overflow = "visible";
+            collapseBtn.classList.remove("collapsed");
+            collapseIcon.textContent = "▼";
+          }
+        });
+        DEBUG.log("Profile banner collapse functionality initialized");
+      } else {
+        DEBUG.warn("Profile banner collapse icon not found");
+      }
+    } else {
+      DEBUG.warn("Profile banner collapse elements not found", {
+        collapseBtn: !!collapseBtn,
+        profileBanner: !!profileBanner,
+      });
+    }
+
+    // Initialize Leave a Note Button
+    const leaveNoteBtn = document.getElementById("leaveNoteBtn");
+    if (leaveNoteBtn) {
+      leaveNoteBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Leave a Note button clicked");
+
+        if (window.showToast) {
+          window.showToast(
+            "Leave a Note feature coming soon! This will let you leave messages in the yearbook.",
+            "info",
+            5000
+          );
+        } else {
+          alert(
+            "Leave a Note feature coming soon! This will let you leave messages in the yearbook."
+          );
+        }
+      });
+      DEBUG.log("Leave a Note button listener attached successfully");
+    } else {
+      DEBUG.warn("Leave a Note button not found in DOM");
+    }
+
+    DEBUG.log("Header quick actions initialization completed successfully");
+
+    // Validate button states
+    validateButtonStates();
+  } catch (error) {
+    DEBUG.error("Error during header quick actions initialization", error);
+  }
+}
+
+// Validate that all expected buttons are properly initialized
+function validateButtonStates() {
+  DEBUG.log("Validating button states...");
+
+  const expectedButtons = [
+    { id: "tutorialBtn", name: "Tutorial Button" },
+    { id: "editProfileQuickBtn", name: "Edit Profile Quick Button" },
+    { id: "sidebarLoginBtn", name: "Sidebar Login Button" },
+    { id: "leaveNoteBtn", name: "Leave a Note Button" },
+    { id: "collapseProfileBtn", name: "Profile Collapse Button" },
+  ];
+
+  const missingButtons = [];
+  const workingButtons = [];
+
+  expectedButtons.forEach((button) => {
+    const element = document.getElementById(button.id);
+    if (element) {
+      workingButtons.push(button.name);
+    } else {
+      missingButtons.push(button.name);
+    }
+  });
+
+  if (workingButtons.length > 0) {
+    DEBUG.log("✅ Working buttons", workingButtons);
+  }
+
+  if (missingButtons.length > 0) {
+    DEBUG.warn("⚠️ Missing buttons", missingButtons);
+  }
+
+  // Check AI Assistant button
+  const aiAssistantBtn = document.querySelector('[data-action="openChatbot"]');
+  if (aiAssistantBtn) {
+    DEBUG.log("✅ AI Assistant button found");
+  } else {
+    DEBUG.warn("⚠️ AI Assistant button not found");
+  }
+
+  // Check profile navigation buttons
+  const profileNavBtns = document.querySelectorAll(".nav-btn[data-page]");
+  if (profileNavBtns.length > 0) {
+    DEBUG.log(`✅ Profile navigation buttons found`, {
+      count: profileNavBtns.length,
+    });
+  } else {
+    DEBUG.warn("⚠️ Profile navigation buttons not found");
   }
 }
 

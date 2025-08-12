@@ -22,14 +22,8 @@ class WidgetUploadManager {
     try {
       this.log("Initializing widget upload system");
 
-      // Test Cloud Functions connection
-      const isConnected = await cloudUploadManager.testConnection();
-      if (!isConnected) {
-        this.error("Cloud Functions connection failed");
-        return false;
-      }
-
-      this.log("Cloud Functions connection successful");
+      // Initialize without connection test
+      this.log("Widget upload system initialized");
       this.setupEventListeners();
       return true;
     } catch (error) {
