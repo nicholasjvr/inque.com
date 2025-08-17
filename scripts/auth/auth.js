@@ -1,21 +1,3 @@
-/**
- * Enhanced Authentication System with Social Features
- *
- * This file has been refactored to:
- * 1. Consolidate all auth logic into the SocialAuthManager class
- * 2. Remove duplicate functions and cross-references
- * 3. Add comprehensive debug logging for easier debugging
- * 4. Centralize DOM element management
- * 5. Provide unified UI update methods
- *
- * Key improvements:
- * - Single source of truth for DOM elements
- * - Unified notification system
- * - Consolidated UI updates
- * - Better separation of concerns
- * - Enhanced error handling and logging
- */
-
 import { auth, db, storage } from "../../core/firebase-core.js";
 import {
   createUserWithEmailAndPassword,

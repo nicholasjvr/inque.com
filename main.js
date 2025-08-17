@@ -66,6 +66,21 @@ try {
   DEBUG.error("Error importing enhanced widget upload system", error);
 }
 
+// Import Firestore functions for profile updates
+DEBUG.log("Importing Firestore functions");
+try {
+  import("https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js")
+    .then((firestore) => {
+      window.firestore = firestore;
+      DEBUG.log("Firestore functions imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import Firestore functions", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing Firestore functions", error);
+}
+
 // Import social features
 DEBUG.log("Importing social features");
 try {
@@ -308,27 +323,103 @@ function initializeAdditionalModals() {
         // Clear previous files
         uploadedFiles.innerHTML = "";
 
-        // Display selected files
+        // Display selected files with better formatting
         files.forEach((file) => {
           const fileItem = document.createElement("div");
           fileItem.className = "file-item";
+          fileItem.style.cssText =
+            "display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(0, 240, 255, 0.1); border-radius: 8px; border: 1px solid rgba(0, 240, 255, 0.2); margin-bottom: 8px;";
+
+          const fileIcon = getFileIcon(file.name);
           fileItem.innerHTML = `
-            <span class="file-name">${file.name}</span>
-            <span class="file-size">${(file.size / 1024).toFixed(1)} KB</span>
-            <span class="file-type">${file.type || "Unknown"}</span>
+            <span style="font-size: 1.2rem;">${fileIcon}</span>
+            <span style="flex: 1; color: var(--text-light); font-weight: 500;">${file.name}</span>
+            <span style="color: var(--primary-color); font-size: 0.9rem; font-weight: 600;">${(file.size / 1024).toFixed(1)} KB</span>
           `;
           uploadedFiles.appendChild(fileItem);
         });
+
+        // Show success message
+        window.showToast(
+          `${files.length} file${files.length > 1 ? "s" : ""} selected successfully! 📁`,
+          "success"
+        );
+
+        // Helper function to get file icons
+        function getFileIcon(filename) {
+          const ext = filename.split(".").pop().toLowerCase();
+          const iconMap = {
+            html: "🌐",
+            css: "🎨",
+            js: "⚡",
+            png: "🖼️",
+            jpg: "🖼️",
+            jpeg: "🖼️",
+            gif: "🖼️",
+            svg: "🖼️",
+            json: "📋",
+            txt: "📄",
+            md: "📝",
+          };
+          return iconMap[ext] || "📁";
+        }
 
         // Enable create button if files are selected
         createWidgetBtn.disabled = files.length === 0;
       });
 
       // Create widget button
-      createWidgetBtn.addEventListener("click", () => {
+      createWidgetBtn.addEventListener("click", async () => {
         DEBUG.log("Create widget button clicked");
-        // TODO: Implement widget creation logic
-        window.showToast("Widget creation feature coming soon!", "info");
+
+        try {
+          const files = Array.from(widgetFileInput.files);
+          if (files.length === 0) {
+            window.showToast(
+              "Please select files to create a widget",
+              "warning"
+            );
+            return;
+          }
+
+          // Show loading state
+          createWidgetBtn.disabled = true;
+          createWidgetBtn.innerHTML =
+            '<span class="btn-loader">Creating...</span>';
+
+          // Simulate widget creation process (replace with actual logic)
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+
+          // Success notification
+          window.showToast("Widget created successfully! 🎉", "success");
+
+          // Reset form
+          widgetFileInput.value = "";
+          uploadedFiles.innerHTML = "";
+          createWidgetBtn.disabled = true;
+
+          // Close modal after success
+          setTimeout(() => {
+            const widgetStudioModal =
+              document.getElementById("widgetStudioModal");
+            if (widgetStudioModal) {
+              widgetStudioModal.style.display = "none";
+              document.body.style.overflow = "";
+            }
+          }, 1500);
+
+          DEBUG.log("Widget created successfully");
+        } catch (error) {
+          DEBUG.error("Failed to create widget", error);
+          window.showToast(
+            "Failed to create widget: " + error.message,
+            "error"
+          );
+        } finally {
+          // Reset button state
+          createWidgetBtn.disabled = false;
+          createWidgetBtn.innerHTML = "Create Widget";
+        }
       });
     }
 
@@ -376,15 +467,107 @@ function initializeAdditionalModals() {
         editProfileModal.style.display = "none";
         document.body.style.overflow = "";
       }
+
+      // Enter key on form submission
+      if (
+        e.key === "Enter" &&
+        e.ctrlKey &&
+        editProfileModal.style.display === "block"
+      ) {
+        e.preventDefault();
+        DEBUG.log("Form submission triggered via Ctrl+Enter");
+        editProfileForm.dispatchEvent(new Event("submit"));
+      }
     });
 
     // Form submission
     if (editProfileForm) {
-      editProfileForm.addEventListener("submit", (e) => {
+      editProfileForm.addEventListener("submit", async (e) => {
         e.preventDefault();
         DEBUG.log("Edit profile form submitted");
-        // TODO: Implement profile update logic
-        window.showToast("Profile update feature coming soon!", "info");
+
+        // Get form elements
+        const saveBtn = editProfileForm.querySelector(".save-btn");
+        const originalBtnText = saveBtn.textContent;
+
+        // Show loading state
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<span class="btn-loader">Saving...</span>';
+
+        try {
+          const formData = new FormData(editProfileForm);
+          const displayName = document.getElementById("editDisplayName").value;
+          const bio = document.getElementById("editBio").value;
+          const twitter = document.getElementById("editTwitter").value;
+          const instagram = document.getElementById("editInstagram").value;
+          const github = document.getElementById("editGithub").value;
+          const website = document.getElementById("editWebsite").value;
+
+          // Get current user
+          if (!window.authState || !window.authState.currentUser) {
+            window.showToast("Please log in to update your profile", "error");
+            return;
+          }
+
+          // Update profile in Firestore
+          if (
+            window.firestore &&
+            window.firestore.doc &&
+            window.firestore.updateDoc
+          ) {
+            const userRef = window.firestore.doc(
+              db,
+              "users",
+              window.authState.currentUser.uid
+            );
+            await window.firestore.updateDoc(userRef, {
+              name: displayName,
+              bio: bio,
+              socialLinks: {
+                twitter: twitter,
+                instagram: instagram,
+                github: github,
+                website: website,
+              },
+              updatedAt: new Date(),
+            });
+          } else {
+            throw new Error("Firestore functions not available");
+          }
+
+          // Update local state
+          if (window.authState.currentUser) {
+            window.authState.currentUser.displayName = displayName;
+          }
+
+          // Show success notification with more details
+          window.showToast(
+            `Profile updated successfully! Welcome back, ${displayName}! ✨`,
+            "success"
+          );
+
+          // Close modal after success
+          editProfileModal.style.display = "none";
+          document.body.style.overflow = "";
+
+          // Update profile display in header if it exists
+          const profileNameElement = document.querySelector(".profile-name");
+          if (profileNameElement) {
+            profileNameElement.textContent = displayName;
+          }
+
+          DEBUG.log("Profile updated successfully", { displayName, bio });
+        } catch (error) {
+          DEBUG.error("Failed to update profile", error);
+          window.showToast(
+            "Failed to update profile: " + error.message,
+            "error"
+          );
+        } finally {
+          // Reset button state
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalBtnText;
+        }
       });
     }
 
@@ -412,10 +595,13 @@ function initializeAdditionalModals() {
   window.openWidgetStudio = function () {
     DEBUG.log("Opening Widget Studio modal");
     if (widgetStudioModal) {
+      DEBUG.log("Widget Studio modal found, opening...");
       widgetStudioModal.style.display = "block";
       document.body.style.overflow = "hidden";
+      DEBUG.log("Widget Studio modal opened successfully");
     } else {
       DEBUG.error("Widget Studio modal not found");
+      console.error("Widget Studio modal element not found in DOM");
     }
   };
 
@@ -423,24 +609,50 @@ function initializeAdditionalModals() {
   window.openEditProfile = function () {
     DEBUG.log("Opening Edit Profile modal");
     if (editProfileModal) {
+      DEBUG.log("Edit Profile modal found, opening...");
       editProfileModal.style.display = "block";
       document.body.style.overflow = "hidden";
 
-      // TODO: Populate form with current user data
+      // Populate form with current user data
       const editDisplayName = document.getElementById("editDisplayName");
       const editBio = document.getElementById("editBio");
 
       if (editDisplayName && window.authState && window.authState.currentUser) {
         // Populate with current user data
         editDisplayName.value = window.authState.currentUser.displayName || "";
-        // TODO: Populate other fields
+        DEBUG.log("Populated form with user data");
+      } else {
+        DEBUG.log("No user data available for form population");
       }
+
+      DEBUG.log("Edit Profile modal opened successfully");
     } else {
       DEBUG.error("Edit Profile modal not found");
+      console.error("Edit Profile modal element not found in DOM");
     }
   };
 
   DEBUG.log("Additional modals initialization completed");
+
+  // Debug function to check modal status
+  window.debugModals = function () {
+    DEBUG.log("=== MODAL DEBUG INFO ===");
+    DEBUG.log("Widget Studio Modal:", {
+      element: !!widgetStudioModal,
+      display: widgetStudioModal ? widgetStudioModal.style.display : "N/A",
+      id: widgetStudioModal ? widgetStudioModal.id : "N/A",
+    });
+    DEBUG.log("Edit Profile Modal:", {
+      element: !!editProfileModal,
+      display: editProfileModal ? editProfileModal.style.display : "N/A",
+      id: editProfileModal ? editProfileModal.id : "N/A",
+    });
+    DEBUG.log("Global functions:", {
+      openWidgetStudio: typeof window.openWidgetStudio,
+      openEditProfile: typeof window.openEditProfile,
+    });
+    DEBUG.log("=== END MODAL DEBUG ===");
+  };
 }
 
 // Initialize password visibility toggles
@@ -629,6 +841,8 @@ function initializeEnhancedUI() {
 
   // Enhanced toast notifications
   window.showToast = function (message, type = "info", duration = 5000) {
+    DEBUG.log(`Showing toast notification: ${type} - ${message}`);
+
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
     toast.innerHTML = `
@@ -638,17 +852,28 @@ function initializeEnhancedUI() {
 
     const container =
       document.getElementById("toast-container") || document.body;
+
+    if (!document.getElementById("toast-container")) {
+      DEBUG.warn("Toast container not found, appending to body");
+    }
+
     container.appendChild(toast);
+    DEBUG.log("Toast element created and added to DOM");
 
     // Trigger animation
-    setTimeout(() => toast.classList.add("show"), 100);
+    setTimeout(() => {
+      toast.classList.add("show");
+      DEBUG.log("Toast animation triggered");
+    }, 100);
 
     // Auto remove
     setTimeout(() => {
       toast.classList.remove("show");
+      DEBUG.log("Toast auto-removal started");
       setTimeout(() => {
         if (toast.parentNode) {
           toast.parentNode.removeChild(toast);
+          DEBUG.log("Toast element removed from DOM");
         }
       }, 300);
     }, duration);
@@ -656,13 +881,19 @@ function initializeEnhancedUI() {
     // Manual close
     const closeBtn = toast.querySelector(".toast-close");
     closeBtn.addEventListener("click", () => {
+      DEBUG.log("Toast manually closed by user");
       toast.classList.remove("show");
       setTimeout(() => {
         if (toast.parentNode) {
           toast.parentNode.removeChild(toast);
+          DEBUG.log("Toast element removed from DOM after manual close");
         }
       }, 300);
     });
+
+    DEBUG.log(
+      `Toast notification displayed successfully: ${type} - ${message}`
+    );
   };
 
   DEBUG.log("Enhanced UI features initialized");

@@ -1,5 +1,13 @@
 import { db, auth, storage } from "../core/firebase-core.js";
 import {
+  collection,
+  query,
+  where,
+  getDocs,
+  doc,
+  updateDoc
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import {
   createProject,
   listUserProjects,
   updateProject,
@@ -27,9 +35,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   let widgetEditMode = false;
   let currentlyEditingCard = null;
 
-  // Fetch projects from Firestore
+  // Fetch widgets from Firestore
   async function loadTimelineProjects() {
-    DEBUG.log("Timeline Manager: Loading timeline projects from Firestore");
+    DEBUG.log("Timeline Manager: Loading timeline widgets from Firestore");
     try {
       // Check if user is authenticated
       const user = auth.currentUser;
@@ -41,15 +49,38 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
       }
 
-      timelineProjects = await listUserProjects();
-      DEBUG.log("Timeline Manager: Projects loaded successfully", {
+      // Load widgets from the widgets collection instead of projects
+      const widgetsRef = collection(db, "widgets");
+      const q = query(widgetsRef, where("userId", "==", user.uid));
+      const querySnapshot = await getDocs(q);
+      
+      timelineProjects = querySnapshot.docs.map(doc => {
+        const data = doc.data();
+        DEBUG.log("Timeline Manager: Processing widget", {
+          id: doc.id,
+          title: data.title,
+          slot: data.slot,
+          userId: data.userId
+        });
+        return {
+          id: doc.id,
+          title: data.title || "Untitled Widget",
+          desc: data.description || "No description available",
+          slot: data.slot,
+          files: data.files || [],
+          createdAt: data.createdAt
+        };
+      });
+
+      DEBUG.log("Timeline Manager: Widgets loaded successfully", {
         count: timelineProjects.length,
+        widgets: timelineProjects.map(w => ({ id: w.id, title: w.title, slot: w.slot }))
       });
     } catch (error) {
-      DEBUG.error("Timeline Manager: Failed to load projects", error);
+      DEBUG.error("Timeline Manager: Failed to load widgets", error);
       // Don't show error for unauthenticated users
       if (error.message !== "Not logged in.") {
-        console.error("Timeline Manager: Project loading error", error);
+        console.error("Timeline Manager: Widget loading error", error);
       }
       timelineProjects = [];
     }
@@ -59,10 +90,16 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function renderAllWidgetCards() {
     DEBUG.log("Timeline Manager: Rendering all widget cards");
     await loadTimelineProjects();
+    
     const timelineEvents = document.querySelectorAll(".timeline-event");
     DEBUG.log("Timeline Manager: Found timeline events", {
       count: timelineEvents.length,
     });
+    
+    if (timelineEvents.length === 0) {
+      DEBUG.warn("Timeline Manager: No timeline events found in DOM");
+      return;
+    }
 
     timelineEvents.forEach((event, idx) => {
       // Remove any previous card
@@ -108,21 +145,24 @@ document.addEventListener("DOMContentLoaded", async function () {
               const newTitle = card.querySelector(".widget-edit-title").value;
               const newDesc = card.querySelector(".widget-edit-desc").value;
               try {
-                await updateProject(project.id, {
+                // Update widget in Firestore
+                const widgetRef = doc(db, "widgets", project.id);
+                await updateDoc(widgetRef, {
                   title: newTitle,
-                  desc: newDesc,
+                  description: newDesc,
+                  updatedAt: new Date()
                 });
-                DEBUG.log("Timeline Manager: Project updated successfully", {
+                DEBUG.log("Timeline Manager: Widget updated successfully", {
                   projectId: project.id,
                 });
                 currentlyEditingCard = null;
                 renderAllWidgetCards();
               } catch (error) {
                 DEBUG.error(
-                  "Timeline Manager: Failed to update project",
+                  "Timeline Manager: Failed to update widget",
                   error
                 );
-                alert("Failed to update project: " + error.message);
+                alert("Failed to update widget: " + error.message);
               }
             });
           card

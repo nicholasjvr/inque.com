@@ -16,7 +16,10 @@
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
   </head>
   <body>
-<!-- Sidebar and overlay -->
+    <!-- Toast Notification Container -->
+    <div id="toast-container"></div>
+
+    <!-- Sidebar and overlay -->
 <div class="sidebar-overlay"></div>
 <nav class="sidebar-nav">
   <div class="sidebar-user-info">
@@ -455,6 +458,13 @@
             </div>
           </div>
         </div>
+      </div>
+
+      <!-- Test Buttons for Debugging -->
+      <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white;">
+        <button onclick="window.openWidgetStudio()" style="margin: 5px; padding: 5px 10px;">Test Widget Studio</button>
+        <button onclick="window.openEditProfile()" style="margin: 5px; padding: 5px 10px;">Test Edit Profile</button>
+        <button onclick="window.debugModals()" style="margin: 5px; padding: 5px 10px; background: #ff6b6b;">Debug Modals</button>
       </div>
 
       <!-- Edit Profile Modal -->
