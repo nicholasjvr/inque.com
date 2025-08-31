@@ -1,12 +1,15 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Home Page</title>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>VIBE-CODERS - Your AI IDE Development Hub</title>
     <link rel="stylesheet" href="core/styles.css" />
     <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
     <link
@@ -14,599 +17,1113 @@
       rel="stylesheet"
     />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
+    <style>
+      /* NEO-BRUTALIST OVERRIDES */
+      :root {
+        --primary-neon: #00ffff;
+        --secondary-neon: #ff00ff;
+        --accent-neon: #ffff00;
+        --error-neon: #ff4444;
+        --success-neon: #44ff44;
+        --warning-neon: #ffaa00;
+        --text-primary: #ffffff;
+        --text-secondary: #cccccc;
+        --bg-primary: #0a0a0a;
+        --bg-secondary: #1a1a1a;
+        --bg-tertiary: #2a2a2a;
+        --border-width: 3px;
+        --border-radius: 0px;
+        --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.3);
+      }
+
+      body {
+        font-family: "JetBrains Mono", "Inter", monospace;
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        overflow-x: hidden;
+      }
+
+      .neo-brutalist {
+        border: var(--border-width) solid var(--primary-neon);
+        background: var(--bg-secondary);
+        box-shadow: var(--shadow-glow);
+        border-radius: var(--border-radius);
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .neo-button {
+        background: var(--bg-secondary);
+        border: var(--border-width) solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 12px 24px;
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .neo-button:hover {
+        background: var(--primary-neon);
+        color: var(--bg-primary);
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+
+      .neo-input {
+        background: var(--bg-secondary);
+        border: var(--border-width) solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 12px;
+        font-family: "JetBrains Mono", monospace;
+        box-shadow: var(--shadow-glow);
+      }
+
+      .neo-card {
+        background: var(--bg-secondary);
+        border: var(--border-width) solid var(--primary-neon);
+        padding: 24px;
+        margin: 16px 0;
+        box-shadow: var(--shadow-glow);
+        border-radius: var(--border-radius);
+      }
+
+      .neo-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin: 24px 0;
+      }
+
+      /* Toast Notifications */
+      .toast {
+        background: var(--bg-secondary);
+        border: var(--border-width) solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 16px 20px;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-glow);
+        font-family: "JetBrains Mono", monospace;
+        font-size: 0.9rem;
+        max-width: 400px;
+        transform: translateX(100%);
+        transition: transform 0.3s ease;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .toast.show {
+        transform: translateX(0);
+      }
+
+      .toast.success {
+        border-color: var(--success-neon);
+        box-shadow: 0 0 20px rgba(68, 255, 68, 0.3);
+      }
+
+      .toast.error {
+        border-color: var(--error-neon);
+        box-shadow: 0 0 20px rgba(255, 68, 68, 0.3);
+      }
+
+      .toast.warning {
+        border-color: var(--warning-neon);
+        box-shadow: 0 0 20px rgba(255, 170, 0, 0.3);
+      }
+
+      .toast.info {
+        border-color: var(--primary-neon);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        font-size: 1.2rem;
+        cursor: pointer;
+        padding: 0;
+        width: 20px;
+        height: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .toast-close:hover {
+        color: var(--text-primary);
+      }
+
+      .neo-section {
+        padding: 40px 20px;
+        border-bottom: var(--border-width) solid var(--primary-neon);
+      }
+
+      .neo-text-glow {
+        text-shadow: 0 0 10px currentColor;
+      }
+
+      .toast {
+        background: var(--bg-secondary);
+        border: 2px solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 12px 16px;
+        border-radius: 0px;
+        margin-bottom: 8px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.3);
+        animation: slideIn 0.3s ease-out;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        z-index: 10000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.8);
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background-color: var(--bg-secondary);
+        margin: 10% auto;
+        padding: 24px;
+        border: 3px solid var(--primary-neon);
+        width: 90%;
+        max-width: 500px;
+        box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
+      }
+
+      @media (max-width: 768px) {
+        .neo-grid {
+          grid-template-columns: 1fr;
+        }
+        header .header-content {
+          flex-direction: column;
+          gap: 16px;
+        }
+        nav {
+          flex-wrap: wrap;
+          justify-content: center;
+        }
+      }
+    </style>
   </head>
   <body>
+    <!-- Toast Notifications -->
     <div id="toast-container"></div>
-<div class="sidebar-overlay"></div>
-<nav class="sidebar-nav">
-  <div class="sidebar-user-info">
-    <div class="sidebar-avatar"></div>
-    <div class="sidebar-user-details">
-      <span class="sidebar-user-name">Guest</span>
-      <span class="sidebar-user-email" style="display: none;">guest@example.com</span>
-      <span class="sidebar-user-status"><span class="status-dot guest"></span> Not logged in</span>
-    </div>
-    <button id="sidebarLoginBtn" class="sidebar-auth-btn">Login</button>
-    <span id="sidebarUserActions" style="display:none;">
-      <button id="sidebarEditProfileBtn" class="sidebar-auth-btn">Edit Profile</button>
-      <button id="sidebarLogoutBtn" class="sidebar-auth-btn">Logout</button>
-    </span>
-  </div>
 
-  <div class="sidebar-stats" style="display: none;">
-    <div class="sidebar-stat-item">
-      <span class="stat-label">Level</span>
-      <span class="stat-value" id="sidebarLvl">?</span>
-    </div>
-    <div class="sidebar-stat-item">
-      <span class="stat-label">Type</span>
-      <span class="stat-value" id="sidebarType">?</span>
-    </div>
-    <div class="sidebar-stat-item">
-      <span class="stat-label">Role</span>
-      <span class="stat-value" id="sidebarRole">GUEST</span>
-    </div>
-  </div>
+    <!-- Header -->
+    <header
+      class="neo-brutalist"
+      style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        padding: 16px;
+      "
+    >
+      <div
+        style="
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          max-width: 1400px;
+          margin: 0 auto;
+        "
+      >
+        <div style="display: flex; align-items: center; gap: 20px">
+          <h1
+            style="
+              font-size: 2rem;
+              font-family: &quot;Orbitron&quot;, monospace;
+              color: var(--primary-neon);
+              margin: 0;
+            "
+            class="neo-text-glow"
+          >
+            VIBE-CODERS
+          </h1>
+          <span style="color: var(--text-secondary); font-size: 0.9rem"
+            >AI IDE Development Hub</span
+          >
+        </div>
 
-  <!-- Quick Actions Section -->
-  <div class="sidebar-quick-actions">
-    <h4 class="sidebar-section-title">Quick Actions</h4>
-    <button class="quick-action-btn" data-action="newWidget" onclick="event.stopPropagation();">
-      <span class="quick-action-icon">+</span>
-      <span class="quick-action-text">Add Project to Showcase</span>
-    </button>
-    <button class="quick-action-btn" data-action="shareProfile" onclick="event.stopPropagation();">
-      <span class="quick-action-icon">📤</span>
-      <span class="quick-action-text">Share Profile</span>
-    </button>
-    <button class="quick-action-btn" data-action="settings" onclick="event.stopPropagation();">
-      <span class="quick-action-icon">⚙️</span>
-      <span class="quick-action-text">Settings</span>
-    </button>
-  </div>
+        <nav style="display: flex; gap: 16px; align-items: center">
+          <button class="neo-button category-btn" data-category="home">
+            HOME
+          </button>
+          <button class="neo-button category-btn" data-category="guides">
+            GUIDES
+          </button>
+          <button class="neo-button category-btn" data-category="showcase">
+            SHOWCASE
+          </button>
+          <button class="neo-button category-btn" data-category="inspiration">
+            INSPIRATION
+          </button>
+          <button class="neo-button category-btn" data-category="tools">
+            TOOLS
+          </button>
+          <button
+            class="neo-button category-btn neo-brutalist-accent"
+            data-category="projects"
+          >
+            MY PROJECTS
+          </button>
+        </nav>
 
-  <!-- Notifications Section -->
-  <div class="sidebar-notifications" id="sidebarNotifications">
-    <div class="notifications-header" id="notificationsHeader">
-      <h4 class="sidebar-section-title">
-        Notifications
-        <span class="notification-badge" id="notificationCount" style="display: none;">0</span>
-        <button id="markAllReadBtn" class="mark-all-read-btn" style="display: none;" title="Mark all as read">✓</button>
-      </h4>
-      <button class="notifications-toggle" id="notificationsToggle" title="Expand notifications">
-        <span class="toggle-icon">▼</span>
-      </button>
-    </div>
-    <div class="notification-list" id="notificationList">
-      <div class="notification-item empty-notification">
-        <span class="notification-text">No new notifications</span>
-      </div>
-    </div>
-  </div>
-
-  <!-- UPDATE -->
-  <button class="sidebar-close-btn" aria-label="Close sidebar">&times;</button>
-  <a href="pages/users.html" class="sidebar-nav-btn">List Users</a>
-  <button class="sidebar-nav-btn" data-action="explore">Explore Creations</button>
-  <button class="sidebar-nav-btn" data-action="tutorial">My Inventory</button>
-  
-  <!-- AI Assistant Section -->
-  <div class="sidebar-ai-assistant">
-    <h4 class="sidebar-section-title">AI Assistant</h4>
-    <button class="quick-action-btn" data-action="openChatbot" onclick="event.stopPropagation();">
-      <span class="quick-action-icon">🤖</span>
-      <span class="quick-action-text">Ask AI Assistant</span>
-    </button>
-  </div>
-</nav>
-<header class="site-header">
-  <button class="hamburger-menu" aria-label="Open sidebar">&#9776;</button>
-  <div id="profile-banner">
-    <!-- Profile Avatar Section -->
-    <div class="profile-avatar-section">
-      <div class="profile-pic-container">
-        <div class="profile-status-indicator" id="profileStatusIndicator"></div>
-      </div>
-      <div class="profile-quick-actions">
-        <button class="profile-action-btn" id="editProfileQuickBtn" title="Edit Profile" aria-label="Edit Profile">
-          <span class="action-icon">✏️</span>
-        </button>
-        <button class="profile-action-btn" id="tutorialBtn" title="Help & Tutorial" aria-label="Help & Tutorial">
-          <span class="action-icon">ℹ️</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Profile Info Section -->
-    <div class="profile-info-section">
-        <div class="profile-header">
-          <h3 class="profile-name" id="profileName">Welcome</h3>
-          <div class="profile-status" id="profileStatus">
-            <span class="status-badge guest">Guest</span>
+        <div
+          class="user-section"
+          style="display: flex; align-items: center; gap: 16px"
+        >
+          <div
+            class="user-avatar"
+            id="userAvatar"
+            style="
+              width: 40px;
+              height: 40px;
+              background: var(--bg-tertiary);
+              border: 2px solid var(--primary-neon);
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              font-size: 1.2rem;
+            "
+          >
+            👤
           </div>
-          <button id="profileLoginBtn" class="profile-action-btn" style="display: none; margin-left: auto;">Login</button>
-        </div>
-      
-      <p class="profile-bio" id="profileBio">Explore the world of inque</p>
-      
-      <!-- Profile Stats Row -->
-      <div class="profile-stats-row">
-        <div class="stat-item">
-          <span class="stat-label">Level</span>
-          <span class="stat-value" id="profileLvl">?</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Type</span>
-          <span class="stat-value" id="profileType">?</span>
-        </div>
-        <div class="stat-item">
-          <span class="stat-label">Role</span>
-          <span class="stat-value" id="profileRole">GUEST</span>
+          <span id="userName" style="color: var(--text-secondary)">Guest</span>
+          <button id="authBtn" class="neo-button">LOGIN</button>
         </div>
       </div>
+    </header>
 
-      <!-- Social Stats Row -->
-      <div class="profile-social-stats" id="profileSocialStats" style="display: none;">
-        <div class="social-stat-item">
-          <span class="social-stat-label">Followers</span>
-          <span class="social-stat-value" id="profileFollowers">0</span>
-        </div>
-        <div class="social-stat-item">
-          <span class="social-stat-label">Following</span>
-          <span class="social-stat-value" id="profileFollowing">0</span>
-        </div>
-        <div class="social-stat-item">
-          <span class="social-stat-label">Widgets</span>
-          <span class="social-stat-value" id="profileWidgets">0</span>
-        </div>
-        <div class="social-stat-item">
-          <span class="social-stat-label">Likes</span>
-          <span class="social-stat-value" id="profileLikes">0</span>
-        </div>
-      </div>
+    <!-- Main Content -->
+    <main style="margin-top: 120px">
+      <!-- Hero Section -->
+      <section
+        id="home-section"
+        class="neo-section"
+        style="
+          background: linear-gradient(
+            135deg,
+            #0a0a0a 0%,
+            #1a1a1a 50%,
+            #0a0a0a 100%
+          );
+        "
+      >
+        <div style="max-width: 1400px; margin: 0 auto">
+          <div style="text-align: center; padding: 60px 20px">
+            <h1
+              style="
+                font-size: 4rem;
+                font-family: &quot;Orbitron&quot;, monospace;
+                color: var(--primary-neon);
+                margin: 0 0 20px 0;
+              "
+              class="neo-text-glow"
+            >
+              WELCOME TO VIBE-CODERS
+            </h1>
+            <p
+              style="
+                font-size: 1.5rem;
+                color: var(--text-secondary);
+                margin: 0 0 40px 0;
+                max-width: 800px;
+                margin: 0 auto 40px auto;
+              "
+            >
+              The ultimate hub for developers using AI IDEs like Cursor, Bolt,
+              and Claude Code. Build faster, share knowledge, and stay ahead of
+              the curve.
+            </p>
 
-      <!-- Social Actions Row -->
-      <div class="profile-social-actions" id="profileSocialActions" style="display: none;">
-        <button class="social-action-btn" id="editProfileSocialBtn" title="Edit Profile">
-          <span class="social-action-icon">✏️</span>
-          <span class="social-action-text">Edit</span>
-        </button>
-        <button class="social-action-btn" id="shareProfileBtn" title="Share Profile">
-          <span class="social-action-icon">📤</span>
-          <span class="social-action-text">Share</span>
-        </button>
-        <button class="social-action-btn" id="viewActivityBtn" title="View Activity">
-          <span class="social-action-icon">📈</span>
-          <span class="social-action-text">Activity</span>
-        </button>
-      </div>
-
-      <!-- Navigation Buttons -->
-      <div class="profile-navigation">
-        <button class="nav-btn primary" data-page="about" title="Learn about inque">
-          <span class="nav-icon"></span>
-          <span class="nav-text">About</span>
-        </button>
-        <button class="nav-btn secondary" data-page="explore" title="Explore creations">
-          <span class="nav-icon"></span>
-          <span class="nav-text">Explore</span>
-        </button>
-        <button class="nav-btn secondary" data-page="inventory" title="View your items">
-          <span class="nav-icon"></span>
-          <span class="nav-text">Inventory</span>
-        </button>
-        <button class="nav-btn secondary" data-page="inventory" title="View your items">
-          <span class="nav-icon"></span>
-          <span class="nav-text">Blog</span>
-        </button>
-        <button id="leaveNoteBtn" class="nav-btn secondary" title="Leave a note in the yearbook">
-          <span class="nav-icon">📝</span>
-          <span class="nav-text">Leave a Note</span>
-        </button>
-      </div>
-    </div>
-
-    <!-- Collapse/Expand Button -->
-    <button id="collapseProfileBtn" class="collapse-profile-btn" aria-label="Toggle profile details">
-      <span class="collapse-icon">▼</span>
-    </button>
-  </div>
-</header>
-
-<main>
-  <!-- ... existing code ... -->
-<button class="quick-action-btn" data-action="openChatbot" onclick="openChatbot(); event.stopPropagation();">
-  <span class="quick-action-icon">🤖</span>
-  <span class="quick-action-text">Ask AI Assistant</span>
-</button>
-      <section class="timeline-nav">
-        <div class="timeline-3channel">
-            <div class="timeline-row top">
-              <div class="timeline-event" data-id="1">
-                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
-              </div>
-              <div class="timeline-event" data-id="3">
-                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
-              </div>
-              <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
-              </div>
-              <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
-              </div>
-              <div class="timeline-event" data-id="5">
-                <button class="edit-widget-btn" onclick="event.stopPropagation();">Edit</button>
-              </div>
-            </div>
-            <div class="timeline-row middle">
-              <div class="timeline-track"></div>
-              <div class="timeline-scrollbar">
-                <div class="timeline-scrollbar-handle">
-                  <span class="tooltip-text"
-                    >Double-click to lock/unlock scroll</span
-                  >
-                </div>
-              </div>
-            </div>
-            <div class="timeline-row bottom">
-              <div class="timeline-event" data-id="2"></div>
-              <div class="timeline-event" data-id="4"></div>
-              <div class="timeline-event" data-id="4"></div>
-              <div class="timeline-event" data-id="5"></div>
-              <div class="timeline-event" data-id="5"></div>
-            </div>
-          </div>
-        </section>
-      </main>
-      <footer>
-        <p style="color: #aaa; font-size: 0.8rem;">&copy; 2025 inque. All rights reserved.</p>
-      </footer>
-
-      <!-- Only ONE main script, loaded as a module -->
-      <script type="module" src="main.js"></script>
-              <script type="module" src="scripts/ui/canvas.js"></script>
-        <script type="module" src="scripts/widgets/widget-display.js"></script>
-        <script type="module" src="scripts/widgets/widget-upload.js"></script>
-        <script type="module" src="scripts/widgets/widget-preview.js"></script>
-        <script type="module" src="scripts/timeline-manager.js"></script>
-
-      <!-- Widget Preview Modal -->
-      <div id="widgetModal" class="modal" style="z-index: 4000;">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Widget Preview</h2>
-            <span class="close-button">&times;</span>
-          </div>
-          <div class="modal-body">
-            <iframe id="widgetFrame" src="" frameborder="0"></iframe>
-          </div>
-        </div>
-      </div>
-
-      <!-- Auth Modal -->
-      <div id="authModal" class="modal">
-        <div class="modal-content auth-modal-content">
-          <div class="modal-header">
-            <h2 id="authModalTitle" class="modal-title">Welcome to inque</h2>
-            <span class="close-button auth-close-button">&times;</span>
-          </div>
-          <div class="modal-body">
-            <!-- Login Form -->
-            <form id="loginForm" class="auth-form">
-              <div class="form-group">
-                <label for="loginEmail">Email Address</label>
-                <input type="email" id="loginEmail" placeholder="Enter your email" required>
-              </div>
-              <div class="form-group">
-                <label for="loginPassword">Password</label>
-                <div class="password-input-container">
-                  <input type="password" id="loginPassword" placeholder="Enter your password" required>
-                  <button type="button" class="password-toggle" id="loginPasswordToggle">👁️</button>
-                </div>
-              </div>
-              <div class="form-options">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="rememberMe">
-                  <span class="checkmark"></span>
-                  Remember me
-                </label>
-                <a href="#" class="forgot-password" id="forgotPasswordLink">Forgot password?</a>
-              </div>
-              <button type="submit" class="auth-submit-btn" id="loginSubmitBtn">
-                <span class="btn-text">Sign In</span>
-                <span class="btn-loader" style="display: none;">⏳</span>
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                class="neo-button neo-brutalist-accent"
+                style="font-size: 1.2rem; padding: 16px 32px"
+                onclick="testVibeCodersIntegration()"
+              >
+                🚀 START BUILDING
               </button>
-              
-              <div class="social-login">
-                <div class="divider">
-                  <span>or continue with</span>
-                </div>
-                <div class="social-buttons">
-                  <button type="button" class="social-btn google-btn" id="googleLoginBtn">
-                    <span class="social-icon">🔍</span>
-                    Google
-                  </button>
-                  <button type="button" class="social-btn github-btn" id="githubLoginBtn">
-                    <span class="social-icon">🐙</span>
-                    GitHub
-                  </button>
-                </div>
-              </div>
-              
-              <p class="auth-switch">
-                Don't have an account? <a href="#" id="showSignUp">Create one</a>
-              </p>
-            </form>
-
-            <!-- Sign Up Form -->
-            <form id="signUpForm" class="auth-form" style="display: none;">
-              <div class="form-group">
-                <label for="signUpDisplayName">Display Name</label>
-                <input type="text" id="signUpDisplayName" placeholder="Enter your display name" required>
-              </div>
-              <div class="form-group">
-                <label for="signUpUsername">Username</label>
-                <input type="text" id="signUpUsername" placeholder="Choose a username" required>
-                <div class="username-availability" id="usernameAvailability"></div>
-              </div>
-              <div class="form-group">
-                <label for="signUpEmail">Email Address</label>
-                <input type="email" id="signUpEmail" placeholder="Enter your email" required>
-              </div>
-              <div class="form-group">
-                <label for="signUpPassword">Password</label>
-                <div class="password-input-container">
-                  <input type="password" id="signUpPassword" placeholder="Create a password" required>
-                  <button type="button" class="password-toggle" id="signUpPasswordToggle">👁️</button>
-                </div>
-                <div class="password-strength" id="passwordStrength"></div>
-              </div>
-              <div class="form-group">
-                <label for="confirmPassword">Confirm Password</label>
-                <div class="password-input-container">
-                  <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
-                  <button type="button" class="password-toggle" id="confirmPasswordToggle">👁️</button>
-                </div>
-              </div>
-              <div class="form-group">
-                <label for="signUpBio">Bio (Optional)</label>
-                <textarea id="signUpBio" placeholder="Tell us about yourself..." rows="2"></textarea>
-              </div>
-              
-              <!-- Social Links Section -->
-              <div class="social-links-section">
-                <h4>Social Links (Optional)</h4>
-                <div class="social-links-grid">
-                  <div class="form-group">
-                    <label for="signUpTwitter">Twitter</label>
-                    <input type="url" id="signUpTwitter" placeholder="https://twitter.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="signUpInstagram">Instagram</label>
-                    <input type="url" id="signUpInstagram" placeholder="https://instagram.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="signUpGithub">GitHub</label>
-                    <input type="url" id="signUpGithub" placeholder="https://github.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="signUpWebsite">Website</label>
-                    <input type="url" id="signUpWebsite" placeholder="https://yourwebsite.com">
-                  </div>
-                </div>
-              </div>
-              
-              <div class="form-options">
-                <label class="checkbox-label">
-                  <input type="checkbox" id="agreeTerms" required>
-                  <span class="checkmark"></span>
-                  I agree to the <a href="#" class="terms-link">Terms of Service</a> and <a href="#" class="terms-link">Privacy Policy</a>
-                </label>
-                <label class="checkbox-label">
-                  <input type="checkbox" id="emailNotifications" checked>
-                  <span class="checkmark"></span>
-                  Receive email notifications
-                </label>
-              </div>
-              <button type="submit" class="auth-submit-btn" id="signUpSubmitBtn">
-                <span class="btn-text">Create Account</span>
-                <span class="btn-loader" style="display: none;">⏳</span>
+              <button
+                class="neo-button"
+                style="font-size: 1.2rem; padding: 16px 32px"
+              >
+                📚 EXPLORE GUIDES
               </button>
-              
-              <div class="social-login">
-                <div class="divider">
-                  <span>or sign up with</span>
-                </div>
-                <div class="social-buttons">
-                  <button type="button" class="social-btn google-btn" id="googleSignUpBtn">
-                    <span class="social-icon">🔍</span>
-                    Google
-                  </button>
-                  <button type="button" class="social-btn github-btn" id="githubSignUpBtn">
-                    <span class="social-icon">🐙</span>
-                    GitHub
-                  </button>
-                </div>
-              </div>
-              <p class="auth-switch">
-                Already have an account? <a href="#" id="showLogin">Sign in</a>
+            </div>
+          </div>
+
+          <!-- Quick Stats -->
+          <div class="neo-grid" style="max-width: 1000px; margin: 0 auto">
+            <div class="neo-card">
+              <h3 style="color: var(--primary-neon); margin: 0 0 16px 0">
+                📊 ACTIVE VIBE-CODERS
+              </h3>
+              <div style="font-size: 2rem; font-weight: bold">1,247</div>
+              <p style="color: var(--text-secondary); margin: 8px 0 0 0">
+                Building with AI IDEs
               </p>
-            </form>
+            </div>
 
-            <!-- Forgot Password Form -->
-            <form id="forgotPasswordForm" class="auth-form" style="display: none;">
-              <div class="form-group">
-                <label for="forgotPasswordEmail">Email Address</label>
-                <input type="email" id="forgotPasswordEmail" placeholder="Enter your email" required>
-              </div>
-              <button type="submit" class="auth-submit-btn" id="forgotPasswordSubmitBtn">
-                <span class="btn-text">Send Reset Link</span>
-                <span class="btn-loader" style="display: none;">⏳</span>
-              </button>
-              <p class="auth-switch">
-                Remember your password? <a href="#" id="showLoginFromForgot">Sign in</a>
+            <div class="neo-card">
+              <h3 style="color: var(--secondary-neon); margin: 0 0 16px 0">
+                📝 GUIDES SHARED
+              </h3>
+              <div style="font-size: 2rem; font-weight: bold">342</div>
+              <p style="color: var(--text-secondary); margin: 8px 0 0 0">
+                Knowledge base growing
               </p>
-            </form>
-          </div>
-        </div>
-      </div>
+            </div>
 
-      <!-- Collaborative Canvas Modal -->
-      <div id="canvasModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Collaborative Canvas</h2>
-            <span class="close-button canvas-close-button">&times;</span>
-          </div>
-          <div class="modal-body">
-            <canvas id="collabCanvas"></canvas>
-            <span class="canvas-tooltip-text"></span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Widget Studio Modal -->
-      <div id="widgetStudioModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Widget Studio</h2>
-            <span class="close-button widget-studio-close-button">&times;</span>
-          </div>
-          <div class="modal-body">
-            <div class="widget-studio-content">
-              <div class="studio-section">
-                <h3>Create New Widget</h3>
-                <p>Upload your HTML, CSS, and JavaScript files to create an interactive widget.</p>
-                <div class="file-upload-area">
-                  <input type="file" id="widgetFileInput" multiple accept=".html,.css,.js,.png,.jpg,.jpeg,.gif,.svg,.json" />
-                  <label for="widgetFileInput" class="upload-label">
-                    <span class="upload-icon">📁</span>
-                    <span>Choose files or drag them here</span>
-                  </label>
-                </div>
-                <div class="uploaded-files" id="uploadedFiles"></div>
-                <button class="create-widget-btn" id="createWidgetBtn" disabled>Create Widget</button>
-              </div>
+            <div class="neo-card">
+              <h3 style="color: var(--accent-neon); margin: 0 0 16px 0">
+                ⚡ PROJECTS BUILT
+              </h3>
+              <div style="font-size: 2rem; font-weight: bold">856</div>
+              <p style="color: var(--text-secondary); margin: 8px 0 0 0">
+                Showcased creations
+              </p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- Test Buttons for Debugging -->
-      <div style="position: fixed; top: 10px; right: 10px; z-index: 9999; background: rgba(0,0,0,0.8); padding: 10px; border-radius: 5px; color: white;">
-        <button onclick="window.openWidgetStudio()" style="margin: 5px; padding: 5px 10px;">Test Widget Studio</button>
-        <button onclick="window.openEditProfile()" style="margin: 5px; padding: 5px 10px;">Test Edit Profile</button>
-        <button onclick="window.debugModals()" style="margin: 5px; padding: 5px 10px; background: #ff6b6b;">Debug Modals</button>
-      </div>
+      <!-- Guides Section -->
+      <section id="guides-section" class="neo-section" style="display: none">
+        <div style="max-width: 1400px; margin: 0 auto">
+          <h2
+            style="
+              font-size: 3rem;
+              color: var(--primary-neon);
+              text-align: center;
+              margin-bottom: 40px;
+            "
+            class="neo-text-glow"
+          >
+            📚 GUIDES
+          </h2>
 
-      <!-- Edit Profile Modal -->
-      <div id="editProfileModal" class="modal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">Edit Profile</h2>
-            <span class="close-button edit-profile-close-button">&times;</span>
+          <div style="text-align: center; margin-bottom: 40px">
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                margin-bottom: 20px;
+              "
+            >
+              Master AI IDE development with step-by-step guides from the
+              community
+            </p>
+            <button class="neo-button neo-brutalist-accent" id="createGuideBtn">
+              ✍️ CREATE GUIDE
+            </button>
           </div>
-          <div class="modal-body">
-            <form id="editProfileForm" class="edit-profile-form">
-              <div class="form-group">
-                <label for="editDisplayName">Display Name</label>
-                <input type="text" id="editDisplayName" placeholder="Enter your display name" required>
-              </div>
-              <div class="form-group">
-                <label for="editBio">Bio</label>
-                <textarea id="editBio" placeholder="Tell us about yourself..." rows="3"></textarea>
-              </div>
-              <div class="form-group">
-                <label for="editPhoto">Profile Photo</label>
-                <input type="file" id="editPhoto" accept="image/*">
-                <div class="photo-preview" id="photoPreview"></div>
-              </div>
-              <div class="social-links-section">
-                <h4>Social Links</h4>
-                <div class="social-links-grid">
-                  <div class="form-group">
-                    <label for="editTwitter">Twitter</label>
-                    <input type="url" id="editTwitter" placeholder="https://twitter.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="editInstagram">Instagram</label>
-                    <input type="url" id="editInstagram" placeholder="https://instagram.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="editGithub">GitHub</label>
-                    <input type="url" id="editGithub" placeholder="https://github.com/username">
-                  </div>
-                  <div class="form-group">
-                    <label for="editWebsite">Website</label>
-                    <input type="url" id="editWebsite" placeholder="https://yourwebsite.com">
-                  </div>
-                </div>
-              </div>
-              <div class="form-actions">
-                <button type="button" class="cancel-btn" id="cancelEditBtn">Cancel</button>
-                <button type="submit" class="save-btn">Save Changes</button>
-              </div>
-            </form>
+
+          <div class="neo-grid" id="guidesGrid">
+            <!-- Guides will be populated here -->
           </div>
         </div>
-      </div>
+      </section>
 
-      <!-- AI Chatbot Modal -->
-      <div id="chatbotModal" class="modal">
-        <div class="modal-content chatbot-modal-content">
-          <div class="modal-header">
-            <h2 class="modal-title">🤖 AI Assistant</h2>
-            <span class="close-button chatbot-close-button">&times;</span>
+      <!-- Showcase Section -->
+      <section id="showcase-section" class="neo-section" style="display: none">
+        <div style="max-width: 1400px; margin: 0 auto">
+          <h2
+            style="
+              font-size: 3rem;
+              color: var(--secondary-neon);
+              text-align: center;
+              margin-bottom: 40px;
+            "
+            class="neo-text-glow"
+          >
+            🏆 SHOWCASE
+          </h2>
+
+          <div style="text-align: center; margin-bottom: 40px">
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                margin-bottom: 20px;
+              "
+            >
+              See what the Vibe-coders community has built using AI IDEs
+            </p>
+            <button
+              class="neo-button neo-brutalist-accent"
+              id="addToShowcaseBtn"
+            >
+              ➕ ADD TO SHOWCASE
+            </button>
           </div>
-          <div class="modal-body">
-            <div class="chatbot-container">
-              <div class="chat-messages" id="chatMessages">
-                <div class="message ai-message">
-                  <div class="message-avatar">🤖</div>
-                  <div class="message-content">
-                    <p>Hello! I'm your AI assistant. I can help you understand the features of this application, answer questions about widgets, and guide you through the platform. What would you like to know?</p>
-                  </div>
-                </div>
+
+          <div class="neo-grid" id="showcaseGrid">
+            <!-- Showcase projects will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Inspiration Section -->
+      <section
+        id="inspiration-section"
+        class="neo-section"
+        style="display: none"
+      >
+        <div style="max-width: 1400px; margin: 0 auto">
+          <h2
+            style="
+              font-size: 3rem;
+              color: var(--accent-neon);
+              text-align: center;
+              margin-bottom: 40px;
+            "
+            class="neo-text-glow"
+          >
+            💡 INSPIRATION
+          </h2>
+
+          <div style="text-align: center; margin-bottom: 40px">
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                margin-bottom: 20px;
+              "
+            >
+              Find inspiration from beautiful web designs and creative coding
+              examples
+            </p>
+          </div>
+
+          <div class="neo-grid" id="inspirationGrid">
+            <!-- Inspiration content will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- Tools Section -->
+      <section id="tools-section" class="neo-section" style="display: none">
+        <div style="max-width: 1400px; margin: 0 auto">
+          <h2
+            style="
+              font-size: 3rem;
+              color: var(--warning-neon);
+              text-align: center;
+              margin-bottom: 40px;
+            "
+            class="neo-text-glow"
+          >
+            🛠️ TOOLS
+          </h2>
+
+          <div style="text-align: center; margin-bottom: 40px">
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                margin-bottom: 20px;
+              "
+            >
+              Complete library of tools to supercharge your development workflow
+            </p>
+          </div>
+
+          <div style="margin-bottom: 40px">
+            <div
+              style="
+                display: flex;
+                gap: 16px;
+                justify-content: center;
+                margin-bottom: 32px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                class="neo-button tool-category active"
+                data-category="ai-ides"
+              >
+                AI IDEs
+              </button>
+              <button class="neo-button tool-category" data-category="design">
+                Design Tools
+              </button>
+              <button
+                class="neo-button tool-category"
+                data-category="productivity"
+              >
+                Productivity
+              </button>
+              <button
+                class="neo-button tool-category"
+                data-category="templates"
+              >
+                Templates
+              </button>
+            </div>
+          </div>
+
+          <div class="neo-grid" id="toolsGrid">
+            <!-- Tools will be populated here -->
+          </div>
+        </div>
+      </section>
+
+      <!-- My Projects Section -->
+      <section id="projects-section" class="neo-section" style="display: none">
+        <div style="max-width: 1400px; margin: 0 auto">
+          <h2
+            style="
+              font-size: 3rem;
+              color: var(--error-neon);
+              text-align: center;
+              margin-bottom: 40px;
+            "
+            class="neo-text-glow"
+          >
+            🚀 MY PROJECTS
+          </h2>
+
+          <div style="text-align: center; margin-bottom: 40px">
+            <p
+              style="
+                font-size: 1.2rem;
+                color: var(--text-secondary);
+                margin-bottom: 20px;
+              "
+            >
+              Your complete development workspace - from GitHub to deployment
+            </p>
+            <div
+              style="
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                flex-wrap: wrap;
+              "
+            >
+              <button
+                class="neo-button neo-brutalist-accent"
+                id="connectGithubBtn"
+              >
+                🔗 CONNECT GITHUB
+              </button>
+              <button class="neo-button" id="createProjectBtn">
+                ➕ NEW PROJECT
+              </button>
+            </div>
+          </div>
+
+          <!-- Project Management Interface -->
+          <div class="neo-card" style="margin-bottom: 32px">
+            <div
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 24px;
+              "
+            >
+              <div style="text-align: center">
+                <div style="font-size: 3rem; margin-bottom: 8px">📁</div>
+                <h4 style="color: var(--primary-neon); margin: 0 0 8px 0">
+                  Files & Assets
+                </h4>
+                <p
+                  style="
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    margin: 0;
+                  "
+                >
+                  Upload and manage project files, documentation, and assets
+                </p>
               </div>
-              
-              <div class="chat-input-container">
-                <input type="text" id="chatInput" class="chat-input" placeholder="Ask me anything about the application..." maxlength="500">
-                <button id="sendChatBtn" class="send-chat-btn">
-                  <span class="btn-icon">📤</span>
-                  Send
+
+              <div style="text-align: center">
+                <div style="font-size: 3rem; margin-bottom: 8px">📊</div>
+                <h4 style="color: var(--secondary-neon); margin: 0 0 8px 0">
+                  Project Planning
+                </h4>
+                <p
+                  style="
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    margin: 0;
+                  "
+                >
+                  Gantt charts, timelines, and project management tools
+                </p>
+              </div>
+
+              <div style="text-align: center">
+                <div style="font-size: 3rem; margin-bottom: 8px">💻</div>
+                <h4 style="color: var(--accent-neon); margin: 0 0 8px 0">
+                  GitHub Integration
+                </h4>
+                <p
+                  style="
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    margin: 0;
+                  "
+                >
+                  Sync with your repositories and manage codebases
+                </p>
+              </div>
+
+              <div style="text-align: center">
+                <div style="font-size: 3rem; margin-bottom: 8px">🎨</div>
+                <h4 style="color: var(--warning-neon); margin: 0 0 8px 0">
+                  Widget Studio
+                </h4>
+                <p
+                  style="
+                    color: var(--text-secondary);
+                    font-size: 0.9rem;
+                    margin: 0;
+                  "
+                >
+                  Create and manage interactive widgets for your projects
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Project Timeline (Widget Display Integration) -->
+          <div class="neo-card">
+            <h3
+              style="
+                color: var(--primary-neon);
+                margin: 0 0 24px 0;
+                text-align: center;
+              "
+            >
+              📅 PROJECT TIMELINE
+            </h3>
+            <div id="projectTimeline" style="min-height: 300px">
+              <!-- Timeline will be populated by timeline-manager.js -->
+              <div
+                style="
+                  text-align: center;
+                  color: var(--text-secondary);
+                  padding: 40px;
+                "
+              >
+                <div style="font-size: 4rem; margin-bottom: 16px">⚡</div>
+                <p>
+                  Connect your GitHub and start building amazing projects with
+                  AI assistance!
+                </p>
+                <button
+                  class="neo-button neo-brutalist-accent"
+                  style="margin-top: 20px"
+                >
+                  GET STARTED →
                 </button>
               </div>
-              
-              <div class="chat-suggestions">
-                <p class="suggestions-title">Quick questions you can ask:</p>
-                <div class="suggestion-chips">
-                  <button class="suggestion-chip" data-question="What is this application about?">What is this application about?</button>
-                  <button class="suggestion-chip" data-question="How do I upload a widget?">How do I upload a widget?</button>
-                  <button class="suggestion-chip" data-question="What are the main features?">What are the main features?</button>
-                  <button class="suggestion-chip" data-question="How do I edit my profile?">How do I edit my profile?</button>
-                </div>
-              </div>
             </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Footer -->
+    <footer
+      style="
+        background: var(--bg-secondary);
+        border-top: var(--border-width) solid var(--primary-neon);
+        padding: 40px 20px;
+        margin-top: 60px;
+      "
+    >
+      <div style="max-width: 1400px; margin: 0 auto">
+        <div
+          style="
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 40px;
+          "
+        >
+          <div>
+            <h3
+              style="
+                color: var(--primary-neon);
+                margin: 0 0 16px 0;
+                font-family: &quot;Orbitron&quot;, monospace;
+              "
+            >
+              VIBE-CODERS
+            </h3>
+            <p style="color: var(--text-secondary); margin: 0">
+              The ultimate development hub for AI IDE users. Build faster, share
+              knowledge, and create amazing software.
+            </p>
+          </div>
+
+          <div>
+            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
+              PLATFORM
+            </h4>
+            <ul style="list-style: none; padding: 0; margin: 0">
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Guides</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Showcase</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Tools</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Inspiration</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
+              COMMUNITY
+            </h4>
+            <ul style="list-style: none; padding: 0; margin: 0">
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Discord</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >GitHub</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Twitter</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Newsletter</a
+                >
+              </li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
+              RESOURCES
+            </h4>
+            <ul style="list-style: none; padding: 0; margin: 0">
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Documentation</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >API Reference</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Support</a
+                >
+              </li>
+              <li style="margin-bottom: 8px">
+                <a
+                  href="#"
+                  style="color: var(--text-secondary); text-decoration: none"
+                  >Privacy Policy</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div
+          style="
+            border-top: 1px solid var(--primary-neon);
+            margin-top: 40px;
+            padding-top: 20px;
+            text-align: center;
+          "
+        >
+          <p style="color: var(--text-secondary); margin: 0">
+            © 2024 VIBE-CODERS. Built with ❤️ by the developer community.
+          </p>
+        </div>
+      </div>
+    </footer>
+
+    <!-- Modals and Overlays -->
+    <div id="authModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 400px">
+        <div
+          class="modal-header"
+          style="
+            border-bottom: 2px solid var(--primary-neon);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <h2 class="modal-title" style="color: var(--primary-neon); margin: 0">
+            LOGIN
+          </h2>
+          <span class="close-button" style="font-size: 1.5rem; cursor: pointer"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <!-- Auth form content will be populated by main.js -->
+          <div id="authFormContainer">
+            <button class="neo-button" style="width: 100%; margin-bottom: 16px">
+              🔗 Continue with GitHub
+            </button>
+            <button class="neo-button" style="width: 100%; margin-bottom: 16px">
+              📧 Continue with Email
+            </button>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- Toast Container -->
+    <div
+      id="toast-container"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    ></div>
+
+    <!-- Missing DOM Elements for Legacy Compatibility -->
+    <div id="profile-banner" style="display: none">
+      <div id="profileName">User</div>
+      <div id="profileBio">Bio</div>
+      <div id="profileSocialStats" style="display: none">
+        <div>Followers: <span id="profileFollowers">0</span></div>
+        <div>Following: <span id="profileFollowing">0</span></div>
+        <div>Widgets: <span id="profileWidgets">0</span></div>
+        <div>Likes: <span id="profileLikes">0</span></div>
+      </div>
+      <div id="profileSocialActions" style="display: none">
+        <button id="editProfileSocialBtn">Edit Profile</button>
+        <button id="shareProfileBtn">Share Profile</button>
+        <button id="viewActivityBtn">View Activity</button>
+      </div>
+    </div>
+
+    <div id="sidebar-nav" style="display: none">
+      <button id="sidebarLoginBtn">Login</button>
+      <button id="tutorialBtn">Tutorial</button>
+      <button id="editProfileQuickBtn">Edit Profile</button>
+      <button id="leaveNoteBtn">Leave a Note</button>
+      <button id="collapseProfileBtn">
+        <span class="collapse-icon">▼</span>
+      </button>
+    </div>
+
+    <div id="timeline-3channel" style="display: none"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="main.js"></script>
+    <script type="module" src="scripts/ui/navigation.js"></script>
+    <script type="module" src="scripts/ui/tools-filter.js"></script>
+    <script type="module" src="scripts/timeline-manager.js"></script>
+    <script type="module" src="scripts/widgets/widget-display.js"></script>
+    <script type="module" src="scripts/widgets/widget-upload.js"></script>
+    <script type="module" src="scripts/widgets/widget-preview.js"></script>
+    <script type="module" src="scripts/upload/cloud-upload.js"></script>
+    <script type="module" src="scripts/social/social-features.js"></script>
+
+    <!-- Test and Debug Functions -->
+    <script>
+      // Test function for Vibe-coders integration
+      window.testVibeCodersIntegration = function () {
+        console.log("🧪 Testing Vibe-coders Integration...");
+
+        // Test toast notifications
+        if (window.showToast) {
+          window.showToast("🎉 Vibe-coders platform is working!", "success");
+          setTimeout(() => {
+            window.showToast(
+              "🔧 Integration system loaded successfully",
+              "info"
+            );
+          }, 1000);
+          setTimeout(() => {
+            window.showToast("🚀 Ready to build amazing things!", "success");
+          }, 2000);
+        } else {
+          alert("Toast system not loaded");
+        }
+
+        // Test navigation
+        if (window.navigationManager) {
+          console.log("✅ Navigation manager found");
+          console.log(
+            "Current section:",
+            window.navigationManager.getCurrentSection()
+          );
+        } else {
+          console.log("❌ Navigation manager not found");
+        }
+
+        // Test tools filter
+        if (window.toolsFilterManager) {
+          console.log("✅ Tools filter manager found");
+          console.log(
+            "Tools count:",
+            window.toolsFilterManager.getToolsCount()
+          );
+        } else {
+          console.log("❌ Tools filter manager not found");
+        }
+
+        // Test integration
+        if (window.vibeCodersIntegration) {
+          console.log("✅ Vibe-coders integration found");
+          console.log(
+            "Integration status:",
+            window.vibeCodersIntegration.getIntegrationStatus()
+          );
+        } else {
+          console.log("❌ Vibe-coders integration not found");
+        }
+
+        console.log("🧪 Test completed! Check console for details.");
+      };
+
+      // Debug function to check all systems
+      window.debugVibeCoders = function () {
+        console.log("🔍 VIBE-CODERS DEBUG REPORT");
+        console.log("========================");
+        console.log("Platform:", document.title);
+        console.log("URL:", window.location.href);
+        console.log("User Agent:", navigator.userAgent);
+        console.log("Window size:", window.innerWidth, "x", window.innerHeight);
+
+        // Check for required elements
+        const requiredElements = [
+          "authBtn",
+          "userName",
+          "userAvatar",
+          "toast-container",
+          "home-section",
+          "guides-section",
+          "showcase-section",
+          "inspiration-section",
+          "tools-section",
+          "projects-section",
+        ];
+
+        console.log("📋 Required Elements Check:");
+        requiredElements.forEach((id) => {
+          const element = document.getElementById(id);
+          console.log(
+            `${element ? "✅" : "❌"} ${id}: ${element ? "Found" : "Missing"}`
+          );
+        });
+
+        // Check for required functions
+        const requiredFunctions = [
+          "showToast",
+          "navigationManager",
+          "toolsFilterManager",
+          "vibeCodersIntegration",
+          "testVibeCodersIntegration",
+        ];
+
+        console.log("🔧 Required Functions Check:");
+        requiredFunctions.forEach((func) => {
+          const exists = typeof window[func] === "function";
+          console.log(
+            `${exists ? "✅" : "❌"} ${func}: ${exists ? "Available" : "Missing"}`
+          );
+        });
+
+        console.log("========================");
+        console.log("Debug report completed!");
+      };
+
+      // Auto-run debug on page load
+      document.addEventListener("DOMContentLoaded", () => {
+        setTimeout(() => {
+          console.log("🔍 Auto-running Vibe-coders debug...");
+          if (window.debugVibeCoders) {
+            window.debugVibeCoders();
+          }
+        }, 2000);
+      });
+    </script>
   </body>
 </html>
-
-<!-- Toast Notification System -->
-<div id="toast-container" class="toast-container">
-  <!-- Toast notifications will be dynamically added here -->
-</div>
-
-<div id="error-toast" class="error-toast">
-  <span id="error-toast-message"></span>
-  <button id="error-toast-close">&times;</button>
-</div>
-
-
-
-<!-- Chatbot Script (regular script so openChatbot is global) -->
-<script src="pages/page_modals/modal_scripts/chatbot.js"></script>
-
-

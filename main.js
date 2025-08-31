@@ -101,6 +101,20 @@ try {
   DEBUG.error("Error importing social features", error);
 }
 
+// Import Vibe-coders integration
+DEBUG.log("Importing Vibe-coders integration");
+try {
+  import("./scripts/integration/vibe-coders-integration.js")
+    .then(() => {
+      DEBUG.log("Vibe-coders integration imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import Vibe-coders integration", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing Vibe-coders integration", error);
+}
+
 // Note: widget-display and timeline-manager are loaded via script tags in index.html
 
 // Enhanced initialization with feature detection
