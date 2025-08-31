@@ -1,11 +1,16 @@
-import { db, auth, storage } from "../core/firebase-core.js";
+import {
+  db,
+  auth,
+  storage,
+  onAuthStateChanged,
+} from "../core/firebase-core.js";
 import {
   collection,
   query,
   where,
   getDocs,
   doc,
-  updateDoc
+  updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   createProject,
@@ -49,18 +54,25 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
       }
 
+      DEBUG.log("Timeline Manager: User authenticated", { uid: user.uid });
+
       // Load widgets from the widgets collection instead of projects
       const widgetsRef = collection(db, "widgets");
       const q = query(widgetsRef, where("userId", "==", user.uid));
       const querySnapshot = await getDocs(q);
-      
-      timelineProjects = querySnapshot.docs.map(doc => {
+
+      DEBUG.log("Timeline Manager: Widgets query executed", {
+        querySnapshotSize: querySnapshot.size,
+      });
+
+      timelineProjects = querySnapshot.docs.map((doc) => {
         const data = doc.data();
         DEBUG.log("Timeline Manager: Processing widget", {
           id: doc.id,
           title: data.title,
           slot: data.slot,
-          userId: data.userId
+          userId: data.userId,
+          fileCount: data.files?.length || 0,
         });
         return {
           id: doc.id,
@@ -68,13 +80,17 @@ document.addEventListener("DOMContentLoaded", async function () {
           desc: data.description || "No description available",
           slot: data.slot,
           files: data.files || [],
-          createdAt: data.createdAt
+          createdAt: data.createdAt,
         };
       });
 
       DEBUG.log("Timeline Manager: Widgets loaded successfully", {
         count: timelineProjects.length,
-        widgets: timelineProjects.map(w => ({ id: w.id, title: w.title, slot: w.slot }))
+        widgets: timelineProjects.map((w) => ({
+          id: w.id,
+          title: w.title,
+          slot: w.slot,
+        })),
       });
     } catch (error) {
       DEBUG.error("Timeline Manager: Failed to load widgets", error);
@@ -90,12 +106,12 @@ document.addEventListener("DOMContentLoaded", async function () {
   async function renderAllWidgetCards() {
     DEBUG.log("Timeline Manager: Rendering all widget cards");
     await loadTimelineProjects();
-    
+
     const timelineEvents = document.querySelectorAll(".timeline-event");
     DEBUG.log("Timeline Manager: Found timeline events", {
       count: timelineEvents.length,
     });
-    
+
     if (timelineEvents.length === 0) {
       DEBUG.warn("Timeline Manager: No timeline events found in DOM");
       return;
@@ -150,7 +166,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 await updateDoc(widgetRef, {
                   title: newTitle,
                   description: newDesc,
-                  updatedAt: new Date()
+                  updatedAt: new Date(),
                 });
                 DEBUG.log("Timeline Manager: Widget updated successfully", {
                   projectId: project.id,
@@ -158,10 +174,7 @@ document.addEventListener("DOMContentLoaded", async function () {
                 currentlyEditingCard = null;
                 renderAllWidgetCards();
               } catch (error) {
-                DEBUG.error(
-                  "Timeline Manager: Failed to update widget",
-                  error
-                );
+                DEBUG.error("Timeline Manager: Failed to update widget", error);
                 alert("Failed to update widget: " + error.message);
               }
             });
@@ -173,12 +186,36 @@ document.addEventListener("DOMContentLoaded", async function () {
               renderAllWidgetCards();
             });
         } else {
-          // Normal display mode
+          // Normal display mode with live widget iframe
           card.innerHTML = `
+            <div class="widget-preview" style="margin-bottom:8px;">
+              <iframe class="widget-iframe" title="Widget Preview" style="width:100%;height:240px;border:0;border-radius:8px;background:#0b0b0b"></iframe>
+            </div>
             <h3>${project.title || "Untitled Widget"}</h3>
             <p>${project.desc || "No description available"}</p>
             <button class="widget-edit-btn">✏️ Edit</button>
           `;
+
+          const iframe = card.querySelector(".widget-iframe");
+          iframe.setAttribute(
+            "sandbox",
+            "allow-scripts allow-same-origin allow-forms"
+          );
+
+          // Asynchronously load widget HTML with asset URLs rewritten
+          loadWidgetIntoIframe(project, iframe).catch((error) => {
+            DEBUG.error(
+              "Timeline Manager: Failed to load widget into iframe",
+              error
+            );
+            iframe.replaceWith(
+              Object.assign(document.createElement("div"), {
+                className: "widget-preview-error",
+                textContent: "Failed to load widget preview",
+              })
+            );
+          });
+
           card
             .querySelector(".widget-edit-btn")
             .addEventListener("click", () => {
@@ -204,6 +241,72 @@ document.addEventListener("DOMContentLoaded", async function () {
     });
 
     DEBUG.log("Timeline Manager: All widget cards rendered");
+  }
+
+  // Create a blob URL for widget's HTML with asset paths rewritten to Firebase download URLs
+  async function loadWidgetIntoIframe(project, iframeEl) {
+    try {
+      const files = Array.isArray(project.files) ? project.files : [];
+      if (files.length === 0) {
+        DEBUG.warn("Timeline Manager: Project has no files", {
+          projectId: project.id,
+        });
+        return;
+      }
+
+      const fileMap = {};
+      files.forEach((f) => {
+        if (f && f.fileName && f.downloadURL) {
+          fileMap[f.fileName] = f.downloadURL;
+        }
+      });
+
+      DEBUG.log("Timeline Manager: File map created", {
+        fileCount: Object.keys(fileMap).length,
+        files: Object.keys(fileMap),
+      });
+
+      // Prefer index.html, else first html file
+      const htmlFileName =
+        Object.keys(fileMap).find((n) => /index\.html?$/i.test(n)) ||
+        Object.keys(fileMap).find((n) => /\.html?$/i.test(n));
+
+      if (!htmlFileName) {
+        DEBUG.warn("Timeline Manager: No HTML file found for widget", {
+          projectId: project.id,
+        });
+        return;
+      }
+
+      DEBUG.log("Timeline Manager: Loading widget HTML", { htmlFileName });
+      const res = await fetch(fileMap[htmlFileName]);
+      const originalHtml = await res.text();
+
+      const resolveMappedUrl = (path) => {
+        if (!path) return null;
+        const cleaned = path.replace(/^\.\//, "").replace(/^\//, "");
+        if (fileMap[cleaned]) return fileMap[cleaned];
+        const base = cleaned.split("/").pop();
+        return fileMap[base] || null;
+      };
+
+      // Rewrite src/href for local asset references to their Firebase download URLs
+      const processedHtml = originalHtml.replace(
+        /(href|src)=["']([^"']+)["']/gi,
+        (match, attr, value) => {
+          const mapped = resolveMappedUrl(value);
+          return mapped ? `${attr}="${mapped}"` : match;
+        }
+      );
+
+      const blob = new Blob([processedHtml], { type: "text/html" });
+      const url = URL.createObjectURL(blob);
+      iframeEl.src = url;
+      DEBUG.log("Timeline Manager: Widget iframe set with blob URL");
+    } catch (error) {
+      DEBUG.error("Timeline Manager: Error preparing widget iframe", error);
+      throw error;
+    }
   }
 
   // Listen for Edit Profile button (assume it has id 'editProfileQuickBtn')
@@ -238,6 +341,21 @@ document.addEventListener("DOMContentLoaded", async function () {
   // Initial render
   DEBUG.log("Timeline Manager: Performing initial render");
   renderAllWidgetCards();
+
+  // Add auth state listener to re-render when auth changes
+  DEBUG.log("Timeline Manager: Setting up auth state listener");
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      DEBUG.log("Timeline Manager: User authenticated, re-rendering timeline", {
+        uid: user.uid,
+      });
+      renderAllWidgetCards();
+    } else {
+      DEBUG.log("Timeline Manager: User signed out, clearing timeline");
+      timelineProjects = [];
+      renderAllWidgetCards();
+    }
+  });
 
   // Widget Modal Function
   function openWidgetModal(widgetPath, widgetTitle) {
@@ -303,14 +421,6 @@ document.addEventListener("DOMContentLoaded", async function () {
   const categoryModal = document.getElementById("categoryModal");
   const categoryModalBody = document.getElementById("categoryModalBody");
   const categoryModalClose = document.querySelector(".category-modal-close");
-
-  const widgetPaths = [
-    "widgets/app-widget-1/widget.html",
-    "widgets/widget2/index.html",
-    "widgets/widget3/index.html",
-    "widgets/widget4/index.html",
-    "widgets/widget5/index.html",
-  ];
 
   if (categoryModalClose) {
     DEBUG.log("Timeline Manager: Setting up category modal close button");

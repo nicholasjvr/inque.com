@@ -1,5 +1,5 @@
 // scripts/widget-display.js
-import { db, auth, storage } from "../firebase/firebase-init.js";
+import { db, auth, storage } from "../core/firebase-core.js";
 import {
   doc,
   getDoc,
@@ -101,6 +101,22 @@ export class WidgetDisplay {
   }
 
   /**
+   * Helper function to find HTML file in widget files array
+   */
+  findHtmlFile(files) {
+    if (!Array.isArray(files) || files.length === 0) return null;
+
+    // First try to find index.html
+    const indexFile = files.find(
+      (f) => f.fileName && /index\.html?$/i.test(f.fileName)
+    );
+    if (indexFile) return indexFile;
+
+    // Fallback to any HTML file
+    return files.find((f) => f.fileName && /\.html?$/i.test(f.fileName));
+  }
+
+  /**
    * Setup widget slots in the UI
    */
   setupWidgetSlots() {
@@ -125,14 +141,11 @@ export class WidgetDisplay {
     if (
       widgetForSlot &&
       widgetForSlot.files &&
-      widgetForSlot.files["index.html"]
+      this.findHtmlFile(widgetForSlot.files)
     ) {
       // Widget exists - show iframe
-      this.showWidgetIframe(
-        container,
-        widgetForSlot.files["index.html"],
-        widgetForSlot
-      );
+      const htmlFile = this.findHtmlFile(widgetForSlot.files);
+      this.showWidgetIframe(container, htmlFile.downloadURL, widgetForSlot);
     } else {
       // No widget - show upload interface
       this.showUploadInterface(container, slotNumber);
@@ -291,9 +304,8 @@ export class WidgetDisplay {
     const fileList = Array.from(files)
       .map((file) => file.name)
       .join(", ");
-    uploadForm.querySelector(
-      ".upload-placeholder p"
-    ).textContent = `Selected: ${fileList}`;
+    uploadForm.querySelector(".upload-placeholder p").textContent =
+      `Selected: ${fileList}`;
   }
 
   /**
@@ -361,8 +373,14 @@ export class WidgetDisplay {
    */
   previewWidget(widgetId) {
     const widgetData = this.widgetData[widgetId];
-    if (!widgetData || !widgetData.files["index.html"]) {
-      this.showToast("Widget not found or invalid", "error");
+    if (!widgetData) {
+      this.showToast("Widget not found", "error");
+      return;
+    }
+
+    const htmlFile = this.findHtmlFile(widgetData.files);
+    if (!htmlFile || !htmlFile.downloadURL) {
+      this.showToast("Widget HTML file not found", "error");
       return;
     }
 
@@ -380,7 +398,7 @@ export class WidgetDisplay {
           </div>
           <div class="modal-body">
             <iframe 
-              src="${widgetData.files["index.html"]}" 
+              src="${htmlFile.downloadURL}" 
               class="widget-preview-iframe"
               frameborder="0"
               sandbox="allow-scripts allow-same-origin allow-forms"
@@ -407,7 +425,7 @@ export class WidgetDisplay {
 
     // Update modal content
     modal.querySelector("h3").textContent = widgetData.title;
-    modal.querySelector("iframe").src = widgetData.files["index.html"];
+    modal.querySelector("iframe").src = htmlFile.downloadURL;
     modal.style.display = "block";
   }
 

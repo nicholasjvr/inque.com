@@ -678,6 +678,9 @@ class SocialFeaturesManager {
 // Initialize the social features system
 const socialFeatures = new SocialFeaturesManager();
 
+// Expose globally for main.js access
+window.socialFeatures = socialFeatures;
+
 document.addEventListener("DOMContentLoaded", () => {
   socialFeatures.init();
 });

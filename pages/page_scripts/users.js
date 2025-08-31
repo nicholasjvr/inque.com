@@ -1,8 +1,6 @@
-import { db, auth } from "../../../scripts/firebase-init.js";
 import {
   collection,
   getDocs,
-  doc,
   onSnapshot,
   addDoc,
   serverTimestamp,
@@ -10,7 +8,10 @@ import {
   orderBy,
   limit,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  onAuthStateChanged,
+  auth,
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   // DOM Elements

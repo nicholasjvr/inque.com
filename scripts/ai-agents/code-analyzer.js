@@ -1,9 +1,3 @@
-#!/usr/bin/env node
-
-/**
- * AI-Powered Code Quality Analyzer
- * Analyzes code for quality issues, performance problems, and security vulnerabilities
- */
 
 import { AI_CONFIG } from "../../config/ai-config.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";

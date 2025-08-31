@@ -7338,3 +7338,122 @@ body {
     background: rgba(255, 255, 255, 0.3);
     transform: scale(1.1) rotate(90deg);
 }
+
+/* Social Stats Styling */
+.profile-social-stats {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.social-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.social-stat-label {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.social-stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+}
+
+/* Social Actions Styling */
+.profile-social-actions {
+    display: flex;
+    gap: 10px;
+    margin: 15px 0;
+    justify-content: center;
+}
+
+.social-action-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 0.9rem;
+}
+
+.social-action-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.social-action-icon {
+    font-size: 1.1rem;
+}
+
+.social-action-text {
+    font-weight: 500;
+}
+
+/* Enhanced Profile Stats */
+.profile-stats-row {
+    display: flex;
+    justify-content: space-around;
+    margin: 15px 0;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    flex: 1;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: #aaa;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.stat-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    font-family: 'Orbitron', monospace;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+
+    .profile-social-stats,
+    .profile-social-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .social-stat-item,
+    .stat-item {
+        margin-bottom: 10px;
+    }
+}

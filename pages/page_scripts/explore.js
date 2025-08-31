@@ -21,22 +21,34 @@ const listDiv = document.getElementById("exploreWidgetList");
 listDiv.innerHTML = '<div style="color:#fff">Loading widgets...</div>';
 
 async function fetchAllWidgets() {
-  const usersSnapshot = await getDocs(collection(db, "users"));
-  const widgets = [];
-  usersSnapshot.forEach((doc) => {
-    const user = doc.data();
-    if (!user.widgets) return;
-    for (let slot of Object.keys(user.widgets)) {
-      const widget = user.widgets[slot];
+  try {
+    console.log("[EXPLORE DEBUG] Fetching widgets from widgets collection");
+    const widgetsSnapshot = await getDocs(collection(db, "widgets"));
+    const widgets = [];
+
+    widgetsSnapshot.forEach((doc) => {
+      const widget = doc.data();
+      console.log("[EXPLORE DEBUG] Processing widget", {
+        id: doc.id,
+        title: widget.title,
+        userId: widget.userId,
+        fileCount: widget.files?.length || 0,
+      });
+
+      // Get user data for display
       widgets.push({
         ...widget,
-        userName: user.name || "Unknown",
-        userId: doc.id,
-        slot,
+        id: doc.id,
+        userId: widget.userId,
       });
-    }
-  });
-  return widgets;
+    });
+
+    console.log("[EXPLORE DEBUG] Total widgets found:", widgets.length);
+    return widgets;
+  } catch (error) {
+    console.error("[EXPLORE DEBUG] Error fetching widgets:", error);
+    return [];
+  }
 }
 
 function shuffle(arr) {
@@ -47,6 +59,20 @@ function shuffle(arr) {
   return arr;
 }
 
+// Helper function to find HTML file in widget files array
+function findHtmlFile(files) {
+  if (!Array.isArray(files) || files.length === 0) return null;
+
+  // First try to find index.html
+  const indexFile = files.find(
+    (f) => f.fileName && /index\.html?$/i.test(f.fileName)
+  );
+  if (indexFile) return indexFile;
+
+  // Fallback to any HTML file
+  return files.find((f) => f.fileName && /\.html?$/i.test(f.fileName));
+}
+
 (async function showWidgets() {
   try {
     let widgets = await fetchAllWidgets();
@@ -54,19 +80,41 @@ function shuffle(arr) {
       listDiv.innerHTML = '<div style="color:#fff">No widgets found yet.</div>';
       return;
     }
-    widgets = shuffle(widgets).slice(0, 12); // Show up to 12 random widgets
+
+    // Filter out widgets without HTML files
+    const validWidgets = widgets.filter((widget) => {
+      const htmlFile = findHtmlFile(widget.files);
+      return htmlFile && htmlFile.downloadURL;
+    });
+
+    if (!validWidgets.length) {
+      listDiv.innerHTML =
+        '<div style="color:#fff">No widgets with HTML files found.</div>';
+      return;
+    }
+
+    widgets = shuffle(validWidgets).slice(0, 12); // Show up to 12 random widgets
     listDiv.innerHTML = "";
+
     for (const widget of widgets) {
+      const htmlFile = findHtmlFile(widget.files);
+      console.log("[EXPLORE DEBUG] Rendering widget", {
+        id: widget.id,
+        title: widget.title,
+        htmlFile: htmlFile?.fileName,
+        downloadURL: htmlFile?.downloadURL,
+      });
+
       const card = document.createElement("div");
       card.className = "explore-widget-card";
       card.innerHTML = `
         <div class="explore-widget-title">${
           widget.title || "Untitled Widget"
         }</div>
-        <div class="explore-widget-user">by ${widget.userName}</div>
+        <div class="explore-widget-user">by ${widget.userName || "Unknown User"}</div>
         ${
-          widget.files && widget.files["index.html"]
-            ? `<iframe class='explore-widget-preview' src='${widget.files["index.html"]}' sandbox='allow-scripts allow-same-origin'></iframe>`
+          htmlFile && htmlFile.downloadURL
+            ? `<iframe class='explore-widget-preview' src='${htmlFile.downloadURL}' sandbox='allow-scripts allow-same-origin'></iframe>`
             : `<div style='height:200px;display:flex;align-items:center;justify-content:center;background:#111;border-radius:6px;color:#888;'>No Preview</div>`
         }
         <a href='/?user=${
@@ -76,6 +124,7 @@ function shuffle(arr) {
       listDiv.appendChild(card);
     }
   } catch (e) {
+    console.error("[EXPLORE DEBUG] Error loading widgets:", e);
     listDiv.innerHTML = `<div style='color:#f66'>Error loading widgets: ${e.message}</div>`;
   }
 })();

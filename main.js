@@ -28,8 +28,14 @@ window.authState = {
 DEBUG.log("Importing firebase-core.js");
 try {
   import("./core/firebase-core.js")
-    .then(() => {
-      DEBUG.log("firebase-core.js imported successfully");
+    .then((core) => {
+      // Expose Firestore db globally for non-module callers
+      if (core && core.db) {
+        window.db = core.db;
+        DEBUG.log("firebase-core.js imported successfully (db exposed)");
+      } else {
+        DEBUG.warn("firebase-core.js imported but db was not found in exports");
+      }
     })
     .catch((error) => {
       DEBUG.error("Failed to import firebase-core.js", error);
@@ -113,6 +119,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     // Initialize social interactions
     initializeSocialInteractions();
+
+    // Initialize social stats manager
+    await socialStatsManager.init();
 
     // Initialize enhanced UI features
     initializeEnhancedUI();
@@ -812,8 +821,308 @@ function initializeSocialInteractions() {
     }
   });
 
+  // Social action buttons
+  document.addEventListener("click", (e) => {
+    if (e.target.matches("#editProfileSocialBtn")) {
+      e.preventDefault();
+      DEBUG.log("Edit profile social button clicked");
+      if (window.openEditProfile) {
+        window.openEditProfile();
+      }
+    }
+
+    if (e.target.matches("#shareProfileBtn")) {
+      e.preventDefault();
+      DEBUG.log("Share profile button clicked");
+      shareUserProfile();
+    }
+
+    if (e.target.matches("#viewActivityBtn")) {
+      e.preventDefault();
+      DEBUG.log("View activity button clicked");
+      showUserActivity();
+    }
+  });
+
   DEBUG.log("Social interactions initialized");
 }
+
+// Social stats management
+let socialStatsManager = {
+  currentUser: null,
+  socialFeatures: null,
+  debugMode: true,
+
+  async init() {
+    DEBUG.log("Initializing social stats manager");
+
+    try {
+      // Wait for social features to be available
+      await this.waitForSocialFeatures();
+
+      // Setup auth state listener
+      this.setupAuthListener();
+
+      DEBUG.log("Social stats manager initialized successfully");
+    } catch (error) {
+      DEBUG.error("Failed to initialize social stats manager", error);
+    }
+  },
+
+  async waitForSocialFeatures() {
+    let attempts = 0;
+    const maxAttempts = 50;
+
+    while (attempts < maxAttempts) {
+      if (window.socialFeatures) {
+        this.socialFeatures = window.socialFeatures;
+        DEBUG.log("Social features found for stats manager", { attempts });
+        return;
+      }
+
+      if (this.debugMode) {
+        console.log(
+          `[SOCIAL STATS] Waiting for social features... attempt ${attempts + 1}/${maxAttempts}`
+        );
+      }
+
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      attempts++;
+    }
+
+    throw new Error("Social features not available after maximum attempts");
+  },
+
+  setupAuthListener() {
+    // Listen for auth state changes
+    document.addEventListener("authStateChanged", async (event) => {
+      DEBUG.log(
+        "Auth state changed event received in stats manager",
+        event.detail
+      );
+      await this.handleAuthStateChange(event.detail);
+    });
+
+    // Also check current auth state
+    if (window.authState && window.authState.currentUser) {
+      this.handleAuthStateChange(window.authState.currentUser);
+    }
+  },
+
+  async handleAuthStateChange(user) {
+    DEBUG.log("Handling auth state change in stats manager", {
+      userId: user?.uid,
+    });
+
+    if (user) {
+      this.currentUser = user;
+      await this.loadAndDisplaySocialData(user.uid);
+      this.showSocialElements(true);
+    } else {
+      this.currentUser = null;
+      this.showSocialElements(false);
+      this.clearSocialData();
+    }
+  },
+
+  async loadAndDisplaySocialData(userId) {
+    try {
+      DEBUG.log("Loading social data for user", userId);
+
+      // Load user's social data
+      await this.socialFeatures.loadUserSocialData(userId);
+
+      // Get additional user stats
+      const userStats = await this.getUserStats(userId);
+
+      // Update UI with social data
+      this.updateSocialStats(userStats);
+
+      DEBUG.log("Social data loaded and displayed successfully");
+    } catch (error) {
+      DEBUG.error("Failed to load social data", error);
+    }
+  },
+
+  async getUserStats(userId) {
+    try {
+      const { db } = await import("./core/firebase-core.js");
+      const { doc, getDoc, collection, query, where, getDocs } = await import(
+        "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+      );
+
+      // Get user document
+      const userDoc = await getDoc(doc(db, "users", userId));
+      const userData = userDoc.exists() ? userDoc.data() : {};
+
+      // Get user's widgets count
+      const widgetsQuery = query(
+        collection(db, "widgets"),
+        where("userId", "==", userId)
+      );
+      const widgetsSnapshot = await getDocs(widgetsQuery);
+      const widgetsCount = widgetsSnapshot.size;
+
+      // Get total likes across all user's widgets
+      let totalLikes = 0;
+      widgetsSnapshot.forEach((doc) => {
+        const widgetData = doc.data();
+        totalLikes += widgetData.stats?.likes || 0;
+      });
+
+      return {
+        followers: this.socialFeatures.followers.size,
+        following: this.socialFeatures.following.size,
+        widgets: widgetsCount,
+        likes: totalLikes,
+        displayName: userData.displayName || "User",
+        bio: userData.bio || "",
+      };
+    } catch (error) {
+      DEBUG.error("Failed to get user stats", error);
+      return {
+        followers: 0,
+        following: 0,
+        widgets: 0,
+        likes: 0,
+        displayName: "User",
+        bio: "",
+      };
+    }
+  },
+
+  updateSocialStats(stats) {
+    DEBUG.log("Updating social stats in UI", stats);
+
+    // Update follower count
+    const followersElement = document.getElementById("profileFollowers");
+    if (followersElement) {
+      followersElement.textContent = stats.followers;
+    }
+
+    // Update following count
+    const followingElement = document.getElementById("profileFollowing");
+    if (followingElement) {
+      followingElement.textContent = stats.following;
+    }
+
+    // Update widgets count
+    const widgetsElement = document.getElementById("profileWidgets");
+    if (widgetsElement) {
+      widgetsElement.textContent = stats.widgets;
+    }
+
+    // Update likes count
+    const likesElement = document.getElementById("profileLikes");
+    if (likesElement) {
+      likesElement.textContent = stats.likes;
+    }
+
+    // Update profile name and bio if available
+    if (stats.displayName && stats.displayName !== "User") {
+      const profileNameElement = document.getElementById("profileName");
+      if (profileNameElement) {
+        profileNameElement.textContent = stats.displayName;
+      }
+    }
+
+    if (stats.bio) {
+      const profileBioElement = document.getElementById("profileBio");
+      if (profileBioElement) {
+        profileBioElement.textContent = stats.bio;
+      }
+    }
+  },
+
+  showSocialElements(show) {
+    const socialStats = document.getElementById("profileSocialStats");
+    const socialActions = document.getElementById("profileSocialActions");
+
+    if (socialStats) {
+      socialStats.style.display = show ? "flex" : "none";
+    }
+
+    if (socialActions) {
+      socialActions.style.display = show ? "flex" : "none";
+    }
+  },
+
+  clearSocialData() {
+    DEBUG.log("Clearing social data from UI");
+
+    const elements = [
+      "profileFollowers",
+      "profileFollowing",
+      "profileWidgets",
+      "profileLikes",
+    ];
+    elements.forEach((id) => {
+      const element = document.getElementById(id);
+      if (element) {
+        element.textContent = "0";
+      }
+    });
+  },
+};
+
+// Helper functions for social actions
+async function shareUserProfile() {
+  try {
+    if (!socialStatsManager.currentUser) {
+      window.showToast("Please log in to share your profile", "error");
+      return;
+    }
+
+    const profileUrl = `${window.location.origin}/profile/${socialStatsManager.currentUser.uid}`;
+    const shareText = `Check out my profile on inque!`;
+
+    if (navigator.share) {
+      await navigator.share({
+        title: "My inque Profile",
+        text: shareText,
+        url: profileUrl,
+      });
+    } else {
+      await navigator.clipboard.writeText(`${shareText}\n${profileUrl}`);
+      window.showToast("Profile link copied to clipboard!", "success");
+    }
+
+    DEBUG.log("Profile shared successfully");
+  } catch (error) {
+    DEBUG.error("Failed to share profile", error);
+    window.showToast("Failed to share profile", "error");
+  }
+}
+
+function showUserActivity() {
+  DEBUG.log("Showing user activity");
+  // You can implement this to show user's recent activity
+  window.showToast(
+    "Activity feature coming soon! Check back for updates.",
+    "info"
+  );
+}
+
+// Test function for social features (call from browser console)
+window.testSocialFeatures = function () {
+  DEBUG.log("Testing social features...");
+  console.log("Social Stats Manager:", socialStatsManager);
+  console.log("Window Social Features:", window.socialFeatures);
+  console.log("Social Stats Elements:", {
+    followers: document.getElementById("profileFollowers"),
+    following: document.getElementById("profileFollowing"),
+    widgets: document.getElementById("profileWidgets"),
+    likes: document.getElementById("profileLikes"),
+    socialStats: document.getElementById("profileSocialStats"),
+    socialActions: document.getElementById("profileSocialActions"),
+  });
+
+  if (socialStatsManager.currentUser) {
+    console.log("Current User:", socialStatsManager.currentUser);
+  } else {
+    console.log("No current user - try logging in first");
+  }
+};
 
 // Initialize enhanced UI features
 function initializeEnhancedUI() {

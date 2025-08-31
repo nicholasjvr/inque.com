@@ -16,10 +16,7 @@
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
   </head>
   <body>
-    <!-- Toast Notification Container -->
     <div id="toast-container"></div>
-
-    <!-- Sidebar and overlay -->
 <div class="sidebar-overlay"></div>
 <nav class="sidebar-nav">
   <div class="sidebar-user-info">
@@ -35,8 +32,7 @@
       <button id="sidebarLogoutBtn" class="sidebar-auth-btn">Logout</button>
     </span>
   </div>
-  
-  <!-- Profile Stats Section -->
+
   <div class="sidebar-stats" style="display: none;">
     <div class="sidebar-stat-item">
       <span class="stat-label">Level</span>
@@ -147,6 +143,42 @@
           <span class="stat-label">Role</span>
           <span class="stat-value" id="profileRole">GUEST</span>
         </div>
+      </div>
+
+      <!-- Social Stats Row -->
+      <div class="profile-social-stats" id="profileSocialStats" style="display: none;">
+        <div class="social-stat-item">
+          <span class="social-stat-label">Followers</span>
+          <span class="social-stat-value" id="profileFollowers">0</span>
+        </div>
+        <div class="social-stat-item">
+          <span class="social-stat-label">Following</span>
+          <span class="social-stat-value" id="profileFollowing">0</span>
+        </div>
+        <div class="social-stat-item">
+          <span class="social-stat-label">Widgets</span>
+          <span class="social-stat-value" id="profileWidgets">0</span>
+        </div>
+        <div class="social-stat-item">
+          <span class="social-stat-label">Likes</span>
+          <span class="social-stat-value" id="profileLikes">0</span>
+        </div>
+      </div>
+
+      <!-- Social Actions Row -->
+      <div class="profile-social-actions" id="profileSocialActions" style="display: none;">
+        <button class="social-action-btn" id="editProfileSocialBtn" title="Edit Profile">
+          <span class="social-action-icon">✏️</span>
+          <span class="social-action-text">Edit</span>
+        </button>
+        <button class="social-action-btn" id="shareProfileBtn" title="Share Profile">
+          <span class="social-action-icon">📤</span>
+          <span class="social-action-text">Share</span>
+        </button>
+        <button class="social-action-btn" id="viewActivityBtn" title="View Activity">
+          <span class="social-action-icon">📈</span>
+          <span class="social-action-text">Activity</span>
+        </button>
       </div>
 
       <!-- Navigation Buttons -->
