@@ -153,8 +153,6 @@ class SecurityScanner {
 }
 
 export default SecurityScanner;
-<<<<<<< Current (Your changes)
-=======
 
 // Run scanner if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -178,4 +176,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1);
   });
 }
->>>>>>> Incoming (Background Agent changes)

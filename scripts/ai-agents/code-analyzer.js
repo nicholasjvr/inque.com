@@ -110,8 +110,6 @@ class CodeAnalyzer {
 }
 
 export default CodeAnalyzer;
-<<<<<<< Current (Your changes)
-=======
 
 // Run analyzer if called directly
 if (import.meta.url === `file://${process.argv[1]}`) {
@@ -144,4 +142,3 @@ if (import.meta.url === `file://${process.argv[1]}`) {
     process.exit(1);
   });
 }
->>>>>>> Incoming (Background Agent changes)
