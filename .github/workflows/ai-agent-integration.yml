@@ -1,0 +1,75 @@
+name: AI Agent Integration
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    types: [opened, synchronize, reopened]
+  schedule:
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_dispatch: # Manual trigger
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+  security-events: write
+
+jobs:
+  ai-code-analysis:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run AI Code Analysis
+        run: node scripts/ai-agent/code-analyzer.js
+        env:
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+
+      - name: Run Security Scan
+        run: node scripts/ai-agent/security-scanner.js
+        env:
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
+
+      - name: Generate Analysis Report
+        run: node scripts/ai-agent/generate-report.js
+
+      - name: Upload Analysis Results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ai-analysis-results
+          path: |
+            analysis-report.json
+            security-scan-results.json
+            code-quality-metrics.json
+          retention-days: 30
+
+      - name: Create Issues for Critical Problems
+        if: failure()
+        run: node scripts/ai-agent/create-issues.js
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  ai-chatbot-deployment:
+    needs: ai-code-analysis
+    runs-on: ubuntu-latest
+    if: success()
+
+    steps:
+      - name: Deploy AI Chatbot
+        run: node scripts/deployment/deploy-agent.js
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+          GOOGLE_AI_API_KEY: ${{ secrets.GOOGLE_AI_API_KEY }}
