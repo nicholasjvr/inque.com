@@ -97,18 +97,32 @@ try {
   DEBUG.error("Error importing social features", error);
 }
 
-// Import inQ integration
-DEBUG.log("Importing inQ integration");
+// Import navigation system directly
+DEBUG.log("Importing navigation system");
 try {
-  import("./scripts/integration/vibe-coders-integration.js")
+  import("./scripts/ui/navigation.js")
     .then(() => {
-      DEBUG.log("inQ integration imported successfully");
+      DEBUG.log("Navigation system imported successfully");
     })
     .catch((error) => {
-      DEBUG.error("Failed to import inQ integration", error);
+      DEBUG.error("Failed to import navigation system", error);
     });
 } catch (error) {
-  DEBUG.error("Error importing inQ integration", error);
+  DEBUG.error("Error importing navigation system", error);
+}
+
+// Import tools filter system directly
+DEBUG.log("Importing tools filter system");
+try {
+  import("./scripts/ui/tools-filter.js")
+    .then(() => {
+      DEBUG.log("Tools filter system imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import tools filter system", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing tools filter system", error);
 }
 
 // Note: widget-display and timeline-manager are loaded via script tags in index.html
@@ -1962,5 +1976,45 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 DEBUG.log("Enhanced scroll and fullscreen functionality loaded");
+
+// Global functions for backward compatibility (previously from vibe-coders-integration.js)
+DEBUG.log("Setting up global compatibility functions");
+
+// Global function to test integration
+window.testVibeCodersIntegration = function () {
+  DEBUG.log("Testing inQ platform integration");
+
+  // Test navigation
+  if (window.navigationManager) {
+    DEBUG.log("✅ Navigation manager available");
+  } else {
+    DEBUG.warn("⚠️ Navigation manager not available");
+  }
+
+  // Test tools filter
+  if (window.toolsFilterManager) {
+    DEBUG.log("✅ Tools filter manager available");
+  } else {
+    DEBUG.warn("⚠️ Tools filter manager not available");
+  }
+
+  // Test auth
+  if (window.authState && window.authState.isInitialized) {
+    DEBUG.log("✅ Auth system initialized");
+  } else {
+    DEBUG.warn("⚠️ Auth system not initialized");
+  }
+
+  // Show success message
+  if (window.showToast) {
+    window.showToast(
+      "inQ Platform integration test completed! 🎉",
+      "success",
+      3000
+    );
+  }
+
+  DEBUG.log("inQ platform integration test completed");
+};
 
 DEBUG.log("Enhanced inque social app initialization complete");

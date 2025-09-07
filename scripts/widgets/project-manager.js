@@ -1,5 +1,5 @@
 // scripts/project-manager.js
-import { db, auth } from "../firebase/firebase-init.js";
+import { db, auth } from "../../core/firebase-core.js";
 import {
   doc,
   setDoc,

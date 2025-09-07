@@ -1,8 +1,4 @@
-// Widget Preview System - Enhanced file preview for widget uploads
-// This module provides preview capabilities for various file types before upload
-
-import { auth } from "../../../core/firebase-core.js";
-
+import { auth } from "../../core/firebase-core.js";
 class WidgetPreviewManager {
   constructor() {
     this.previewContainer = null;
