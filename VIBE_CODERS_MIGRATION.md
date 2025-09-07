@@ -268,9 +268,4 @@ The integration system is designed to be non-breaking and will preserve all your
 
 **Happy coding! 🚀**
 
-<<<<<<< Current (Your changes)
-The Vibe-coders platform is designed to help developers using AI IDEs build faster, share knowledge, and stay ahead of the curve.
-=======
 The inQ - Platform is designed to help developers using AI IDEs build faster, share knowledge, and stay ahead of the curve.
-
-> > > > > > > Incoming (Background Agent changes)
