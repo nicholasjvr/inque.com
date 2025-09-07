@@ -15,6 +15,7 @@
       href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
       rel="stylesheet"
     />
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
     <style>
       /* My Projects specific styles */
       :root {
@@ -479,6 +480,200 @@
         }
       }
 
+      /* Chatbot Modal Styles */
+      .chatbot-modal-content {
+        background: var(--projects-surface);
+        border: 2px solid var(--projects-primary);
+        border-radius: 16px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow: hidden;
+      }
+
+      .chatbot-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        max-height: 300px;
+      }
+
+      .message {
+        display: flex;
+        margin-bottom: 1rem;
+        align-items: flex-start;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--projects-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      .message-content {
+        flex: 1;
+      }
+
+      .message-content p {
+        margin: 0;
+        padding: 0.75rem;
+        border-radius: 12px;
+        line-height: 1.4;
+      }
+
+      .ai-message .message-content p {
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+      }
+
+      .user-message .message-content p {
+        background: rgba(255, 0, 255, 0.1);
+        border: 1px solid var(--projects-secondary);
+        margin-left: auto;
+      }
+
+      .chat-input-container {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-top: 1px solid var(--projects-border);
+      }
+
+      .chat-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--projects-border);
+        border-radius: 8px;
+        background: var(--projects-bg);
+        color: var(--projects-text);
+        font-size: 0.9rem;
+      }
+
+      .chat-input:focus {
+        outline: none;
+        border-color: var(--projects-primary);
+      }
+
+      .send-chat-btn {
+        padding: 0.75rem 1rem;
+        background: var(--projects-primary);
+        color: var(--projects-bg);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .send-chat-btn:hover {
+        background: rgba(0, 240, 255, 0.8);
+      }
+
+      .chat-suggestions {
+        padding: 1rem;
+        border-top: 1px solid var(--projects-border);
+      }
+
+      .suggestions-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        color: var(--projects-text-secondary);
+      }
+
+      .suggestion-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .suggestion-chip {
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 20px;
+        color: var(--projects-primary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s ease;
+      }
+
+      .suggestion-chip:hover {
+        background: rgba(0, 240, 255, 0.2);
+      }
+
+      /* Modal Styles */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: var(--projects-surface);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 240, 255, 0.3);
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: hidden;
+      }
+
+      .modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--projects-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-title {
+        margin: 0;
+        color: var(--projects-primary);
+        font-size: 1.25rem;
+      }
+
+      .close-button {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--projects-primary);
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .close-button:hover {
+        background: rgba(0, 240, 255, 0.1);
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
       /* Responsive Design */
       @media (max-width: 768px) {
         .projects-grid {
@@ -540,6 +735,16 @@
 
     <!-- Main Content -->
     <main class="projects-main">
+      <!-- Hidden elements for main.js compatibility -->
+      <div style="display: none">
+        <button id="profileLoginBtn">Login</button>
+        <div id="sidebar-nav" style="display: none"></div>
+        <div id="notificationCount" style="display: none">0</div>
+        <div id="notificationList" style="display: none"></div>
+        <div id="markAllReadBtn" style="display: none">Mark All Read</div>
+        <div id="toast-container" style="display: none"></div>
+      </div>
+
       <div class="projects-grid">
         <!-- Sidebar -->
         <div class="projects-sidebar">
@@ -563,6 +768,33 @@
                 <div class="stat-number" id="viewsCount">0</div>
                 <div class="stat-label">Views</div>
               </div>
+            </div>
+
+            <!-- Profile Social Stats for main.js compatibility -->
+            <div id="profileSocialStats" style="display: none">
+              <div class="social-stat">
+                <span class="stat-label">Followers:</span>
+                <span class="stat-value" id="profileFollowers">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Following:</span>
+                <span class="stat-value" id="profileFollowing">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Widgets:</span>
+                <span class="stat-value" id="profileWidgets">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Likes:</span>
+                <span class="stat-value" id="profileLikes">0</span>
+              </div>
+            </div>
+
+            <!-- Profile Social Actions for main.js compatibility -->
+            <div id="profileSocialActions" style="display: none">
+              <button id="editProfileSocialBtn">Edit Profile</button>
+              <button id="shareProfileBtn">Share Profile</button>
+              <button id="viewActivityBtn">View Activity</button>
             </div>
           </div>
 
@@ -600,6 +832,15 @@
                   Manage your widget collection
                 </div>
               </a>
+              <div
+                class="quick-action-card"
+                id="aiAssistantBtn"
+                data-action="openChatbot"
+              >
+                <span class="quick-action-icon">🤖</span>
+                <div class="quick-action-title">AI Assistant</div>
+                <div class="quick-action-description">Get help and answers</div>
+              </div>
             </div>
           </div>
 
@@ -610,31 +851,108 @@
             style="display: none"
           >
             <div class="section-header">
-              <h3 class="section-title">Sign In</h3>
+              <h3 class="section-title">Welcome to inQ</h3>
             </div>
-            <form class="auth-form" id="loginForm">
-              <input
-                type="email"
-                class="auth-input"
-                id="loginEmail"
-                placeholder="Email"
-                required
-              />
-              <input
-                type="password"
-                class="auth-input"
-                id="loginPassword"
-                placeholder="Password"
-                required
-              />
-              <button type="submit" class="auth-button" id="loginBtn">
+
+            <!-- Login Form -->
+            <div id="loginFormContainer">
+              <h4 style="color: var(--projects-primary); margin-bottom: 1rem">
                 Sign In
-              </button>
-            </form>
-            <div style="text-align: center; margin-top: 1rem">
-              <button class="quick-action-btn" id="showSignupBtn">
+              </h4>
+              <form class="auth-form" id="loginForm">
+                <input
+                  type="email"
+                  class="auth-input"
+                  id="loginEmail"
+                  placeholder="Email"
+                  required
+                />
+                <input
+                  type="password"
+                  class="auth-input"
+                  id="loginPassword"
+                  placeholder="Password"
+                  required
+                />
+                <button type="submit" class="auth-button" id="loginBtn">
+                  Sign In
+                </button>
+              </form>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="signupFormContainer" style="display: none">
+              <h4 style="color: var(--projects-primary); margin-bottom: 1rem">
                 Create Account
-              </button>
+              </h4>
+              <form class="auth-form" id="signupForm">
+                <input
+                  type="email"
+                  class="auth-input"
+                  id="signupEmail"
+                  placeholder="Email"
+                  required
+                />
+                <input
+                  type="password"
+                  class="auth-input"
+                  id="signupPassword"
+                  placeholder="Password (min 6 characters)"
+                  minlength="6"
+                  required
+                />
+                <input
+                  type="text"
+                  class="auth-input"
+                  id="signupDisplayName"
+                  placeholder="Display Name (optional)"
+                />
+                <button type="submit" class="auth-button" id="signupBtn">
+                  Create Account
+                </button>
+              </form>
+            </div>
+
+            <!-- Toggle between forms -->
+            <div style="text-align: center; margin-top: 1rem">
+              <div id="loginFormContainer">
+                <span style="color: var(--projects-text-secondary)"
+                  >Don't have an account?
+                </span>
+                <button
+                  class="quick-action-btn"
+                  id="showSignupBtn"
+                  style="
+                    background: none;
+                    border: none;
+                    color: var(--projects-primary);
+                    text-decoration: underline;
+                    padding: 0;
+                    margin-left: 0.5rem;
+                  "
+                >
+                  Sign Up
+                </button>
+              </div>
+              <div id="signupFormContainer" style="display: none">
+                <span style="color: var(--projects-text-secondary)"
+                  >Already have an account?
+                </span>
+                <button
+                  class="quick-action-btn"
+                  id="showLoginBtn"
+                  style="
+                    background: none;
+                    border: none;
+                    color: var(--projects-primary);
+                    text-decoration: underline;
+                    padding: 0;
+                    margin-left: 0.5rem;
+                  "
+                >
+                  Sign In
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -652,7 +970,8 @@
               </div>
             </div>
             <div class="timeline-section" id="timelineSection">
-              <div class="timeline-event">
+              <!-- Timeline events will be populated here -->
+              <div class="timeline-event" id="timeline-3channel">
                 <div class="timeline-event-title">Welcome to My Projects!</div>
                 <div class="timeline-event-content">
                   This is your central hub for managing widgets, connecting with
@@ -700,9 +1019,81 @@
     <!-- Toast Container -->
     <div id="toastContainer" class="toast-container"></div>
 
+    <!-- AI Chatbot Modal for main.js compatibility -->
+    <div id="chatbotModal" class="modal" style="display: none">
+      <div class="modal-content chatbot-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">🤖 AI Assistant</h2>
+          <span class="close-button chatbot-close-button">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="chatbot-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message ai-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                  <p>
+                    Hello! I'm your AI assistant. I can help you understand the
+                    features of this application, answer questions about
+                    widgets, and guide you through the platform. What would you
+                    like to know?
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input-container">
+              <input
+                type="text"
+                id="chatInput"
+                class="chat-input"
+                placeholder="Ask me anything about the application..."
+                maxlength="500"
+              />
+              <button id="sendChatBtn" class="send-chat-btn">
+                <span class="btn-icon">📤</span>
+                Send
+              </button>
+            </div>
+
+            <div class="chat-suggestions">
+              <p class="suggestions-title">Quick questions you can ask:</p>
+              <div class="suggestion-chips">
+                <button
+                  class="suggestion-chip"
+                  data-question="What is this application about?"
+                >
+                  What is this application about?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="How do I upload a widget?"
+                >
+                  How do I upload a widget?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="What are the main features?"
+                >
+                  What are the main features?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="How do I edit my profile?"
+                >
+                  How do I edit my profile?
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Scripts -->
     <script type="module" src="page_scripts/my-projects.js"></script>
     <script type="module" src="../scripts/auth/auth.js"></script>
     <script type="module" src="../scripts/timeline-manager.js"></script>
+    <script type="module" src="page_modals/modal_scripts/chatbot.js"></script>
   </body>
 </html>

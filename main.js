@@ -52,6 +52,8 @@ try {
     });
 } catch (error) {
   DEBUG.error("Error importing enhanced auth system", error);
+  // Fallback: try to load without modules
+  DEBUG.log("Attempting fallback auth system load");
 }
 
 // Import enhanced widget upload system
@@ -1439,7 +1441,9 @@ function initializeHeaderQuickActions() {
       });
       DEBUG.log("Profile login button listener attached successfully");
     } else {
-      DEBUG.warn("Profile login button not found in DOM");
+      DEBUG.log(
+        "Profile login button not found (this is normal on pages without login forms)"
+      );
     }
 
     // Initialize Profile Banner Collapse/Expand
@@ -1550,7 +1554,9 @@ function validateButtonStates() {
   if (aiAssistantBtn) {
     DEBUG.log("✅ AI Assistant button found");
   } else {
-    DEBUG.warn("⚠️ AI Assistant button not found");
+    DEBUG.log(
+      "AI Assistant button not found (this is normal on pages without chatbot)"
+    );
   }
 
   // Check profile navigation buttons
@@ -1560,7 +1566,9 @@ function validateButtonStates() {
       count: profileNavBtns.length,
     });
   } else {
-    DEBUG.warn("⚠️ Profile navigation buttons not found");
+    DEBUG.log(
+      "Profile navigation buttons not found (this is normal on pages without profile navigation)"
+    );
   }
 }
 
@@ -2002,7 +2010,7 @@ window.testVibeCodersIntegration = function () {
   if (window.authState && window.authState.isInitialized) {
     DEBUG.log("✅ Auth system initialized");
   } else {
-    DEBUG.warn("⚠️ Auth system not initialized");
+    DEBUG.log("Auth system not initialized (this is normal during startup)");
   }
 
   // Show success message

@@ -165,48 +165,7 @@ function addMessage(content, sender) {
   console.log(`[CHATBOT] Added ${sender} message:`, content);
 }
 
-// Send message to AI and get response
-async function sendMessage() {
-  const chatInput = document.getElementById("chatInput");
-  const message = chatInput.value.trim();
-
-  if (!message || isTyping) return;
-
-  console.log("[CHATBOT] Sending message:", message);
-
-  // Add user message to chat
-  addMessage("user", message);
-
-  // Clear input
-  chatInput.value = "";
-
-  // Show typing indicator
-  showTypingIndicator();
-
-  try {
-    // Get AI response
-    const response = await getAIResponse(message);
-
-    // Remove typing indicator
-    removeTypingIndicator();
-
-    // Add AI response
-    addMessage("ai", response);
-
-    console.log("[CHATBOT] AI response received:", response);
-  } catch (error) {
-    console.error("[CHATBOT] Error getting AI response:", error);
-
-    // Remove typing indicator
-    removeTypingIndicator();
-
-    // Show error message
-    addMessage(
-      "ai",
-      "Sorry, I encountered an error. Please try again or ask a different question."
-    );
-  }
-}
+// Removed duplicate sendMessage function - using the one above
 
 // Get AI response using Genkit API
 async function getAIResponse(message) {

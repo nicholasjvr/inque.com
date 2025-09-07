@@ -45,6 +45,17 @@ const firebaseConfig = {
   measurementId: "G-KQT58LWVSK",
 };
 
+// For local development, we'll handle domain authorization differently
+const isLocalhost =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1";
+if (isLocalhost) {
+  DEBUG.log("Running on localhost - using development configuration");
+  DEBUG.log(
+    "IMPORTANT: To enable Firebase Auth on localhost, add 'localhost' to Authorized Domains in Firebase Console > Authentication > Settings"
+  );
+}
+
 DEBUG.log("Initializing Firebase app");
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);

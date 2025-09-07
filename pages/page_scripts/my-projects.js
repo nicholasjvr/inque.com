@@ -65,7 +65,15 @@ class MyProjectsManager {
       loginEmail: document.getElementById("loginEmail"),
       loginPassword: document.getElementById("loginPassword"),
       loginBtn: document.getElementById("loginBtn"),
+      signupForm: document.getElementById("signupForm"),
+      signupEmail: document.getElementById("signupEmail"),
+      signupPassword: document.getElementById("signupPassword"),
+      signupDisplayName: document.getElementById("signupDisplayName"),
+      signupBtn: document.getElementById("signupBtn"),
       showSignupBtn: document.getElementById("showSignupBtn"),
+      showLoginBtn: document.getElementById("showLoginBtn"),
+      loginFormContainer: document.getElementById("loginFormContainer"),
+      signupFormContainer: document.getElementById("signupFormContainer"),
 
       // Timeline elements
       timelineSection: document.getElementById("timelineSection"),
@@ -90,9 +98,23 @@ class MyProjectsManager {
       });
     }
 
+    // Signup form
+    if (this.domElements.signupForm) {
+      this.domElements.signupForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        this.handleSignup();
+      });
+    }
+
     if (this.domElements.showSignupBtn) {
       this.domElements.showSignupBtn.addEventListener("click", () => {
         this.showSignupForm();
+      });
+    }
+
+    if (this.domElements.showLoginBtn) {
+      this.domElements.showLoginBtn.addEventListener("click", () => {
+        this.showLoginForm();
       });
     }
 
@@ -100,6 +122,22 @@ class MyProjectsManager {
     if (this.domElements.refreshTimelineBtn) {
       this.domElements.refreshTimelineBtn.addEventListener("click", () => {
         this.refreshTimeline();
+      });
+    }
+
+    // AI Assistant button
+    const aiAssistantBtn = document.getElementById("aiAssistantBtn");
+    if (aiAssistantBtn) {
+      aiAssistantBtn.addEventListener("click", () => {
+        this.openChatbot();
+      });
+    }
+
+    // Profile login button
+    const profileLoginBtn = document.getElementById("profileLoginBtn");
+    if (profileLoginBtn) {
+      profileLoginBtn.addEventListener("click", () => {
+        this.handleProfileLogin();
       });
     }
 
@@ -433,12 +471,111 @@ class MyProjectsManager {
     }
   }
 
+  async handleSignup() {
+    try {
+      const email = this.domElements.signupEmail.value;
+      const password = this.domElements.signupPassword.value;
+      const displayName = this.domElements.signupDisplayName.value;
+
+      if (!email || !password) {
+        this.showToast("Please fill in email and password", "warning");
+        return;
+      }
+
+      if (password.length < 6) {
+        this.showToast("Password must be at least 6 characters", "warning");
+        return;
+      }
+
+      DEBUG.log("Attempting signup", { email });
+
+      // Show loading state
+      this.setSignupButtonLoading(true);
+
+      // Create user account
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      DEBUG.log("User created successfully", { uid: user.uid });
+
+      // Update profile with display name if provided
+      if (displayName) {
+        await updateProfile(user, {
+          displayName: displayName,
+        });
+        DEBUG.log("Display name updated", { displayName });
+      }
+
+      this.showToast(
+        "Account created successfully! Welcome to inQ!",
+        "success"
+      );
+      this.clearSignupForm();
+
+      // Switch back to login form
+      setTimeout(() => {
+        this.showLoginForm();
+      }, 2000);
+    } catch (error) {
+      DEBUG.error("Signup failed", error);
+      this.showToast(this.getSignupErrorMessage(error), "error");
+    } finally {
+      this.setSignupButtonLoading(false);
+    }
+  }
+
   showSignupForm() {
-    // For now, just show a message. Could implement full signup form
-    this.showToast(
-      "Signup form coming soon! Use the main site to create an account.",
-      "info"
-    );
+    DEBUG.log("Showing signup form");
+
+    if (this.domElements.loginFormContainer) {
+      this.domElements.loginFormContainer.style.display = "none";
+    }
+    if (this.domElements.signupFormContainer) {
+      this.domElements.signupFormContainer.style.display = "block";
+    }
+
+    // Update toggle buttons
+    if (
+      this.domElements.showSignupBtn &&
+      this.domElements.showSignupBtn.parentElement
+    ) {
+      this.domElements.showSignupBtn.parentElement.style.display = "none";
+    }
+    if (
+      this.domElements.showLoginBtn &&
+      this.domElements.showLoginBtn.parentElement
+    ) {
+      this.domElements.showLoginBtn.parentElement.style.display = "block";
+    }
+  }
+
+  showLoginForm() {
+    DEBUG.log("Showing login form");
+
+    if (this.domElements.signupFormContainer) {
+      this.domElements.signupFormContainer.style.display = "none";
+    }
+    if (this.domElements.loginFormContainer) {
+      this.domElements.loginFormContainer.style.display = "block";
+    }
+
+    // Update toggle buttons
+    if (
+      this.domElements.showLoginBtn &&
+      this.domElements.showLoginBtn.parentElement
+    ) {
+      this.domElements.showLoginBtn.parentElement.style.display = "none";
+    }
+    if (
+      this.domElements.showSignupBtn &&
+      this.domElements.showSignupBtn.parentElement
+    ) {
+      this.domElements.showSignupBtn.parentElement.style.display = "block";
+    }
   }
 
   setLoginButtonLoading(loading) {
@@ -453,6 +590,38 @@ class MyProjectsManager {
     if (this.domElements.loginEmail) this.domElements.loginEmail.value = "";
     if (this.domElements.loginPassword)
       this.domElements.loginPassword.value = "";
+  }
+
+  setSignupButtonLoading(loading) {
+    const { signupBtn } = this.domElements;
+    if (!signupBtn) return;
+
+    signupBtn.disabled = loading;
+    signupBtn.textContent = loading ? "Creating Account..." : "Create Account";
+  }
+
+  clearSignupForm() {
+    if (this.domElements.signupEmail) this.domElements.signupEmail.value = "";
+    if (this.domElements.signupPassword)
+      this.domElements.signupPassword.value = "";
+    if (this.domElements.signupDisplayName)
+      this.domElements.signupDisplayName.value = "";
+  }
+
+  getSignupErrorMessage(error) {
+    const errorMessages = {
+      "auth/email-already-in-use": "An account with this email already exists.",
+      "auth/invalid-email": "Please enter a valid email address.",
+      "auth/weak-password":
+        "Password is too weak. Please choose a stronger password.",
+      "auth/network-request-failed":
+        "Network error. Please check your connection.",
+      "auth/too-many-requests": "Too many requests. Please try again later.",
+    };
+
+    return (
+      errorMessages[error.code] || "Account creation failed. Please try again."
+    );
   }
 
   getAuthErrorMessage(error) {
@@ -476,6 +645,38 @@ class MyProjectsManager {
 
     this.setupTimelineListener();
     this.showToast("Timeline refreshed!", "success");
+  }
+
+  openChatbot() {
+    DEBUG.log("Opening chatbot modal");
+
+    const chatbotModal = document.getElementById("chatbotModal");
+    if (chatbotModal) {
+      chatbotModal.style.display = "flex";
+      this.showToast("AI Assistant opened!", "info");
+
+      // Focus on chat input
+      setTimeout(() => {
+        const chatInput = document.getElementById("chatInput");
+        if (chatInput) chatInput.focus();
+      }, 100);
+    } else {
+      DEBUG.error("Chatbot modal not found");
+      this.showToast("AI Assistant not available", "error");
+    }
+  }
+
+  handleProfileLogin() {
+    DEBUG.log("Handling profile login button click");
+
+    // Show auth modal or redirect to login
+    const authModal = document.getElementById("authModal");
+    if (authModal) {
+      authModal.style.display = "block";
+      document.body.style.overflow = "hidden";
+    } else {
+      this.showToast("Login system initializing...", "info");
+    }
   }
 
   showToast(message, type = "info") {

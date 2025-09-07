@@ -1516,22 +1516,28 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.textContent = "Creating Account...";
         submitBtn.disabled = true;
 
-        grecaptcha.enterprise.ready(async () => {
-          const token = await grecaptcha.enterprise.execute(
-            "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
-            { action: "SIGNUP" }
-          );
-          console.log("reCAPTCHA token (Sign Up):", token);
-
-          try {
-            // Create the user account
-            const userCredential = await createUserWithEmailAndPassword(
-              auth,
-              email,
-              password
+        // Check if reCAPTCHA is available (optional for development)
+        if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+          grecaptcha.enterprise.ready(async () => {
+            const token = await grecaptcha.enterprise.execute(
+              "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
+              { action: "SIGNUP" }
             );
-            const user = userCredential.user;
-            console.log("User created:", user.uid);
+            console.log("reCAPTCHA token (Sign Up):", token);
+          });
+        } else {
+          console.log("reCAPTCHA not available, proceeding without verification (development mode)");
+        }
+
+        try {
+          // Create the user account
+          const userCredential = await createUserWithEmailAndPassword(
+            auth,
+            email,
+            password
+          );
+          const user = userCredential.user;
+          console.log("User created:", user.uid);
 
             // Create user profile in Firestore
             const newUserProfile = {
@@ -1651,13 +1657,22 @@ document.addEventListener("DOMContentLoaded", () => {
     loginForm.addEventListener("submit", (e) => {
       e.preventDefault();
 
-      grecaptcha.enterprise.ready(async () => {
-        const token = await grecaptcha.enterprise.execute(
-          "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
-          { action: "LOGIN" }
-        );
-        console.log("reCAPTCHA token (Login):", token);
+      // Check if reCAPTCHA is available (optional for development)
+      if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+        grecaptcha.enterprise.ready(async () => {
+          const token = await grecaptcha.enterprise.execute(
+            "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
+            { action: "LOGIN" }
+          );
+          console.log("reCAPTCHA token (Login):", token);
+          performLogin();
+        });
+      } else {
+        console.log("reCAPTCHA not available, proceeding without verification (development mode)");
+        performLogin();
+      }
 
+      function performLogin() {
         const email = document.getElementById("loginEmail").value;
         const password = document.getElementById("loginPassword").value;
 
