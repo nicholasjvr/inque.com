@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -53,6 +53,59 @@
         background: #111;
         margin-bottom: 0.5rem;
       }
+
+      /* Breadcrumb Navigation */
+      .nav-breadcrumb {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 1rem;
+        font-size: 14px;
+      }
+
+      .breadcrumb-link {
+        color: #4caf50;
+        text-decoration: none;
+        padding: 4px 8px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+      }
+
+      .breadcrumb-link:hover {
+        background: rgba(76, 175, 80, 0.1);
+      }
+
+      .breadcrumb-separator {
+        color: #666;
+      }
+
+      .breadcrumb-current {
+        color: #fff;
+        font-weight: 500;
+      }
+
+      .header-actions {
+        display: flex;
+        gap: 12px;
+        margin-bottom: 1rem;
+      }
+
+      .action-btn {
+        padding: 8px 16px;
+        background: rgba(76, 175, 80, 0.1);
+        border: 1px solid #4caf50;
+        border-radius: 6px;
+        color: #4caf50;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+      }
+
+      .action-btn:hover {
+        background: rgba(76, 175, 80, 0.2);
+        transform: translateY(-1px);
+      }
       @media (max-width: 600px) {
         .explore-widget-list {
           flex-direction: column;
@@ -70,12 +123,19 @@
   </head>
   <body>
     <div class="explore-header">
+      <div class="nav-breadcrumb">
+        <a href="../index.html" class="breadcrumb-link">&larr; Home</a>
+        <span class="breadcrumb-separator">/</span>
+        <a href="my-projects.html" class="breadcrumb-link">My Projects</a>
+        <span class="breadcrumb-separator">/</span>
+        <span class="breadcrumb-current">Explore</span>
+      </div>
+      <div class="header-actions">
+        <a href="my-projects.html" class="action-btn">📊 My Projects</a>
+        <a href="widget_studio.html" class="action-btn">🎨 Create Widget</a>
+        <a href="users.html" class="action-btn">👥 Community</a>
+      </div>
       <h1>Explore Widgets</h1>
-      <a
-        href="../index.html"
-        style="color: #4caf50; text-decoration: none; font-weight: bold"
-        >&larr; Back to Home</a
-      >
     </div>
     <div id="exploreWidgetList" class="explore-widget-list"></div>
     <script type="module" src="explore.js"></script>

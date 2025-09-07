@@ -1,0 +1,708 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Projects - inque</title>
+    <link rel="stylesheet" href="../core/styles.css" />
+    <link rel="stylesheet" href="page_styles/users.css" />
+    <link rel="stylesheet" href="page_styles/widget_studio.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* My Projects specific styles */
+      :root {
+        --projects-primary: #00f0ff;
+        --projects-secondary: #ff00ff;
+        --projects-accent: #ffff00;
+        --projects-bg: #0a0a0a;
+        --projects-surface: #1a1a1a;
+        --projects-border: #333;
+        --projects-text: #ffffff;
+        --projects-text-secondary: #a0a0a0;
+      }
+
+      body {
+        background: var(--projects-bg);
+        color: var(--projects-text);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .projects-header {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          var(--projects-bg) 100%
+        );
+        border-bottom: 2px solid var(--projects-primary);
+        box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 8px;
+        color: var(--projects-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+      }
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .projects-main {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .projects-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+      }
+
+      .projects-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .projects-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .projects-section {
+        background: var(--projects-surface);
+        border: 1px solid var(--projects-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .projects-section:hover {
+        border-color: var(--projects-primary);
+        box-shadow: 0 8px 32px rgba(0, 240, 255, 0.1);
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--projects-border);
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--projects-primary);
+        margin: 0;
+      }
+
+      .section-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .quick-action-btn {
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 6px;
+        color: var(--projects-primary);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+
+      .quick-action-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Profile Card */
+      .profile-card {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          rgba(0, 240, 255, 0.05) 100%
+        );
+        border: 2px solid var(--projects-primary);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        margin: 0 auto 1rem auto;
+        border: 4px solid var(--projects-primary);
+        box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+      }
+
+      .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--projects-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-bio {
+        color: var(--projects-text-secondary);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+      }
+
+      .profile-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--projects-primary);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--projects-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Timeline Section */
+      .timeline-section {
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .timeline-event {
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .timeline-event:hover {
+        border-color: var(--projects-primary);
+        background: rgba(0, 240, 255, 0.05);
+      }
+
+      .timeline-event-title {
+        font-weight: 600;
+        color: var(--projects-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .timeline-event-content {
+        color: var(--projects-text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Quick Actions Grid */
+      .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .quick-action-card {
+        background: var(--projects-surface);
+        border: 1px solid var(--projects-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--projects-text);
+      }
+
+      .quick-action-card:hover {
+        border-color: var(--projects-primary);
+        background: rgba(0, 240, 255, 0.05);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 240, 255, 0.2);
+      }
+
+      .quick-action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .quick-action-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--projects-primary);
+      }
+
+      .quick-action-description {
+        font-size: 0.9rem;
+        color: var(--projects-text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Auth Section */
+      .auth-section {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          rgba(255, 0, 255, 0.05) 100%
+        );
+        border: 2px solid var(--projects-secondary);
+      }
+
+      .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .auth-input {
+        padding: 0.75rem;
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 6px;
+        color: var(--projects-text);
+        font-size: 0.95rem;
+      }
+
+      .auth-input:focus {
+        outline: none;
+        border-color: var(--projects-primary);
+        box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+      }
+
+      .auth-button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        border: none;
+        border-radius: 6px;
+        color: var(--projects-bg);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .auth-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+      }
+
+      /* Toast Notifications */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .toast {
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 8px;
+        padding: 15px 20px;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.3s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .toast.success {
+        border-color: #10b981;
+      }
+
+      .toast.success .toast-icon {
+        color: #10b981;
+      }
+
+      .toast.error {
+        border-color: #ef4444;
+      }
+
+      .toast.error .toast-icon {
+        color: #ef4444;
+      }
+
+      .toast.info {
+        border-color: #3b82f6;
+      }
+
+      .toast.info .toast-icon {
+        color: #3b82f6;
+      }
+
+      .toast.warning {
+        border-color: #f59e0b;
+      }
+
+      .toast.warning .toast-icon {
+        color: #f59e0b;
+      }
+
+      .toast-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      .toast-content {
+        flex: 1;
+      }
+
+      .toast-message {
+        color: var(--projects-text);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--projects-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        font-size: 18px;
+      }
+
+      .toast-close:hover {
+        background: var(--projects-border);
+        color: var(--projects-text);
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .projects-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header-content {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .projects-main {
+          padding: 1rem;
+        }
+
+        .profile-stats {
+          gap: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .projects-main {
+          padding: 0.75rem;
+        }
+
+        .projects-section {
+          padding: 1rem;
+        }
+
+        .quick-actions-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="projects-header">
+      <div class="header-content">
+        <div class="header-left">
+          <a href="../index.html" class="back-btn">
+            <span>←</span>
+            <span>Back to Home</span>
+          </a>
+          <h1 class="page-title">My Projects</h1>
+        </div>
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">👤</div>
+          <span id="userName">Loading...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="projects-main">
+      <div class="projects-grid">
+        <!-- Sidebar -->
+        <div class="projects-sidebar">
+          <!-- Profile Card -->
+          <div class="projects-section profile-card" id="profileSection">
+            <div class="profile-avatar" id="profileAvatar">👤</div>
+            <h2 class="profile-name" id="profileName">Loading...</h2>
+            <p class="profile-bio" id="profileBio">
+              Welcome to your personal project dashboard
+            </p>
+            <div class="profile-stats">
+              <div class="stat-item">
+                <div class="stat-number" id="widgetsCount">0</div>
+                <div class="stat-label">Widgets</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="followersCount">0</div>
+                <div class="stat-label">Followers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="viewsCount">0</div>
+                <div class="stat-label">Views</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">Quick Actions</h3>
+            </div>
+            <div class="quick-actions-grid">
+              <a href="widget_studio.html" class="quick-action-card">
+                <span class="quick-action-icon">🎨</span>
+                <div class="quick-action-title">Widget Studio</div>
+                <div class="quick-action-description">
+                  Create and upload new widgets
+                </div>
+              </a>
+              <a href="explore.html" class="quick-action-card">
+                <span class="quick-action-icon">🔍</span>
+                <div class="quick-action-title">Explore</div>
+                <div class="quick-action-description">
+                  Discover widgets from other creators
+                </div>
+              </a>
+              <a href="users.html" class="quick-action-card">
+                <span class="quick-action-icon">👥</span>
+                <div class="quick-action-title">Community</div>
+                <div class="quick-action-description">
+                  Connect with other developers
+                </div>
+              </a>
+              <a href="inventory.html" class="quick-action-card">
+                <span class="quick-action-icon">📦</span>
+                <div class="quick-action-title">Inventory</div>
+                <div class="quick-action-description">
+                  Manage your widget collection
+                </div>
+              </a>
+            </div>
+          </div>
+
+          <!-- Auth Section (shown when not logged in) -->
+          <div
+            class="projects-section auth-section"
+            id="authSection"
+            style="display: none"
+          >
+            <div class="section-header">
+              <h3 class="section-title">Sign In</h3>
+            </div>
+            <form class="auth-form" id="loginForm">
+              <input
+                type="email"
+                class="auth-input"
+                id="loginEmail"
+                placeholder="Email"
+                required
+              />
+              <input
+                type="password"
+                class="auth-input"
+                id="loginPassword"
+                placeholder="Password"
+                required
+              />
+              <button type="submit" class="auth-button" id="loginBtn">
+                Sign In
+              </button>
+            </form>
+            <div style="text-align: center; margin-top: 1rem">
+              <button class="quick-action-btn" id="showSignupBtn">
+                Create Account
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="projects-content">
+          <!-- Timeline/Projects Feed -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">Recent Activity</h3>
+              <div class="section-actions">
+                <button class="quick-action-btn" id="refreshTimelineBtn">
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+            <div class="timeline-section" id="timelineSection">
+              <div class="timeline-event">
+                <div class="timeline-event-title">Welcome to My Projects!</div>
+                <div class="timeline-event-content">
+                  This is your central hub for managing widgets, connecting with
+                  the community, and tracking your creative journey.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Widgets Grid -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">My Widgets</h3>
+              <div class="section-actions">
+                <a href="widget_studio.html" class="quick-action-btn"
+                  >+ Create New</a
+                >
+              </div>
+            </div>
+            <div id="widgetsGrid" class="neo-grid">
+              <!-- Widgets will be loaded here -->
+              <div
+                class="neo-card"
+                style="
+                  text-align: center;
+                  color: var(--projects-text-secondary);
+                "
+              >
+                <div style="font-size: 3rem; margin-bottom: 1rem">🎨</div>
+                <h3>No widgets yet</h3>
+                <p>Create your first widget in the Widget Studio</p>
+                <a
+                  href="widget_studio.html"
+                  class="quick-action-btn"
+                  style="margin-top: 1rem; display: inline-block"
+                  >Get Started</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="page_scripts/my-projects.js"></script>
+    <script type="module" src="../scripts/auth/auth.js"></script>
+    <script type="module" src="../scripts/timeline-manager.js"></script>
+  </body>
+</html>

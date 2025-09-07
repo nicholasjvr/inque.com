@@ -9,6 +9,61 @@
     -webkit-backdrop-filter: blur(10px);
 }
 
+/* Breadcrumb Navigation */
+.nav-breadcrumb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin-bottom: 1rem;
+    font-size: 14px;
+}
+
+.breadcrumb-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.breadcrumb-link:hover {
+    background: rgba(0, 240, 255, 0.1);
+}
+
+.breadcrumb-separator {
+    color: #666;
+}
+
+.breadcrumb-current {
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.header-actions {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 1rem;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid var(--primary-color);
+    border-radius: 6px;
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.action-btn:hover {
+    background: rgba(0, 240, 255, 0.2);
+    transform: translateY(-1px);
+}
+
 .page-header h1 {
     font-family: 'Orbitron', monospace;
     font-size: 32px;

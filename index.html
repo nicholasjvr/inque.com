@@ -287,12 +287,13 @@
           <button class="neo-button category-btn" data-category="tools">
             TOOLS
           </button>
-          <button
+          <a
+            href="pages/my-projects.html"
             class="neo-button category-btn neo-brutalist-accent"
-            data-category="projects"
+            style="text-decoration: none; display: inline-block"
           >
             MY PROJECTS
-          </button>
+          </a>
         </nav>
 
         <div
@@ -317,6 +318,73 @@
             👤
           </div>
           <span id="userName" style="color: var(--text-secondary)">Guest</span>
+        </div>
+
+        <!-- Quick Social Access -->
+        <div
+          class="quick-social-access"
+          style="display: flex; gap: 8px; margin-left: 16px"
+        >
+          <a
+            href="pages/my-projects.html"
+            class="quick-social-btn"
+            title="My Projects Dashboard"
+            style="
+              padding: 6px 10px;
+              background: rgba(0, 240, 255, 0.1);
+              border: 1px solid #00f0ff;
+              border-radius: 4px;
+              color: #00f0ff;
+              text-decoration: none;
+              font-size: 12px;
+            "
+            >📊</a
+          >
+          <a
+            href="pages/widget_studio.html"
+            class="quick-social-btn"
+            title="Widget Studio"
+            style="
+              padding: 6px 10px;
+              background: rgba(255, 0, 255, 0.1);
+              border: 1px solid #ff00ff;
+              border-radius: 4px;
+              color: #ff00ff;
+              text-decoration: none;
+              font-size: 12px;
+            "
+            >🎨</a
+          >
+          <a
+            href="pages/explore.html"
+            class="quick-social-btn"
+            title="Explore Widgets"
+            style="
+              padding: 6px 10px;
+              background: rgba(255, 255, 0, 0.1);
+              border: 1px solid #ffff00;
+              border-radius: 4px;
+              color: #ffff00;
+              text-decoration: none;
+              font-size: 12px;
+            "
+            >🔍</a
+          >
+          <a
+            href="pages/users.html"
+            class="quick-social-btn"
+            title="Community"
+            style="
+              padding: 6px 10px;
+              background: rgba(255, 71, 87, 0.1);
+              border: 1px solid #ff4757;
+              border-radius: 4px;
+              color: #ff4757;
+              text-decoration: none;
+              font-size: 12px;
+            "
+            >👥</a
+          >
           <button id="authBtn" class="neo-button">LOGIN</button>
         </div>
       </div>
@@ -1110,6 +1178,115 @@
       <button id="tutorialBtn">Tutorial</button>
       <button id="editProfileQuickBtn">Edit Profile</button>
       <button id="leaveNoteBtn">Leave a Note</button>
+
+      <!-- Social Navigation Section -->
+      <div
+        class="sidebar-social-nav"
+        style="border-top: 1px solid #333; padding-top: 10px; margin-top: 10px"
+      >
+        <div
+          style="
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+          "
+        >
+          Social Hub
+        </div>
+        <a
+          href="pages/my-projects.html"
+          class="sidebar-social-btn"
+          style="
+            display: block;
+            padding: 8px 12px;
+            background: rgba(0, 240, 255, 0.1);
+            border: 1px solid #00f0ff;
+            border-radius: 6px;
+            color: #00f0ff;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-align: center;
+          "
+        >
+          📊 My Projects
+        </a>
+        <a
+          href="pages/widget_studio.html"
+          class="sidebar-social-btn"
+          style="
+            display: block;
+            padding: 8px 12px;
+            background: rgba(255, 0, 255, 0.1);
+            border: 1px solid #ff00ff;
+            border-radius: 6px;
+            color: #ff00ff;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-align: center;
+          "
+        >
+          🎨 Widget Studio
+        </a>
+        <a
+          href="pages/explore.html"
+          class="sidebar-social-btn"
+          style="
+            display: block;
+            padding: 8px 12px;
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid #ffff00;
+            border-radius: 6px;
+            color: #ffff00;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-align: center;
+          "
+        >
+          🔍 Explore
+        </a>
+        <a
+          href="pages/users.html"
+          class="sidebar-social-btn"
+          style="
+            display: block;
+            padding: 8px 12px;
+            background: rgba(255, 71, 87, 0.1);
+            border: 1px solid #ff4757;
+            border-radius: 6px;
+            color: #ff4757;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-align: center;
+          "
+        >
+          👥 Community
+        </a>
+        <a
+          href="pages/inventory.html"
+          class="sidebar-social-btn"
+          style="
+            display: block;
+            padding: 8px 12px;
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid #4ade80;
+            border-radius: 6px;
+            color: #4ade80;
+            text-decoration: none;
+            margin-bottom: 5px;
+            font-size: 14px;
+            text-align: center;
+          "
+        >
+          📦 Inventory
+        </a>
+      </div>
+
       <button id="collapseProfileBtn">
         <span class="collapse-icon">▼</span>
       </button>

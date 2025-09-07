@@ -66,10 +66,17 @@ class AgentDeployer {
 
     // Check if required files exist
     const requiredFiles = [
+<<<<<<< Current (Your changes)
       "scripts/ai-agents/code-analyzer.js",
       "scripts/ai-agents/security-scanner.js",
       "config/ai-config.js",
       "core/firebase-core.js",
+=======
+      'scripts/ai-agents/code-analyzer.js',
+      'scripts/ai-agents/security-scanner.js',
+      'config/ai-config.js',
+      'core/firebase-core.js'
+>>>>>>> Incoming (Background Agent changes)
     ];
 
     for (const file of requiredFiles) {
