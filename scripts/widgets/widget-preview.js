@@ -337,3 +337,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Export for use in other modules
 export { WidgetPreviewManager };
+
+// Export previewWidget function for timeline-manager.js
+export function previewWidget(widgetData, containerId) {
+  console.log("[WIDGET PREVIEW] previewWidget called", {
+    widgetData,
+    containerId,
+  });
+
+  if (!widgetData) {
+    console.warn("[WIDGET PREVIEW] No widget data provided");
+    return;
+  }
+
+  const container = document.getElementById(containerId);
+  if (!container) {
+    console.warn("[WIDGET PREVIEW] Container not found", containerId);
+    return;
+  }
+
+  // Create preview content
+  container.innerHTML = `
+    <div class="widget-preview">
+      <h3>Widget Preview</h3>
+      <div class="preview-content">
+        ${typeof widgetData === "string" ? widgetData : JSON.stringify(widgetData)}
+      </div>
+    </div>
+  `;
+
+  console.log("[WIDGET PREVIEW] Widget preview created successfully");
+}

@@ -1,5 +1,5 @@
 // scripts/widget-display.js
-import { db, auth, storage } from "../core/firebase-core.js";
+import { db, auth, storage } from "../../core/firebase-core.js";
 import {
   doc,
   getDoc,
