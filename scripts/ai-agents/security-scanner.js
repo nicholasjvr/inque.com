@@ -7,6 +7,7 @@
 
 import { AI_CONFIG } from "../../config/ai-config.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
 
 class SecurityScanner {
   constructor() {
@@ -152,3 +153,26 @@ class SecurityScanner {
 }
 
 export default SecurityScanner;
+
+// Run scanner if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  (async () => {
+    const scanner = new SecurityScanner();
+    const targets = [
+      "server.js",
+      "scripts/ai-agents/auto-fixer.js",
+      "pages/page_modals/modal_scripts/chatbot.js",
+    ].filter((p) => fs.existsSync(p));
+
+    const results = [];
+    for (const filePath of targets) {
+      const content = fs.readFileSync(filePath, "utf8");
+      const res = await scanner.scanFile(filePath, content);
+      results.push(res);
+    }
+    console.log(JSON.stringify({ results }, null, 2));
+  })().catch((err) => {
+    console.error("[SECURITY SCANNER] CLI error:", err);
+    process.exit(1);
+  });
+}

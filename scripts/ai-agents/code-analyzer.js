@@ -1,6 +1,8 @@
 
 import { AI_CONFIG } from "../../config/ai-config.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
+import fs from "fs";
+import path from "path";
 
 class CodeAnalyzer {
   constructor() {
@@ -108,3 +110,35 @@ class CodeAnalyzer {
 }
 
 export default CodeAnalyzer;
+
+// Run analyzer if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  (async () => {
+    const analyzer = new CodeAnalyzer();
+
+    const candidateFiles = [
+      "main.js",
+      "core/firebase-core.js",
+      "scripts/ui/canvas.js",
+      "pages/page_modals/modal_scripts/chatbot.js",
+    ];
+
+    const existingFiles = candidateFiles.filter((p) => fs.existsSync(p));
+    if (existingFiles.length === 0) {
+      const summary = await analyzer.analyzeProject(process.cwd());
+      console.log(JSON.stringify(summary, null, 2));
+      process.exit(0);
+    }
+
+    const results = [];
+    for (const filePath of existingFiles) {
+      const content = fs.readFileSync(filePath, "utf8");
+      const analysis = await analyzer.analyzeFile(filePath, content);
+      results.push({ filePath, analysis });
+    }
+    console.log(JSON.stringify({ results }, null, 2));
+  })().catch((err) => {
+    console.error("[CODE ANALYZER] CLI error:", err);
+    process.exit(1);
+  });
+}

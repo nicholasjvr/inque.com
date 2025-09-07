@@ -67,8 +67,8 @@ class AgentDeployer {
     
     // Check if required files exist
     const requiredFiles = [
-      'scripts/ai-agent/code-analyzer.js',
-      'scripts/ai-agent/security-scanner.js',
+      'scripts/ai-agents/code-analyzer.js',
+      'scripts/ai-agents/security-scanner.js',
       'config/ai-config.js',
       'core/firebase-core.js'
     ];

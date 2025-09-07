@@ -175,3 +175,19 @@ class AutoFixer {
 }
 
 export default AutoFixer;
+
+// Run auto-fixer if called directly
+if (import.meta.url === `file://${process.argv[1]}`) {
+  (async () => {
+    const fixer = new AutoFixer();
+    const issuesList = [
+      { filePath: "pages/page_modals/modal_scripts/chatbot.js", issues: [{ type: "console.log" }] },
+    ];
+
+    const { results, summary } = await fixer.batchFix(process.cwd(), issuesList);
+    console.log(JSON.stringify({ results, summary }, null, 2));
+  })().catch((err) => {
+    console.error("[AUTO FIXER] CLI error:", err);
+    process.exit(1);
+  });
+}
