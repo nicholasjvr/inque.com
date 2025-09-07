@@ -72,6 +72,28 @@ class SocialAuthManager {
     console.error(`[SOCIAL AUTH ERROR] ${message}`, error || "");
   }
 
+  // Minimal HTML escape to prevent XSS when rendering untrusted text
+  escapeHTML(input) {
+    if (input === null || input === undefined) return "";
+    const text = String(input);
+    return text.replace(/[&<>"']/g, (ch) => {
+      switch (ch) {
+        case "&":
+          return "&amp;";
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case '"':
+          return "&quot;";
+        case "'":
+          return "&#39;";
+        default:
+          return ch;
+      }
+    });
+  }
+
   // Initialize DOM element references
   initializeDOMElements() {
     this.log("Initializing DOM element references");
@@ -1009,15 +1031,16 @@ class SocialAuthManager {
     const timestamp = notification.timestamp
       ? new Date(notification.timestamp.toDate()).toLocaleString()
       : "Just now";
-
+    const safeTitle = this.escapeHTML(notification.title);
+    const safeMessage = this.escapeHTML(notification.message);
     notificationItem.innerHTML = `
       <div class="notification-content">
         <div class="notification-header">
           <span class="notification-icon">${notification.icon}</span>
-          <span class="notification-title">${notification.title}</span>
+          <span class="notification-title">${safeTitle}</span>
           ${!notification.read ? '<span class="unread-indicator"></span>' : ""}
         </div>
-        <div class="notification-message">${notification.message}</div>
+        <div class="notification-message">${safeMessage}</div>
         <div class="notification-time">${timestamp}</div>
       </div>
       <button class="notification-close" aria-label="Dismiss notification">&times;</button>
@@ -1085,8 +1108,9 @@ class SocialAuthManager {
 
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
+    const safeMessage = this.escapeHTML(message);
     toast.innerHTML = `
-      <span class="toast-message">${message}</span>
+      <span class="toast-message">${safeMessage}</span>
       <button class="toast-close">&times;</button>
     `;
 
@@ -1637,7 +1661,7 @@ document.addEventListener("DOMContentLoaded", () => {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
           }
-        });
+        
       } catch (error) {
         console.error("reCAPTCHA error:", error);
         socialAuth.showToast(
@@ -1684,7 +1708,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(error.message);
             console.error("Login error:", error);
           });
-      });
+      }
     });
   }
 

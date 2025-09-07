@@ -46,6 +46,28 @@ class MyProjectsManager {
     this.init();
   }
 
+  // Minimal HTML escape for untrusted text
+  escapeHTML(input) {
+    if (input === null || input === undefined) return "";
+    const text = String(input);
+    return text.replace(/[&<>"']/g, (ch) => {
+      switch (ch) {
+        case "&":
+          return "&amp;";
+        case "<":
+          return "&lt;";
+        case ">":
+          return "&gt;";
+        case '"':
+          return "&quot;";
+        case "'":
+          return "&#39;";
+        default:
+          return ch;
+      }
+    });
+  }
+
   initializeDOMElements() {
     this.domElements = {
       // Profile elements
@@ -344,18 +366,50 @@ class MyProjectsManager {
   createWidgetCard(widget) {
     const card = document.createElement("div");
     card.className = "neo-card";
+
+    const titleText = this.escapeHTML(widget.title || "Untitled Widget");
+    const descText = this.escapeHTML(widget.description || "No description");
+    const fileUrl = widget.files?.[0]?.downloadURL || "#";
+
+    // Build static structure, then assign text and wire events
     card.innerHTML = `
-      <h3>${widget.title || "Untitled Widget"}</h3>
-      <p>${widget.description || "No description"}</p>
-      <div style="margin-top: auto; display: flex; gap: 0.5rem;">
-        <button class="quick-action-btn" onclick="window.open('${widget.files?.[0]?.downloadURL || "#"}', '_blank')">
-          👁️ Preview
-        </button>
-        <button class="quick-action-btn" onclick="navigator.share({ title: '${widget.title}', url: '${widget.files?.[0]?.downloadURL || ""}' })">
-          📤 Share
-        </button>
-      </div>
+      <h3></h3>
+      <p></p>
+      <div style="margin-top: auto; display: flex; gap: 0.5rem;"></div>
     `;
+
+    const h3 = card.querySelector("h3");
+    const p = card.querySelector("p");
+    const actions = card.querySelector("div");
+    h3.textContent = titleText;
+    p.textContent = descText;
+
+    const previewBtn = document.createElement("button");
+    previewBtn.className = "quick-action-btn";
+    previewBtn.textContent = "👁️ Preview";
+    previewBtn.addEventListener("click", () => {
+      window.open(fileUrl, "_blank");
+    });
+
+    const shareBtn = document.createElement("button");
+    shareBtn.className = "quick-action-btn";
+    shareBtn.textContent = "📤 Share";
+    shareBtn.addEventListener("click", async () => {
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: widget.title || "Widget", url: fileUrl });
+        } else {
+          await navigator.clipboard.writeText(fileUrl);
+          this.showToast("Widget URL copied to clipboard!", "success");
+        }
+      } catch (err) {
+        // Non-fatal
+      }
+    });
+
+    actions.appendChild(previewBtn);
+    actions.appendChild(shareBtn);
+
     return card;
   }
 
@@ -421,10 +475,12 @@ class MyProjectsManager {
       ? new Date(notification.timestamp.toDate()).toLocaleString()
       : "Just now";
 
+    const safeTitle = this.escapeHTML(notification.title || "Activity");
+    const safeMessage = this.escapeHTML(notification.message || "");
     event.innerHTML = `
-      <div class="timeline-event-title">${notification.title || "Activity"}</div>
+      <div class="timeline-event-title">${safeTitle}</div>
       <div class="timeline-event-content">
-        ${notification.message || ""}
+        ${safeMessage}
         <div style="font-size: 0.8rem; color: #666; margin-top: 0.5rem;">${timestamp}</div>
       </div>
     `;
@@ -685,10 +741,11 @@ class MyProjectsManager {
 
     const toast = document.createElement("div");
     toast.className = `toast ${type}`;
+    const safeMessage = this.escapeHTML(message);
     toast.innerHTML = `
       <div class="toast-icon">${this.getToastIcon(type)}</div>
       <div class="toast-content">
-        <div class="toast-message">${message}</div>
+        <div class="toast-message">${safeMessage}</div>
       </div>
       <button class="toast-close">&times;</button>
     `;
