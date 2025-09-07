@@ -101,18 +101,18 @@ try {
   DEBUG.error("Error importing social features", error);
 }
 
-// Import Vibe-coders integration
-DEBUG.log("Importing Vibe-coders integration");
+// Import inQ integration
+DEBUG.log("Importing inQ integration");
 try {
   import("./scripts/integration/vibe-coders-integration.js")
     .then(() => {
-      DEBUG.log("Vibe-coders integration imported successfully");
+      DEBUG.log("inQ integration imported successfully");
     })
     .catch((error) => {
-      DEBUG.error("Failed to import Vibe-coders integration", error);
+      DEBUG.error("Failed to import inQ integration", error);
     });
 } catch (error) {
-  DEBUG.error("Error importing Vibe-coders integration", error);
+  DEBUG.error("Error importing inQ integration", error);
 }
 
 // Note: widget-display and timeline-manager are loaded via script tags in index.html

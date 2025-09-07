@@ -1,4 +1,4 @@
-// Navigation System for Vibe-coders Platform
+// Navigation System for inQ - Platform
 // This module handles navigation between different sections while preserving existing functionality
 
 import { auth, db } from "../../core/firebase-core.js";

@@ -1,4 +1,4 @@
-// Tools Filter System for Vibe-coders Platform
+// Tools Filter System for inQ - Platform
 // This module handles filtering and categorization of development tools
 
 class ToolsFilterManager {
