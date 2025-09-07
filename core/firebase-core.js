@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     DEBUG.log("Sidebar functionality setup complete");
   } else {
-    DEBUG.error("Missing sidebar elements", {
+    DEBUG.warn("Sidebar elements not found - sidebar functionality disabled", {
       sidebar: !!sidebar,
       overlay: !!overlay,
       hamburger: !!hamburger,

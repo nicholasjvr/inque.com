@@ -253,6 +253,10 @@ class CloudUploadManager {
 
 // Create and export singleton instance
 const cloudUploadManager = new CloudUploadManager();
+
+// Expose to window for testing
+window.cloudUploadManager = cloudUploadManager;
+
 export default cloudUploadManager;
 
 // Export individual functions for backward compatibility

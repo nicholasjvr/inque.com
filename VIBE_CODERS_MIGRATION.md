@@ -1,12 +1,12 @@
-# VIBE-CODERS Platform Migration Guide
+# inQ - Platform Migration Guide
 
 ## Overview
 
-This guide explains how to gracefully implement the new Vibe-coders platform features without breaking your existing inque application.
+This guide explains how to gracefully implement the new inQ - Platform features without breaking your existing inque application.
 
 ## What's New
 
-The Vibe-coders platform adds the following features to your existing application:
+The inQ - Platform adds the following features to your existing application:
 
 ### 🎯 Core Features
 
@@ -27,7 +27,7 @@ The Vibe-coders platform adds the following features to your existing applicatio
 
 ### Option 1: Gradual Integration (Recommended)
 
-The integration system automatically detects your current setup and adds Vibe-coders features to your existing application.
+The integration system automatically detects your current setup and adds inQ features to your existing application.
 
 **Files Created:**
 
@@ -39,17 +39,17 @@ The integration system automatically detects your current setup and adds Vibe-co
 **How it works:**
 
 1. The integration system detects if you're using the legacy (old) or new platform
-2. If legacy: Adds Vibe-coders sections to your existing sidebar
-3. If new: Initializes the full Vibe-coders platform
+2. If legacy: Adds inQ sections to your existing sidebar
+3. If new: Initializes the full inQ - Platform
 4. Preserves all existing functionality
 
 ### Option 2: Full Platform Switch
 
-Switch to the complete Vibe-coders platform with all new features.
+Switch to the complete inQ - Platform with all new features.
 
 **Files Created:**
 
-- `index-new.html` - Complete Vibe-coders platform
+- `index-new.html` - Complete inQ - Platform
 - All integration scripts and UI components
 
 **How to switch:**
@@ -70,7 +70,7 @@ Switch to the complete Vibe-coders platform with all new features.
 ### Step 2: Test the Integration
 
 1. Open your current `index.html` in a browser
-2. The integration system will automatically add Vibe-coders features
+2. The integration system will automatically add inQ features
 3. Check the browser console for integration status
 4. Test that existing functionality still works
 
@@ -95,7 +95,7 @@ window.vibeCodersIntegration.switchToLegacyPlatform();
 your-project/
 ├── index.html (current - with integration)
 ├── index-legacy.html (backup)
-├── index-new.html (full Vibe-coders platform)
+├── index-new.html (full inQ - Platform)
 ├── scripts/
 │   ├── integration/
 │   │   └── vibe-coders-integration.js
@@ -262,10 +262,15 @@ If you encounter any issues:
 3. Ensure Firebase configuration is correct
 4. Test with a clean browser cache
 
-The integration system is designed to be non-breaking and will preserve all your existing functionality while adding the new Vibe-coders features.
+The integration system is designed to be non-breaking and will preserve all your existing functionality while adding the new inQ features.
 
 ---
 
 **Happy coding! 🚀**
 
+<<<<<<< Current (Your changes)
 The Vibe-coders platform is designed to help developers using AI IDEs build faster, share knowledge, and stay ahead of the curve.
+=======
+The inQ - Platform is designed to help developers using AI IDEs build faster, share knowledge, and stay ahead of the curve.
+
+> > > > > > > Incoming (Background Agent changes)

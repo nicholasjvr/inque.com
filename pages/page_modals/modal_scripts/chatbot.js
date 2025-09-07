@@ -1,10 +1,7 @@
-// ===== AI CHATBOT FUNCTIONALITY =====
 console.log("[CHATBOT] Initializing AI chatbot...");
 
 // Chatbot state
 let chatHistory = [];
-
-// Initialize chatbot when modal opens
 function initializeChatbot() {
   console.log("[CHATBOT] Initializing chatbot components...");
 

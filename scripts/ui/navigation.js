@@ -1,10 +1,11 @@
-// Navigation System for Vibe-coders Platform
+// Navigation System for inQ - Platform
 // This module handles navigation between different sections while preserving existing functionality
-
 import { auth, db } from "../../core/firebase-core.js";
 import {
   onAuthStateChanged,
   signInWithPopup,
+  signInWithRedirect,
+  getRedirectResult,
   GithubAuthProvider,
   signOut,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
@@ -35,7 +36,7 @@ class NavigationManager {
     try {
       this.setupNavigation();
       this.setupAuthIntegration();
-      this.setupSectionHandlers();
+      this.handleRedirectResult();
       this.isInitialized = true;
 
       console.log("[NAVIGATION] Navigation system ready");
@@ -46,11 +47,14 @@ class NavigationManager {
 
   setupNavigation() {
     const categoryButtons = document.querySelectorAll(".category-btn");
+    console.log(`🔧 Setting up ${categoryButtons.length} navigation buttons`);
 
-    categoryButtons.forEach((button) => {
+    categoryButtons.forEach((button, index) => {
+      console.log(`🔧 Button ${index + 1}:`, button.dataset.category, button);
       button.addEventListener("click", (e) => {
         e.preventDefault();
         const category = button.dataset.category;
+        console.log(`🔧 Navigation clicked: ${category}`);
         this.navigateToSection(category);
       });
     });
@@ -78,6 +82,20 @@ class NavigationManager {
     }
 
     console.log("[NAVIGATION] Auth integration configured");
+  }
+
+  async handleRedirectResult() {
+    try {
+      // Check if we're returning from a redirect
+      const result = await getRedirectResult(auth);
+      if (result) {
+        console.log("[NAVIGATION] Redirect authentication successful");
+        this.showToast("Login successful! Welcome!", "success");
+      }
+    } catch (error) {
+      console.error("[NAVIGATION] Redirect result error", error);
+      // Don't show error toast for redirect results as they're expected
+    }
   }
 
   async handleUserLogin(user) {
@@ -219,11 +237,53 @@ class NavigationManager {
   async handleLogin() {
     try {
       const provider = new GithubAuthProvider();
-      const result = await signInWithPopup(auth, provider);
-      console.log("[NAVIGATION] Login successful");
+
+      // Try popup first, fallback to redirect if blocked
+      try {
+        const result = await signInWithPopup(auth, provider);
+        console.log("[NAVIGATION] Login successful via popup");
+        this.showToast("Login successful! Welcome!", "success");
+      } catch (popupError) {
+        console.warn(
+          "[NAVIGATION] Popup blocked, trying redirect:",
+          popupError.code
+        );
+
+        // Check if it's a popup-blocked error
+        if (
+          popupError.code === "auth/popup-blocked" ||
+          popupError.code === "auth/cancelled-popup-request"
+        ) {
+          console.log("[NAVIGATION] Switching to redirect authentication");
+          this.showToast(
+            "Popup blocked. Redirecting to GitHub for authentication...",
+            "info",
+            3000
+          );
+
+          // Use redirect instead
+          await signInWithRedirect(auth, provider);
+          return; // Don't show error toast since we're redirecting
+        }
+
+        // For other errors, re-throw
+        throw popupError;
+      }
     } catch (error) {
       console.error("[NAVIGATION] Login error", error);
-      this.showToast("Authentication failed. Please try again.", "error");
+
+      // Provide more specific error messages
+      let errorMessage = "Authentication failed. Please try again.";
+      if (error.code === "auth/operation-not-allowed") {
+        errorMessage =
+          "GitHub authentication is not enabled. Please contact support.";
+      } else if (error.code === "auth/popup-blocked") {
+        errorMessage = "Popup blocked. Please allow popups and try again.";
+      } else if (error.code === "auth/cancelled-popup-request") {
+        errorMessage = "Authentication cancelled. Please try again.";
+      }
+
+      this.showToast(errorMessage, "error");
     }
   }
 
@@ -238,6 +298,8 @@ class NavigationManager {
   }
 
   navigateToSection(sectionName) {
+    console.log(`🔧 Navigating to section: ${sectionName}`);
+
     if (!this.sections.includes(sectionName)) {
       console.warn("[NAVIGATION] Invalid section:", sectionName);
       return;
@@ -248,6 +310,7 @@ class NavigationManager {
       const sectionElement = document.getElementById(`${section}-section`);
       if (sectionElement) {
         sectionElement.style.display = "none";
+        console.log(`🔧 Hiding section: ${section}`);
       }
     });
 
@@ -256,6 +319,7 @@ class NavigationManager {
     if (targetSection) {
       targetSection.style.display = "block";
       this.currentSection = sectionName;
+      console.log(`🔧 Showing section: ${sectionName}`);
 
       // Update active button state
       const categoryButtons = document.querySelectorAll(".category-btn");
@@ -426,6 +490,9 @@ class NavigationManager {
 
 // Create and export singleton instance
 const navigationManager = new NavigationManager();
+
+// Expose to window for testing
+window.navigationManager = navigationManager;
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {

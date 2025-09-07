@@ -1,7 +1,3 @@
-// Main entry point for the enhanced inque social app
-// This script imports and initializes all core functionality
-
-// Debug logging utility for main entry point
 const DEBUG = {
   log: (message, data = null) => {
     console.log(`[MAIN DEBUG] ${message}`, data || "");
@@ -101,18 +97,18 @@ try {
   DEBUG.error("Error importing social features", error);
 }
 
-// Import Vibe-coders integration
-DEBUG.log("Importing Vibe-coders integration");
+// Import inQ integration
+DEBUG.log("Importing inQ integration");
 try {
   import("./scripts/integration/vibe-coders-integration.js")
     .then(() => {
-      DEBUG.log("Vibe-coders integration imported successfully");
+      DEBUG.log("inQ integration imported successfully");
     })
     .catch((error) => {
-      DEBUG.error("Failed to import Vibe-coders integration", error);
+      DEBUG.error("Failed to import inQ integration", error);
     });
 } catch (error) {
-  DEBUG.error("Error importing Vibe-coders integration", error);
+  DEBUG.error("Error importing inQ integration", error);
 }
 
 // Note: widget-display and timeline-manager are loaded via script tags in index.html
@@ -1583,5 +1579,388 @@ window.openAuthModal = function (formType = "login") {
     DEBUG.error("Failed to open auth modal - elements not found");
   }
 };
+
+// Enhanced Scroll and Fullscreen Functionality
+DEBUG.log("Initializing enhanced scroll and fullscreen functionality");
+
+// Global state for fullscreen mode
+window.fullscreenState = {
+  isFullscreen: false,
+  originalScrollPosition: 0,
+  isInitialized: false,
+};
+
+// Initialize enhanced scroll and fullscreen features
+function initializeEnhancedScrollAndFullscreen() {
+  DEBUG.log("Setting up enhanced scroll and fullscreen features");
+
+  try {
+    // Create fullscreen toggle button
+    createFullscreenToggleButton();
+
+    // Setup scroll event listeners
+    setupScrollEventListeners();
+
+    // Setup keyboard shortcuts
+    setupKeyboardShortcuts();
+
+    // Initialize scroll position restoration
+    initializeScrollPositionRestoration();
+
+    window.fullscreenState.isInitialized = true;
+    DEBUG.log(
+      "Enhanced scroll and fullscreen features initialized successfully"
+    );
+  } catch (error) {
+    DEBUG.error(
+      "Failed to initialize enhanced scroll and fullscreen features",
+      error
+    );
+  }
+}
+
+// Create fullscreen toggle button
+function createFullscreenToggleButton() {
+  DEBUG.log("Creating fullscreen toggle button");
+
+  const toggleButton = document.createElement("button");
+  toggleButton.id = "fullscreenToggle";
+  toggleButton.className = "fullscreen-toggle";
+  toggleButton.innerHTML = "⛶";
+  toggleButton.title = "Toggle Fullscreen Mode (F11)";
+
+  // Add click event listener
+  toggleButton.addEventListener("click", toggleFullscreenMode);
+
+  // Add to DOM
+  document.body.appendChild(toggleButton);
+
+  DEBUG.log("Fullscreen toggle button created and added to DOM");
+}
+
+// Toggle fullscreen mode
+function toggleFullscreenMode() {
+  DEBUG.log("Toggling fullscreen mode", {
+    currentState: window.fullscreenState.isFullscreen,
+  });
+
+  const body = document.body;
+  const header = document.querySelector("header");
+  const footer = document.querySelector("footer");
+  const main = document.querySelector("main");
+
+  if (!window.fullscreenState.isFullscreen) {
+    // Enter fullscreen mode
+    DEBUG.log("Entering fullscreen mode");
+
+    // Store current scroll position
+    window.fullscreenState.originalScrollPosition = window.pageYOffset;
+
+    // Add fullscreen class to body
+    body.classList.add("fullscreen-mode");
+
+    // Hide header and footer
+    if (header) {
+      header.style.transform = "translateY(-100%)";
+      DEBUG.log("Header hidden");
+    }
+
+    if (footer) {
+      footer.style.transform = "translateY(100%)";
+      DEBUG.log("Footer hidden");
+    }
+
+    // Adjust main content
+    if (main) {
+      main.style.height = "100vh";
+      main.style.paddingTop = "20px";
+      main.style.paddingBottom = "20px";
+      DEBUG.log("Main content adjusted for fullscreen");
+    }
+
+    // Update button icon
+    const toggleButton = document.getElementById("fullscreenToggle");
+    if (toggleButton) {
+      toggleButton.innerHTML = "⛷";
+      toggleButton.title = "Exit Fullscreen Mode (F11)";
+    }
+
+    window.fullscreenState.isFullscreen = true;
+
+    // Show success notification
+    if (window.showToast) {
+      window.showToast(
+        "Fullscreen mode activated! Press F11 or click the button to exit.",
+        "success",
+        3000
+      );
+    }
+  } else {
+    // Exit fullscreen mode
+    DEBUG.log("Exiting fullscreen mode");
+
+    // Remove fullscreen class from body
+    body.classList.remove("fullscreen-mode");
+
+    // Show header and footer
+    if (header) {
+      header.style.transform = "translateY(0)";
+      DEBUG.log("Header shown");
+    }
+
+    if (footer) {
+      footer.style.transform = "translateY(0)";
+      DEBUG.log("Footer shown");
+    }
+
+    // Restore main content
+    if (main) {
+      main.style.height = "";
+      main.style.paddingTop = "";
+      main.style.paddingBottom = "";
+      DEBUG.log("Main content restored");
+    }
+
+    // Update button icon
+    const toggleButton = document.getElementById("fullscreenToggle");
+    if (toggleButton) {
+      toggleButton.innerHTML = "⛶";
+      toggleButton.title = "Toggle Fullscreen Mode (F11)";
+    }
+
+    window.fullscreenState.isFullscreen = false;
+
+    // Restore scroll position
+    setTimeout(() => {
+      window.scrollTo(0, window.fullscreenState.originalScrollPosition);
+      DEBUG.log("Scroll position restored", {
+        position: window.fullscreenState.originalScrollPosition,
+      });
+    }, 100);
+
+    // Show success notification
+    if (window.showToast) {
+      window.showToast("Fullscreen mode deactivated!", "info", 2000);
+    }
+  }
+
+  DEBUG.log("Fullscreen mode toggled successfully", {
+    newState: window.fullscreenState.isFullscreen,
+  });
+}
+
+// Setup scroll event listeners for enhanced behavior
+function setupScrollEventListeners() {
+  DEBUG.log("Setting up scroll event listeners");
+
+  let scrollTimeout;
+  let lastScrollTop = 0;
+
+  window.addEventListener(
+    "scroll",
+    () => {
+      const currentScrollTop = window.pageYOffset;
+      const scrollDirection = currentScrollTop > lastScrollTop ? "down" : "up";
+
+      // Clear existing timeout
+      clearTimeout(scrollTimeout);
+
+      // Set timeout for scroll end detection
+      scrollTimeout = setTimeout(() => {
+        DEBUG.log("Scroll ended", {
+          position: currentScrollTop,
+          direction: scrollDirection,
+        });
+      }, 150);
+
+      // Update last scroll position
+      lastScrollTop = currentScrollTop;
+
+      // Add scroll-based effects
+      handleScrollEffects(currentScrollTop, scrollDirection);
+    },
+    { passive: true }
+  );
+
+  DEBUG.log("Scroll event listeners setup complete");
+}
+
+// Handle scroll-based visual effects
+function handleScrollEffects(scrollTop, direction) {
+  const header = document.querySelector("header");
+  const fullscreenToggle = document.getElementById("fullscreenToggle");
+
+  // Auto-hide header on scroll down (only in non-fullscreen mode)
+  if (!window.fullscreenState.isFullscreen && header) {
+    if (direction === "down" && scrollTop > 100) {
+      header.style.transform = "translateY(-100%)";
+      DEBUG.log("Header auto-hidden on scroll down");
+    } else if (direction === "up" || scrollTop <= 100) {
+      header.style.transform = "translateY(0)";
+      DEBUG.log("Header shown on scroll up");
+    }
+  }
+
+  // Adjust fullscreen toggle opacity based on scroll
+  if (fullscreenToggle) {
+    const opacity = Math.max(0.3, 1 - scrollTop / 500);
+    fullscreenToggle.style.opacity = opacity;
+  }
+}
+
+// Setup keyboard shortcuts
+function setupKeyboardShortcuts() {
+  DEBUG.log("Setting up keyboard shortcuts for fullscreen");
+
+  document.addEventListener("keydown", (e) => {
+    // F11 key for fullscreen toggle
+    if (e.key === "F11") {
+      e.preventDefault();
+      DEBUG.log("F11 key pressed - toggling fullscreen");
+      toggleFullscreenMode();
+    }
+
+    // Escape key to exit fullscreen
+    if (e.key === "Escape" && window.fullscreenState.isFullscreen) {
+      DEBUG.log("Escape key pressed - exiting fullscreen");
+      toggleFullscreenMode();
+    }
+
+    // Ctrl + Shift + D for debug mode toggle
+    if (e.ctrlKey && e.shiftKey && e.key === "D") {
+      e.preventDefault();
+      toggleDebugMode();
+      DEBUG.log("Debug mode toggled via keyboard shortcut");
+    }
+  });
+
+  DEBUG.log("Keyboard shortcuts setup complete");
+}
+
+// Initialize scroll position restoration
+function initializeScrollPositionRestoration() {
+  DEBUG.log("Initializing scroll position restoration");
+
+  // Restore scroll position on page load
+  window.addEventListener("load", () => {
+    const savedPosition = sessionStorage.getItem("scrollPosition");
+    if (savedPosition) {
+      setTimeout(() => {
+        window.scrollTo(0, parseInt(savedPosition));
+        DEBUG.log("Scroll position restored from session storage", {
+          position: savedPosition,
+        });
+      }, 100);
+    }
+  });
+
+  // Save scroll position before page unload
+  window.addEventListener("beforeunload", () => {
+    sessionStorage.setItem("scrollPosition", window.pageYOffset.toString());
+    DEBUG.log("Scroll position saved to session storage", {
+      position: window.pageYOffset,
+    });
+  });
+
+  DEBUG.log("Scroll position restoration initialized");
+}
+
+// Toggle debug mode
+function toggleDebugMode() {
+  const body = document.body;
+  const isDebugMode = body.classList.contains("debug-mode");
+
+  if (isDebugMode) {
+    body.classList.remove("debug-mode");
+    DEBUG.log("Debug mode disabled");
+    if (window.showToast) {
+      window.showToast("Debug mode disabled", "info", 2000);
+    }
+  } else {
+    body.classList.add("debug-mode");
+    DEBUG.log("Debug mode enabled");
+    if (window.showToast) {
+      window.showToast(
+        "Debug mode enabled - Press Ctrl+Shift+D to toggle",
+        "success",
+        3000
+      );
+    }
+  }
+}
+
+// Enhanced smooth scrolling for anchor links
+function setupSmoothScrolling() {
+  DEBUG.log("Setting up smooth scrolling for anchor links");
+
+  document.addEventListener("click", (e) => {
+    const link = e.target.closest('a[href^="#"]');
+    if (link) {
+      e.preventDefault();
+      const targetId = link.getAttribute("href").substring(1);
+      const targetElement = document.getElementById(targetId);
+
+      if (targetElement) {
+        const headerHeight =
+          document.querySelector("header")?.offsetHeight || 0;
+        const targetPosition = targetElement.offsetTop - headerHeight - 20;
+
+        window.scrollTo({
+          top: targetPosition,
+          behavior: "smooth",
+        });
+
+        DEBUG.log("Smooth scroll to element", {
+          targetId,
+          position: targetPosition,
+        });
+      }
+    }
+  });
+
+  DEBUG.log("Smooth scrolling setup complete");
+}
+
+// Global function to programmatically toggle fullscreen
+window.toggleFullscreen = function () {
+  DEBUG.log("Fullscreen toggle called via global function");
+  toggleFullscreenMode();
+};
+
+// Global function to check fullscreen state
+window.isFullscreen = function () {
+  return window.fullscreenState.isFullscreen;
+};
+
+// Global function to enter fullscreen mode
+window.enterFullscreen = function () {
+  if (!window.fullscreenState.isFullscreen) {
+    DEBUG.log("Entering fullscreen via global function");
+    toggleFullscreenMode();
+  }
+};
+
+// Global function to exit fullscreen mode
+window.exitFullscreen = function () {
+  if (window.fullscreenState.isFullscreen) {
+    DEBUG.log("Exiting fullscreen via global function");
+    toggleFullscreenMode();
+  }
+};
+
+// Initialize enhanced scroll and fullscreen features when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  DEBUG.log(
+    "DOM Content Loaded - Initializing enhanced scroll and fullscreen features"
+  );
+
+  // Wait a bit for other initializations to complete
+  setTimeout(() => {
+    initializeEnhancedScrollAndFullscreen();
+    setupSmoothScrolling();
+  }, 500);
+});
+
+DEBUG.log("Enhanced scroll and fullscreen functionality loaded");
 
 DEBUG.log("Enhanced inque social app initialization complete");

@@ -15,6 +15,10 @@
     --bg-card: rgba(16, 21, 32, 0.95);
     --border-glow: rgba(0, 240, 255, 0.4);
     --shadow-glow: rgba(0, 240, 255, 0.3);
+    --header-height: 120px;
+    --footer-height: 80px;
+    --transition-duration: 0.3s;
+    --scrollbar-width: 8px;
 }
 
 body {
@@ -185,18 +189,62 @@ body {
 
 /* Main content styling */
 main {
-    height: 100vh;
+    height: calc(100vh - var(--header-height));
     width: 100vw;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    justify-content: flex-start;
     align-items: center;
     background: transparent;
     margin: 0;
-    padding-top: 120px;
-    /* Enough space for the profile banner */
-    /* Adjust for fixed header */
+    padding: 20px;
+    padding-top: var(--header-height);
     position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    scrollbar-width: thin;
+    scrollbar-color: var(--primary-color) transparent;
+}
+
+/* Custom scrollbar styling */
+main::-webkit-scrollbar {
+    width: var(--scrollbar-width);
+}
+
+main::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+main::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+    background: var(--accent-color);
+}
+
+/* Enhanced spacing for content sections */
+main section {
+    margin: 40px 0;
+    padding: 30px;
+    width: 100%;
+    max-width: 1200px;
+    background: rgba(16, 21, 32, 0.3);
+    border: 1px solid var(--primary-color);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    transition: all 0.3s ease;
+}
+
+main section:hover {
+    background: rgba(16, 21, 32, 0.5);
+    border-color: var(--accent-color);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.2);
 }
 
 .site-header {
@@ -854,14 +902,14 @@ main {
 /* Footer styles */
 footer {
     text-align: center;
-    padding: 15px 0;
-    background: var(--color-navy);
-    color: var(--color-aqua);
-    position: fixed;
-    width: 100%;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
+    padding: 20px 0;
+    background: rgba(16, 21, 32, 0.6);
+    border-top: 1px solid rgba(0, 240, 255, 0.2);
+    backdrop-filter: blur(10px);
+    position: relative;
+    z-index: 10;
+    margin-top: auto;
+    color: var(--text-light);
 }
 
 /* Modal Styles */
@@ -7456,4 +7504,121 @@ body {
     .stat-item {
         margin-bottom: 10px;
     }
+}
+
+/* Enhanced Scroll Area and Fullscreen Functionality */
+
+/* Fullscreen mode styles */
+body.fullscreen-mode {
+    overflow: hidden;
+}
+
+body.fullscreen-mode header {
+    transform: translateY(-100%);
+    transition: transform var(--transition-duration) ease-in-out;
+}
+
+body.fullscreen-mode footer {
+    transform: translateY(100%);
+    transition: transform var(--transition-duration) ease-in-out;
+}
+
+body.fullscreen-mode main {
+    height: 100vh;
+    padding-top: 20px;
+    margin-top: 0;
+}
+
+/* Fullscreen toggle button */
+.fullscreen-toggle {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--bg-card);
+    border: 2px solid var(--primary-color);
+    color: var(--text-light);
+    padding: 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.2);
+}
+
+.fullscreen-toggle:hover {
+    background: var(--primary-color);
+    color: var(--text-dark);
+    transform: scale(1.05);
+    box-shadow: 0 6px 20px rgba(0, 240, 255, 0.4);
+}
+
+.fullscreen-toggle:active {
+    transform: scale(0.95);
+}
+
+/* Header and footer hide/show animations */
+header {
+    transition: transform var(--transition-duration) ease-in-out;
+}
+
+footer {
+    transition: transform var(--transition-duration) ease-in-out;
+}
+
+/* Enhanced content spacing */
+.content-container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* Smooth scrolling for anchor links */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced mobile responsiveness */
+@media (max-width: 768px) {
+    main {
+        padding: 10px;
+        padding-top: calc(var(--header-height) + 10px);
+    }
+
+    main section {
+        margin: 20px 0;
+        padding: 20px;
+    }
+
+    .fullscreen-toggle {
+        top: 10px;
+        right: 10px;
+        padding: 8px;
+        font-size: 16px;
+    }
+
+    footer {
+        padding: 15px 0;
+    }
+}
+
+/* Debug mode indicator */
+.debug-mode-indicator {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(255, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-family: monospace;
+    z-index: 1001;
+    display: none;
+}
+
+body.debug-mode .debug-mode-indicator {
+    display: block;
 }

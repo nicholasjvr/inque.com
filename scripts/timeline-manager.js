@@ -18,6 +18,7 @@ import {
   updateProject,
 } from "./widgets/project-manager.js";
 import { previewWidget } from "./widgets/widget-preview.js";
+import profileDashboardManager from "./widgets/profile-dashboard-manager.js";
 
 // Debug logging utility for timeline manager
 const DEBUG = {
@@ -186,10 +187,10 @@ document.addEventListener("DOMContentLoaded", async function () {
               renderAllWidgetCards();
             });
         } else {
-          // Normal display mode with live widget iframe
+          // Normal display mode with live widget iframe using custom styling
           card.innerHTML = `
             <div class="widget-preview" style="margin-bottom:8px;">
-              <iframe class="widget-iframe" title="Widget Preview" style="width:100%;height:240px;border:0;border-radius:8px;background:#0b0b0b"></iframe>
+              <iframe class="widget-iframe custom-styled" title="Widget Preview" style="width:100%;height:240px;border:0;border-radius:8px;background:#0b0b0b"></iframe>
             </div>
             <h3>${project.title || "Untitled Widget"}</h3>
             <p>${project.desc || "No description available"}</p>
@@ -201,6 +202,14 @@ document.addEventListener("DOMContentLoaded", async function () {
             "sandbox",
             "allow-scripts allow-same-origin allow-forms"
           );
+
+          // Apply custom dashboard styling to the iframe
+          if (profileDashboardManager) {
+            DEBUG.log(
+              "Timeline Manager: Applying custom dashboard styling to widget"
+            );
+            profileDashboardManager.applyDashboardSettings(iframe);
+          }
 
           // Asynchronously load widget HTML with asset URLs rewritten
           loadWidgetIntoIframe(project, iframe).catch((error) => {
@@ -692,5 +701,30 @@ document.addEventListener("DOMContentLoaded", async function () {
       .join("");
   }
 
+  // Listen for dashboard settings changes and reapply styling
+  if (profileDashboardManager) {
+    DEBUG.log("Timeline Manager: Setting up dashboard settings listener");
+
+    // Re-apply styling when dashboard settings change
+    const originalApplySettings =
+      profileDashboardManager.applySettingsToAllWidgets;
+    profileDashboardManager.applySettingsToAllWidgets = function () {
+      originalApplySettings.call(this);
+      // Re-render timeline cards to apply new styling
+      setTimeout(() => {
+        DEBUG.log("Timeline Manager: Re-rendering cards after settings change");
+        renderAllWidgetCards();
+      }, 100);
+    };
+  }
+
   DEBUG.log("Timeline Manager: Initialization complete");
 });
+
+// Expose timeline manager to window for testing
+window.timelineManager = {
+  renderAllWidgetCards,
+  renderWidgetCard,
+  initializeTimeline,
+  // Add other public methods as needed
+};

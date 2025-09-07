@@ -1,7 +1,6 @@
-// Vibe-coders Integration System
-// This module gracefully integrates the old inque system with the new Vibe-coders platform
+// inQ - Platform Integration System
+// This module gracefully integrates the old inque system with the new inQ - Platform
 // without breaking existing functionality
-
 import { auth, db } from "../../core/firebase-core.js";
 import {
   onAuthStateChanged,
@@ -29,7 +28,7 @@ class VibeCodersIntegration {
     this.newElements = new Map();
     this.integrationComplete = false;
 
-    console.log("[INTEGRATION] Vibe-coders Integration Manager initialized");
+    console.log("[INTEGRATION] inQ Integration Manager initialized");
   }
 
   async init() {
@@ -55,16 +54,15 @@ class VibeCodersIntegration {
     const oldSidebar = document.querySelector(".sidebar-nav");
     const oldTimeline = document.querySelector(".timeline-3channel");
     const newHeader = document.querySelector("header.neo-brutalist");
-    const vibeCodersTitle = document.querySelector(
-      'h1:contains("VIBE-CODERS")'
-    );
+    // Title detection updated to inQ branding
+    const inQTitleMatch = document.title.includes("inQ");
 
     if (oldSidebar && oldTimeline && !newHeader) {
       this.isLegacyMode = true;
       console.log("[INTEGRATION] Detected legacy mode - old inque system");
-    } else if (newHeader || document.title.includes("VIBE-CODERS")) {
+    } else if (newHeader || inQTitleMatch) {
       this.isLegacyMode = false;
-      console.log("[INTEGRATION] Detected new platform - Vibe-coders system");
+      console.log("[INTEGRATION] Detected new platform - inQ - Platform");
     } else {
       // Fallback - assume legacy mode
       this.isLegacyMode = true;
@@ -78,7 +76,7 @@ class VibeCodersIntegration {
     // Preserve existing functionality
     this.preserveLegacyElements();
 
-    // Add Vibe-coders features to legacy system
+    // Add inQ features to legacy system
     await this.addVibeCodersFeatures();
 
     // Setup navigation bridge
@@ -119,13 +117,13 @@ class VibeCodersIntegration {
   }
 
   async addVibeCodersFeatures() {
-    // Add Vibe-coders navigation to legacy system
+    // Add inQ navigation to legacy system
     this.addVibeCodersNavigation();
 
-    // Add Vibe-coders sections to legacy system
+    // Add inQ sections to legacy system
     this.addVibeCodersSections();
 
-    // Add Vibe-coders styling
+    // Add inQ styling
     this.addVibeCodersStyling();
   }
 
@@ -133,11 +131,11 @@ class VibeCodersIntegration {
     const sidebarNav = this.legacyElements.get("sidebar-nav");
     if (!sidebarNav) return;
 
-    // Add Vibe-coders section to sidebar
+    // Add inQ section to sidebar
     const vibeCodersSection = document.createElement("div");
     vibeCodersSection.className = "sidebar-vibe-coders";
     vibeCodersSection.innerHTML = `
-      <h4 class="sidebar-section-title">VIBE-CODERS</h4>
+      <h4 class="sidebar-section-title">inQ - Platform</h4>
       <button class="sidebar-nav-btn" data-action="guides">📚 Guides</button>
       <button class="sidebar-nav-btn" data-action="showcase">🏆 Showcase</button>
       <button class="sidebar-nav-btn" data-action="inspiration">💡 Inspiration</button>
@@ -157,14 +155,14 @@ class VibeCodersIntegration {
       });
     });
 
-    console.log("[INTEGRATION] Added Vibe-coders navigation to legacy system");
+    console.log("[INTEGRATION] Added inQ navigation to legacy system");
   }
 
   addVibeCodersSections() {
     const main = document.querySelector("main");
     if (!main) return;
 
-    // Create Vibe-coders sections container
+    // Create inQ sections container
     const vibeCodersContainer = document.createElement("div");
     vibeCodersContainer.id = "vibe-coders-sections";
     vibeCodersContainer.style.cssText = "display: none; margin-top: 20px;";
@@ -177,7 +175,7 @@ class VibeCodersIntegration {
     });
 
     main.appendChild(vibeCodersContainer);
-    console.log("[INTEGRATION] Added Vibe-coders sections to legacy system");
+    console.log("[INTEGRATION] Added inQ sections to legacy system");
   }
 
   createVibeCodersSection(sectionName) {
@@ -224,7 +222,7 @@ class VibeCodersIntegration {
     const descriptions = {
       guides:
         "Master AI IDE development with step-by-step guides from the community",
-      showcase: "See what the Vibe-coders community has built using AI IDEs",
+      showcase: "See what the inQ community has built using AI IDEs",
       inspiration:
         "Find inspiration from beautiful web designs and creative coding examples",
       tools:
@@ -297,14 +295,14 @@ class VibeCodersIntegration {
     `;
 
     document.head.appendChild(style);
-    console.log("[INTEGRATION] Added Vibe-coders styling to legacy system");
+    console.log("[INTEGRATION] Added inQ styling to legacy system");
   }
 
   setupNavigationBridge() {
     // Bridge between legacy and new navigation
     window.vibeCodersIntegration = this;
 
-    // Handle Vibe-coders navigation from legacy system
+    // Handle inQ navigation from legacy system
     window.handleVibeCodersNavigation = (action) => {
       this.handleVibeCodersNavigation(action);
     };
@@ -313,7 +311,7 @@ class VibeCodersIntegration {
   }
 
   handleVibeCodersNavigation(action) {
-    console.log(`[INTEGRATION] Navigating to Vibe-coders section: ${action}`);
+    console.log(`[INTEGRATION] Navigating to inQ section: ${action}`);
 
     // Hide main content
     const main = document.querySelector("main");
@@ -324,7 +322,7 @@ class VibeCodersIntegration {
       }
     }
 
-    // Show Vibe-coders sections
+    // Show inQ sections
     const vibeCodersSections = document.getElementById("vibe-coders-sections");
     if (vibeCodersSections) {
       vibeCodersSections.style.display = "block";
@@ -380,7 +378,7 @@ class VibeCodersIntegration {
           };
 
           await updateDoc(userDocRef, updatedData);
-          console.log("[INTEGRATION] Migrated user data to Vibe-coders format");
+          console.log("[INTEGRATION] Migrated user data to inQ format");
         }
       }
     } catch (error) {
@@ -482,10 +480,41 @@ class VibeCodersIntegration {
       window.location.href = "index-legacy.html";
     }
   }
+
+  // Test function for debugging
+  testIntegration() {
+    console.log("🔧 VibeCoders Integration Test Started");
+    console.log("📊 Current state:", {
+      isInitialized: this.isInitialized,
+      currentUser: this.getCurrentUser(),
+      hasLegacySystem: !!window.vibeCoders,
+      hasNewSystem: !!window.navigationManager,
+    });
+
+    // Test legacy system detection
+    if (window.vibeCoders) {
+      console.log("✅ Legacy system detected:", window.vibeCoders);
+    } else {
+      console.log("⚠️ No legacy system detected");
+    }
+
+    // Test new system
+    if (window.navigationManager) {
+      console.log("✅ New navigation system available");
+    } else {
+      console.log("⚠️ New navigation system not available");
+    }
+
+    console.log("🔧 VibeCoders Integration Test Complete");
+    return true;
+  }
 }
 
 // Create and export singleton instance
 const vibeCodersIntegration = new VibeCodersIntegration();
+
+// Expose to window for testing
+window.vibeCodersIntegration = vibeCodersIntegration;
 
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {

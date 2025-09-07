@@ -556,6 +556,36 @@ class SocialAuthManager {
         totalViews: 0,
         totalLikes: 0,
       },
+      // Enhanced Dashboard Customization Settings
+      dashboardSettings: {
+        layout: "grid", // "grid" | "list" | "timeline"
+        theme: "neo-brutalist", // "neo-brutalist" | "minimal" | "dark" | "custom"
+        customColors: {
+          primary: "#00ffff",
+          secondary: "#ff00ff",
+          accent: "#ffff00",
+          background: "#0a0a0a",
+          text: "#ffffff",
+        },
+        widgetDefaults: {
+          borderColor: "#00ffff",
+          borderWidth: "3px",
+          borderRadius: "0px",
+          width: "100%",
+          height: "300px",
+          shadow: "0 0 20px rgba(0, 255, 255, 0.3)",
+        },
+        spacing: {
+          widgetGap: "24px",
+          sectionPadding: "40px",
+          cardPadding: "24px",
+        },
+        animations: {
+          enabled: true,
+          duration: "0.3s",
+          easing: "ease-out",
+        },
+      },
       createdAt: serverTimestamp(),
       lastActive: serverTimestamp(),
       isVerified: false,
@@ -565,6 +595,77 @@ class SocialAuthManager {
 
     await setDoc(doc(db, "users", user.uid), profileData);
     await this.createDefaultWidgetSlots(user.uid);
+  }
+
+  // Dashboard Settings Management
+  async updateDashboardSettings(userId, settings) {
+    try {
+      this.log("Updating dashboard settings", { userId, settings });
+
+      const userRef = doc(db, "users", userId);
+      await updateDoc(userRef, {
+        dashboardSettings: settings,
+        updatedAt: serverTimestamp(),
+      });
+
+      this.log("Dashboard settings updated successfully");
+      return { success: true };
+    } catch (error) {
+      this.error("Failed to update dashboard settings", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  async getDashboardSettings(userId) {
+    try {
+      this.log("Getting dashboard settings", { userId });
+
+      const userDoc = await getDoc(doc(db, "users", userId));
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const settings =
+          data.dashboardSettings || this.getDefaultDashboardSettings();
+        this.log("Dashboard settings retrieved", settings);
+        return { success: true, settings };
+      } else {
+        throw new Error("User profile not found");
+      }
+    } catch (error) {
+      this.error("Failed to get dashboard settings", error);
+      return { success: false, error: error.message };
+    }
+  }
+
+  getDefaultDashboardSettings() {
+    return {
+      layout: "grid",
+      theme: "neo-brutalist",
+      customColors: {
+        primary: "#00ffff",
+        secondary: "#ff00ff",
+        accent: "#ffff00",
+        background: "#0a0a0a",
+        text: "#ffffff",
+      },
+      widgetDefaults: {
+        borderColor: "#00ffff",
+        borderWidth: "3px",
+        borderRadius: "0px",
+        width: "100%",
+        height: "300px",
+        shadow: "0 0 20px rgba(0, 255, 255, 0.3)",
+      },
+      spacing: {
+        widgetGap: "24px",
+        sectionPadding: "40px",
+        cardPadding: "24px",
+      },
+      animations: {
+        enabled: true,
+        duration: "0.3s",
+        easing: "ease-out",
+      },
+    };
   }
 
   // Event listeners setup

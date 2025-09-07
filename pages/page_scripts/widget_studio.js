@@ -12,6 +12,7 @@ import {
   getDocs,
 } from "firebase/firestore";
 import cloudUploadManager from "../../scripts/upload/cloud-upload.js";
+import profileDashboardManager from "../../scripts/widgets/profile-dashboard-manager.js";
 
 class WidgetStudioManager {
   constructor() {
@@ -50,6 +51,9 @@ class WidgetStudioManager {
 
       // Update stats
       this.updateStudioStats();
+
+      // Initialize profile dashboard integration
+      await this.initializeProfileIntegration();
 
       this.log("Widget Studio page initialization complete");
     } catch (error) {
@@ -110,6 +114,45 @@ class WidgetStudioManager {
     if (userAvatarElement && this.userProfile.photoURL) {
       userAvatarElement.style.backgroundImage = `url(${this.userProfile.photoURL})`;
       userAvatarElement.innerHTML = "";
+    }
+  }
+
+  async initializeProfileIntegration() {
+    try {
+      this.log("Initializing profile dashboard integration");
+
+      // Wait for profile dashboard manager to be ready
+      if (profileDashboardManager) {
+        await profileDashboardManager.init();
+        this.log("Profile dashboard manager initialized");
+
+        // Apply current dashboard settings to preview elements
+        this.applyDashboardStylingToPreviews();
+      } else {
+        this.log("Profile dashboard manager not available");
+      }
+    } catch (error) {
+      this.error("Failed to initialize profile integration", error);
+    }
+  }
+
+  applyDashboardStylingToPreviews() {
+    try {
+      if (!profileDashboardManager) return;
+
+      // Apply styling to any existing preview elements
+      const previewElements = document.querySelectorAll(
+        ".preview-modal .widget-iframe"
+      );
+      previewElements.forEach((element) => {
+        profileDashboardManager.applyDashboardSettings(element);
+      });
+
+      this.log("Applied dashboard styling to preview elements", {
+        count: previewElements.length,
+      });
+    } catch (error) {
+      this.error("Failed to apply dashboard styling to previews", error);
     }
   }
 
@@ -394,6 +437,11 @@ class WidgetStudioManager {
       const previewModalBody = document.getElementById("previewModalBody");
       if (previewModalBody) {
         previewModalBody.innerHTML = previewContent;
+
+        // Apply dashboard styling to preview iframes
+        setTimeout(() => {
+          this.applyDashboardStylingToPreviews();
+        }, 100);
       }
     } catch (error) {
       this.error("Failed to show preview", error);
