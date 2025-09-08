@@ -41,6 +41,7 @@
         background: var(--bg-primary);
         color: var(--text-primary);
         overflow-x: hidden;
+        scroll-behavior: smooth;
       }
 
       .neo-brutalist {
@@ -214,6 +215,305 @@
         box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
       }
 
+      /* Hanging Banner Styles */
+      .profile-banner-hanging {
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        animation: bannerSway 4s ease-in-out infinite;
+      }
+
+      .profile-banner-hanging:hover {
+        box-shadow: 
+          0 16px 64px rgba(0, 255, 255, 0.35),
+          0 0 0 2px rgba(0, 255, 255, 0.25),
+          inset 0 2px 0 rgba(255, 255, 255, 0.2),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+        transform: translateY(-6px) scale(1.01);
+        animation-play-state: paused;
+      }
+
+      /* Chain Sway Animation */
+      @keyframes chainSway {
+        0%, 100% {
+          transform: translateX(-50%) rotate(0deg);
+        }
+        25% {
+          transform: translateX(-50%) rotate(1deg);
+        }
+        50% {
+          transform: translateX(-50%) rotate(0deg);
+        }
+        75% {
+          transform: translateX(-50%) rotate(-1deg);
+        }
+      }
+
+      /* Banner Drop and Sway Entrance */
+      @keyframes bannerDropAndSway {
+        0% {
+          transform: translateY(-100px) rotate(-5deg);
+          opacity: 0;
+          filter: blur(15px);
+        }
+        30% {
+          transform: translateY(20px) rotate(2deg);
+          opacity: 0.8;
+          filter: blur(5px);
+        }
+        60% {
+          transform: translateY(-5px) rotate(-1deg);
+          opacity: 0.9;
+          filter: blur(2px);
+        }
+        100% {
+          transform: translateY(0) rotate(0deg);
+          opacity: 1;
+          filter: blur(0px);
+        }
+      }
+
+      /* Banner Sway Animation */
+      @keyframes bannerSway {
+        0%, 100% {
+          transform: translateY(0px) rotate(0deg);
+        }
+        25% {
+          transform: translateY(-2px) rotate(0.5deg);
+        }
+        50% {
+          transform: translateY(-1px) rotate(0deg);
+        }
+        75% {
+          transform: translateY(-3px) rotate(-0.5deg);
+        }
+      }
+
+      /* Island Floating Animation */
+      @keyframes islandFloat {
+        0%, 100% {
+          transform: translateY(0px);
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.25),
+            0 0 0 1px rgba(0, 255, 255, 0.15),
+            inset 0 2px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+        25% {
+          transform: translateY(-2px);
+          box-shadow: 
+            0 14px 52px rgba(0, 255, 255, 0.28),
+            0 0 0 1px rgba(0, 255, 255, 0.18),
+            inset 0 2px 0 rgba(255, 255, 255, 0.12),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+        }
+        50% {
+          transform: translateY(-1px);
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.25),
+            0 0 0 1px rgba(0, 255, 255, 0.15),
+            inset 0 2px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+        75% {
+          transform: translateY(-3px);
+          box-shadow: 
+            0 16px 56px rgba(0, 255, 255, 0.3),
+            0 0 0 1px rgba(0, 255, 255, 0.2),
+            inset 0 2px 0 rgba(255, 255, 255, 0.14),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.14);
+        }
+      }
+
+      /* Island Pulse Glow Effect */
+      @keyframes islandPulseGlow {
+        0%, 100% {
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.25),
+            0 0 0 1px rgba(0, 255, 255, 0.15),
+            inset 0 2px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.4),
+            0 0 0 1px rgba(0, 255, 255, 0.25),
+            inset 0 2px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      /* Add pulse glow after entrance */
+      .profile-banner-hanging.entered {
+        animation: bannerSway 4s ease-in-out infinite, bannerPulseGlow 5s ease-in-out infinite;
+      }
+
+      /* Banner Pulse Glow Effect */
+      @keyframes bannerPulseGlow {
+        0%, 100% {
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.25),
+            0 0 0 1px rgba(0, 255, 255, 0.15),
+            inset 0 2px 0 rgba(255, 255, 255, 0.1),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        }
+        50% {
+          box-shadow: 
+            0 12px 48px rgba(0, 255, 255, 0.4),
+            0 0 0 1px rgba(0, 255, 255, 0.25),
+            inset 0 2px 0 rgba(255, 255, 255, 0.2),
+            inset 0 -2px 0 rgba(0, 0, 0, 0.15);
+        }
+      }
+
+      /* Banner Control Buttons */
+      .banner-control-btn:hover {
+        transform: scale(1.2);
+        box-shadow: 0 0 10px currentColor;
+      }
+
+      .banner-control-btn:active {
+        transform: scale(0.9);
+      }
+
+      /* Hanging Banner Minimized State */
+      .profile-banner-hanging.minimized {
+        transform: translateX(-50%) translateY(calc(100% - 60px)) rotate(0deg);
+        animation: none;
+        width: 300px;
+        height: 60px;
+        padding: 8px 16px;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      }
+
+      .profile-banner-hanging.minimized .banner-quick-links,
+      .profile-banner-hanging.minimized .banner-actions,
+      .profile-banner-hanging.minimized .user-info {
+        display: none;
+      }
+
+      .profile-banner-hanging.minimized .banner-user-section {
+        justify-content: center;
+        width: 100%;
+      }
+
+      /* Hidden State with Zip-Up Animation */
+      .profile-banner-hanging.hidden {
+        transform: translateY(-120px) rotate(-10deg) scale(0.8);
+        opacity: 0;
+        pointer-events: none;
+        animation: zipUpToHeader 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards;
+      }
+
+      /* Zip-Up Animation */
+      @keyframes zipUpToHeader {
+        0% {
+          transform: translateY(0) rotate(0deg) scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: translateY(-60px) rotate(-5deg) scale(0.9);
+          opacity: 0.5;
+        }
+        100% {
+          transform: translateY(-120px) rotate(-10deg) scale(0.8);
+          opacity: 0;
+        }
+      }
+
+      /* Hide chain when banner is minimized or hidden */
+      .profile-banner-hanging.minimized .banner-chain,
+      .profile-banner-hanging.hidden .banner-chain,
+      .profile-banner-hanging.minimized .chain-link,
+      .profile-banner-hanging.hidden .chain-link {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+      }
+
+      /* Also hide chain when banner section is hidden */
+      #profile-banner-section[style*="opacity: 0"] .banner-chain,
+      #profile-banner-section[style*="opacity: 0"] .chain-link {
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+      }
+
+      /* Fullscreen mode banner behavior */
+      .fullscreen-mode #profile-banner-section {
+        transform: translateX(-50%) translateY(-100%) !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+      }
+
+      .fullscreen-mode .banner-chain,
+      .fullscreen-mode .chain-link {
+        opacity: 0 !important;
+        transition: opacity 0.3s ease !important;
+      }
+
+      .banner-quick-link:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+
+      .banner-quick-link[data-color="primary"]:hover {
+        background: rgba(0, 240, 255, 0.25);
+        box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+      }
+
+      .banner-quick-link[data-color="secondary"]:hover {
+        background: rgba(255, 0, 255, 0.25);
+        box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+      }
+
+      .banner-quick-link[data-color="accent"]:hover {
+        background: rgba(255, 255, 0, 0.25);
+        box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+      }
+
+      .banner-quick-link[data-color="error"]:hover {
+        background: rgba(255, 71, 87, 0.25);
+        box-shadow: 0 0 15px rgba(255, 71, 87, 0.4);
+      }
+
+      .banner-action-btn:hover {
+        background: rgba(255, 170, 0, 0.25);
+        box-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+        transform: scale(1.05);
+      }
+
+      .user-avatar:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
+      }
+
+      @keyframes pulse {
+        0% {
+          transform: scale(1);
+          opacity: 1;
+        }
+        50% {
+          transform: scale(1.2);
+          opacity: 0.7;
+        }
+        100% {
+          transform: scale(1);
+          opacity: 1;
+        }
+      }
+
+      @keyframes slideInBanner {
+        from {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+        to {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      .profile-banner {
+        animation: slideInBanner 0.6s ease-out;
+      }
+
       @media (max-width: 768px) {
         .neo-grid {
           grid-template-columns: 1fr;
@@ -225,6 +525,64 @@
         nav {
           flex-wrap: wrap;
           justify-content: center;
+        }
+        #profile-banner-section {
+          position: fixed;
+          top: 70px;
+          left: 5%;
+          right: 5%;
+          width: 90%;
+          max-width: none;
+          min-width: 300px;
+          transform: none;
+        }
+        
+        .profile-banner-hanging {
+          min-width: 300px;
+          flex-direction: column;
+          gap: 16px;
+          padding: 16px 20px;
+          animation: bannerDropAndSway 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        
+        .banner-chain {
+          height: 30px;
+          top: -30px;
+        }
+        
+        .chain-link {
+          top: -15px;
+          width: 16px;
+          height: 10px;
+        }
+        
+        .banner-quick-links {
+          justify-content: center;
+          flex-wrap: wrap;
+          gap: 6px;
+        }
+        
+        .banner-actions {
+          margin-left: 0;
+          justify-content: center;
+        }
+        
+        .banner-controls {
+          top: -8px;
+          right: -8px;
+        }
+        
+        .banner-control-btn {
+          width: 20px;
+          height: 20px;
+          font-size: 10px;
+        }
+        
+        .profile-banner-hanging.minimized {
+          width: 250px;
+          height: 50px;
+          padding: 6px 12px;
+          transform: translateX(-50%) translateY(calc(100% - 50px)) rotate(0deg);
         }
       }
     </style>
@@ -295,101 +653,333 @@
             MY PROJECTS
           </a>
         </nav>
-
-        <div
-          class="user-section"
-          style="display: flex; align-items: center; gap: 16px"
-        >
-          <div
-            class="user-avatar"
-            id="userAvatar"
-            style="
-              width: 40px;
-              height: 40px;
-              background: var(--bg-tertiary);
-              border: 2px solid var(--primary-neon);
-              border-radius: 50%;
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              font-size: 1.2rem;
-            "
-          >
-            👤
-          </div>
-          <span id="userName" style="color: var(--text-secondary)">Guest</span>
-        </div>
-
-        <!-- Quick Social Access -->
-        <div
-          class="quick-social-access"
-          style="display: flex; gap: 8px; margin-left: 16px"
-        >
-          <a
-            href="pages/my-projects.html"
-            class="quick-social-btn"
-            title="My Projects Dashboard"
-            style="
-              padding: 6px 10px;
-              background: rgba(0, 240, 255, 0.1);
-              border: 1px solid #00f0ff;
-              border-radius: 4px;
-              color: #00f0ff;
-              text-decoration: none;
-              font-size: 12px;
-            "
-            >📊</a
-          >
-          <a
-            href="pages/widget_studio.html"
-            class="quick-social-btn"
-            title="Widget Studio"
-            style="
-              padding: 6px 10px;
-              background: rgba(255, 0, 255, 0.1);
-              border: 1px solid #ff00ff;
-              border-radius: 4px;
-              color: #ff00ff;
-              text-decoration: none;
-              font-size: 12px;
-            "
-            >🎨</a
-          >
-          <a
-            href="pages/explore.html"
-            class="quick-social-btn"
-            title="Explore Widgets"
-            style="
-              padding: 6px 10px;
-              background: rgba(255, 255, 0, 0.1);
-              border: 1px solid #ffff00;
-              border-radius: 4px;
-              color: #ffff00;
-              text-decoration: none;
-              font-size: 12px;
-            "
-            >🔍</a
-          >
-          <a
-            href="pages/users.html"
-            class="quick-social-btn"
-            title="Community"
-            style="
-              padding: 6px 10px;
-              background: rgba(255, 71, 87, 0.1);
-              border: 1px solid #ff4757;
-              border-radius: 4px;
-              color: #ff4757;
-              text-decoration: none;
-              font-size: 12px;
-            "
-            >👥</a
-          >
-          <button id="authBtn" class="neo-button">LOGIN</button>
-        </div>
-      </div>
     </header>
+<section id="profile-banner-section" style="
+  position: fixed;
+  top: 120px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 999;
+  width: 90%;
+  max-width: 1200px;
+  min-width: 800px;
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+">
+  <!-- Hanging Banner with Chain -->
+  <div class="hanging-banner-container" style="position: relative;">
+    <!-- Chain Links -->
+    <div class="banner-chain" style="
+      position: absolute;
+      top: -40px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 4px;
+      height: 40px;
+      background: linear-gradient(to bottom, 
+        var(--primary-neon) 0%, 
+        rgba(0, 255, 255, 0.8) 50%, 
+        rgba(0, 255, 255, 0.4) 100%
+      );
+      border-radius: 2px;
+      box-shadow: 
+        0 0 10px rgba(0, 255, 255, 0.5),
+        inset 0 0 5px rgba(0, 255, 255, 0.3);
+      animation: chainSway 3s ease-in-out infinite;
+    "></div>
+    
+    <!-- Chain Link Details -->
+    <div class="chain-link" style="
+      position: absolute;
+      top: -20px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 12px;
+      background: var(--primary-neon);
+      border-radius: 6px;
+      box-shadow: 
+        0 0 8px rgba(0, 255, 255, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+      animation: chainSway 3s ease-in-out infinite;
+    "></div>
 
+    <!-- Hanging Profile Banner -->
+    <div
+      class="profile-banner-hanging"
+      id="profileBanner"
+      style="
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 24px;
+        padding: 20px 32px;
+        background: linear-gradient(
+          135deg,
+          var(--bg-secondary) 0%,
+          var(--bg-tertiary) 50%,
+          var(--bg-secondary) 100%
+        );
+        border: 3px solid var(--primary-neon);
+        border-radius: 24px;
+        box-shadow: 
+          0 12px 48px rgba(0, 255, 255, 0.25),
+          0 0 0 1px rgba(0, 255, 255, 0.15),
+          inset 0 2px 0 rgba(255, 255, 255, 0.1),
+          inset 0 -2px 0 rgba(0, 0, 0, 0.1);
+        position: relative;
+        backdrop-filter: blur(15px);
+        transform: translateY(-100px) rotate(-2deg);
+        opacity: 0;
+        animation: bannerDropAndSway 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+      "
+    >
+              <!-- User Profile Section -->
+              <div
+                class="banner-user-section"
+                style="display: flex; align-items: center; gap: 12px"
+              >
+                <div
+                  class="user-avatar"
+                  id="userAvatar"
+                  style="
+                    width: 45px;
+                    height: 45px;
+                    background: var(--bg-tertiary);
+                    border: 2px solid var(--primary-neon);
+                    border-radius: 50%;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 1.4rem;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                  "
+                  onclick="openProfileCustomization()"
+                >
+                  👤
+                </div>
+                <div class="user-info">
+                  <div
+                    id="userName"
+                    style="
+                      color: var(--text-primary);
+                      font-weight: 600;
+                      font-size: 1rem;
+                    "
+                  >
+                    Guest
+                  </div>
+                  <div
+                    id="userStatus"
+                    style="color: var(--text-secondary); font-size: 0.8rem"
+                  >
+                    Click to customize
+                  </div>
+                </div>
+              </div>
+    
+              <!-- Quick Links Section -->
+              <div
+                class="banner-quick-links"
+                style="display: flex; gap: 8px; flex-wrap: wrap"
+              >
+                <a
+                  href="pages/my-projects.html"
+                  class="banner-quick-link"
+                  title="My Projects Dashboard"
+                  data-color="primary"
+                  style="
+                    padding: 8px 12px;
+                    background: rgba(0, 240, 255, 0.15);
+                    border: 1px solid #00f0ff;
+                    border-radius: 6px;
+                    color: #00f0ff;
+                    text-decoration: none;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                  >📊 Projects</a
+                >
+                <a
+                  href="pages/widget_studio.html"
+                  class="banner-quick-link"
+                  title="Widget Studio"
+                  data-color="secondary"
+                  style="
+                    padding: 8px 12px;
+                    background: rgba(255, 0, 255, 0.15);
+                    border: 1px solid #ff00ff;
+                    border-radius: 6px;
+                    color: #ff00ff;
+                    text-decoration: none;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                  >🎨 Studio</a
+                >
+                <a
+                  href="pages/explore.html"
+                  class="banner-quick-link"
+                  title="Explore Widgets"
+                  data-color="accent"
+                  style="
+                    padding: 8px 12px;
+                    background: rgba(255, 255, 0, 0.15);
+                    border: 1px solid #ffff00;
+                    border-radius: 6px;
+                    color: #ffff00;
+                    text-decoration: none;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                  >🔍 Explore</a
+                >
+                <a
+                  href="pages/users.html"
+                  class="banner-quick-link"
+                  title="Community"
+                  data-color="error"
+                  style="
+                    padding: 8px 12px;
+                    background: rgba(255, 71, 87, 0.15);
+                    border: 1px solid #ff4757;
+                    border-radius: 6px;
+                    color: #ff4757;
+                    text-decoration: none;
+                    font-size: 11px;
+                    font-weight: 600;
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                    transition: all 0.3s ease;
+                    display: flex;
+                    align-items: center;
+                    gap: 4px;
+                  "
+                  >👥 Community</a
+                >
+              </div>
+    
+              <!-- Banner Actions -->
+              <div
+                class="banner-actions"
+                style="display: flex; gap: 8px; margin-left: auto"
+              >
+                <button
+                  id="customizeBannerBtn"
+                  class="banner-action-btn"
+                  title="Customize Banner"
+                  style="
+                    padding: 6px 10px;
+                    background: rgba(255, 170, 0, 0.15);
+                    border: 1px solid #ffaa00;
+                    border-radius: 4px;
+                    color: #ffaa00;
+                    font-size: 12px;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                  "
+                >
+                  ⚙️
+                </button>
+                <button
+                  id="authBtn"
+                  class="neo-button"
+                  style="padding: 8px 16px; font-size: 0.9rem"
+                >
+                  LOGIN
+                </button>
+              </div>
+    
+              <!-- Banner Controls -->
+              <div class="banner-controls" style="
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                display: flex;
+                gap: 4px;
+              ">
+                <!-- Customization Indicator -->
+                <div
+                  id="bannerCustomizationIndicator"
+                  style="
+                    width: 16px;
+                    height: 16px;
+                    background: var(--success-neon);
+                    border: 2px solid var(--bg-primary);
+                    border-radius: 50%;
+                    display: none;
+                    animation: pulse 2s infinite;
+                  "
+                ></div>
+                
+                <!-- Minimize Button -->
+                <button
+                  id="minimizeBannerBtn"
+                  class="banner-control-btn"
+                  title="Minimize Banner"
+                  style="
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(255, 170, 0, 0.2);
+                    border: 1px solid #ffaa00;
+                    border-radius: 50%;
+                    color: #ffaa00;
+                    font-size: 10px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                  "
+                >
+                  −
+                </button>
+                
+                <!-- Close Button -->
+                <button
+                  id="closeBannerBtn"
+                  class="banner-control-btn"
+                  title="Close Banner"
+                  style="
+                    width: 20px;
+                    height: 20px;
+                    background: rgba(255, 68, 68, 0.2);
+                    border: 1px solid #ff4444;
+                    border-radius: 50%;
+                    color: #ff4444;
+                    font-size: 10px;
+                    cursor: pointer;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    transition: all 0.3s ease;
+                  "
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+</section>
     <!-- Main Content -->
     <main style="margin-top: 120px">
       <!-- Hero Section -->
@@ -986,6 +1576,111 @@
         </div>
       </div>
     </footer>
+
+    <!-- Banner Customization Modal -->
+    <div id="bannerCustomizationModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 600px">
+        <div
+          class="modal-header"
+          style="
+            border-bottom: 2px solid var(--primary-neon);
+            padding-bottom: 16px;
+            margin-bottom: 24px;
+          "
+        >
+          <h2 class="modal-title" style="color: var(--primary-neon); margin: 0">
+            🎨 CUSTOMIZE PROFILE BANNER
+          </h2>
+          <span
+            id="bannerCustomizationCloseBtn"
+            class="auth-close-button"
+            style="font-size: 1.5rem; cursor: pointer"
+            >&times;</span
+          >
+        </div>
+        <div class="modal-body">
+          <!-- Banner Layout Options -->
+          <div style="margin-bottom: 24px">
+            <h3 style="color: var(--text-primary); margin: 0 0 12px 0">
+              Layout Style
+            </h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap">
+              <button
+                class="neo-button layout-option active"
+                data-layout="horizontal"
+              >
+                Horizontal
+              </button>
+              <button class="neo-button layout-option" data-layout="compact">
+                Compact
+              </button>
+              <button class="neo-button layout-option" data-layout="minimal">
+                Minimal
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Links Customization -->
+          <div style="margin-bottom: 24px">
+            <h3 style="color: var(--text-primary); margin: 0 0 12px 0">
+              Quick Links
+            </h3>
+            <div
+              id="quickLinksCustomization"
+              style="
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+              "
+            >
+              <!-- Quick links will be populated here -->
+            </div>
+          </div>
+
+          <!-- Color Theme -->
+          <div style="margin-bottom: 24px">
+            <h3 style="color: var(--text-primary); margin: 0 0 12px 0">
+              Color Theme
+            </h3>
+            <div style="display: flex; gap: 12px; flex-wrap: wrap">
+              <button class="neo-button theme-option active" data-theme="neon">
+                Neon
+              </button>
+              <button class="neo-button theme-option" data-theme="monochrome">
+                Monochrome
+              </button>
+              <button class="neo-button theme-option" data-theme="pastel">
+                Pastel
+              </button>
+            </div>
+          </div>
+
+          <!-- Banner Actions -->
+          <div
+            style="
+              display: flex;
+              gap: 12px;
+              justify-content: flex-end;
+              margin-top: 24px;
+            "
+          >
+            <button
+              id="resetBannerBtn"
+              class="neo-button"
+              style="
+                background: var(--error-neon);
+                border-color: var(--error-neon);
+              "
+            >
+              Reset
+            </button>
+            <button id="saveBannerBtn" class="neo-button neo-brutalist-accent">
+              Save Changes
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <!-- Modals and Overlays -->
     <div id="authModal" class="modal" style="display: none">

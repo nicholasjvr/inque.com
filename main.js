@@ -158,6 +158,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize additional modals
     initializeAdditionalModals();
 
+    // Initialize banner customization
+    initializeBannerCustomization();
+
     // Initialize header quick actions and sidebar login bindings
     initializeHeaderQuickActions();
 
@@ -1692,6 +1695,9 @@ function toggleFullscreenMode() {
       DEBUG.log("Footer hidden");
     }
 
+    // Hide banner when entering fullscreen (since header is hidden)
+    updateBannerState("fullscreen-hidden", false);
+
     // Adjust main content
     if (main) {
       main.style.height = "100vh";
@@ -1733,6 +1739,14 @@ function toggleFullscreenMode() {
     if (footer) {
       footer.style.transform = "translateY(0)";
       DEBUG.log("Footer shown");
+    }
+
+    // Restore banner when exiting fullscreen (unless it was previously closed)
+    const wasClosed = localStorage.getItem("bannerClosed");
+
+    if (wasClosed !== "true") {
+      updateBannerState("visible", true);
+      DEBUG.log("Banner restored after exiting fullscreen");
     }
 
     // Restore main content
@@ -1812,8 +1826,9 @@ function handleScrollEffects(scrollTop, direction) {
   const header = document.querySelector("header");
   const fullscreenToggle = document.getElementById("fullscreenToggle");
 
-  // Auto-hide header on scroll down (only in non-fullscreen mode)
-  if (!window.fullscreenState.isFullscreen && header) {
+  // Auto-hide header on scroll down (DISABLED - interferes with hanging banner)
+  // TODO: Re-enable this feature with proper banner positioning
+  if (false && !window.fullscreenState.isFullscreen && header) {
     if (direction === "down" && scrollTop > 100) {
       header.style.transform = "translateY(-100%)";
       DEBUG.log("Header auto-hidden on scroll down");
@@ -2024,5 +2039,1026 @@ window.testVibeCodersIntegration = function () {
 
   DEBUG.log("inQ platform integration test completed");
 };
+
+// Initialize banner customization functionality
+function initializeBannerCustomization() {
+  DEBUG.log("Initializing banner customization functionality");
+
+  try {
+    // Banner customization modal elements
+    const bannerModal = document.getElementById("bannerCustomizationModal");
+    const bannerCloseBtn = document.getElementById(
+      "bannerCustomizationCloseBtn"
+    );
+    const customizeBannerBtn = document.getElementById("customizeBannerBtn");
+    const saveBannerBtn = document.getElementById("saveBannerBtn");
+    const resetBannerBtn = document.getElementById("resetBannerBtn");
+
+    if (!bannerModal || !bannerCloseBtn || !customizeBannerBtn) {
+      DEBUG.warn("Some banner customization elements not found", {
+        bannerModal: !!bannerModal,
+        bannerCloseBtn: !!bannerCloseBtn,
+        customizeBannerBtn: !!customizeBannerBtn,
+      });
+      return;
+    }
+
+    // Open banner customization modal
+    customizeBannerBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      DEBUG.log("Opening banner customization modal");
+      bannerModal.style.display = "block";
+      document.body.style.overflow = "hidden";
+      populateCustomizationOptions();
+    });
+
+    // Close banner customization modal
+    bannerCloseBtn.addEventListener("click", () => {
+      DEBUG.log("Closing banner customization modal");
+      bannerModal.style.display = "none";
+      document.body.style.overflow = "";
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener("click", (e) => {
+      if (e.target === bannerModal) {
+        DEBUG.log("Closing banner customization modal via outside click");
+        bannerModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Close modal on escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && bannerModal.style.display === "block") {
+        DEBUG.log("Closing banner customization modal via escape key");
+        bannerModal.style.display = "none";
+        document.body.style.overflow = "";
+      }
+    });
+
+    // Layout option buttons
+    const layoutOptions = document.querySelectorAll(".layout-option");
+    layoutOptions.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        DEBUG.log("Layout option clicked", { layout: btn.dataset.layout });
+
+        // Remove active class from all options
+        layoutOptions.forEach((option) => option.classList.remove("active"));
+        // Add active class to clicked option
+        btn.classList.add("active");
+
+        // Apply layout changes
+        applyBannerLayout(btn.dataset.layout);
+      });
+    });
+
+    // Theme option buttons
+    const themeOptions = document.querySelectorAll(".theme-option");
+    themeOptions.forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        DEBUG.log("Theme option clicked", { theme: btn.dataset.theme });
+
+        // Remove active class from all options
+        themeOptions.forEach((option) => option.classList.remove("active"));
+        // Add active class to clicked option
+        btn.classList.add("active");
+
+        // Apply theme changes
+        applyBannerTheme(btn.dataset.theme);
+      });
+    });
+
+    // Save banner customization
+    if (saveBannerBtn) {
+      saveBannerBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        DEBUG.log("Saving banner customization");
+        saveBannerCustomization();
+      });
+    }
+
+    // Reset banner customization
+    if (resetBannerBtn) {
+      resetBannerBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        DEBUG.log("Resetting banner customization");
+        resetBannerCustomization();
+      });
+    }
+
+    // Global function to open profile customization
+    window.openProfileCustomization = function () {
+      DEBUG.log("Opening profile customization via global function");
+      if (bannerModal) {
+        bannerModal.style.display = "block";
+        document.body.style.overflow = "hidden";
+        populateCustomizationOptions();
+      }
+    };
+
+    // Initialize banner card controls
+    initializeBannerCardControls();
+
+    DEBUG.log("Banner customization functionality initialized successfully");
+  } catch (error) {
+    DEBUG.error("Error initializing banner customization", error);
+  }
+}
+
+// Populate customization options
+function populateCustomizationOptions() {
+  DEBUG.log("Populating banner customization options");
+
+  try {
+    const quickLinksContainer = document.getElementById(
+      "quickLinksCustomization"
+    );
+    if (!quickLinksContainer) {
+      DEBUG.warn("Quick links customization container not found");
+      return;
+    }
+
+    // Available quick links
+    const availableLinks = [
+      {
+        id: "projects",
+        label: "📊 Projects",
+        href: "pages/my-projects.html",
+        enabled: true,
+      },
+      {
+        id: "studio",
+        label: "🎨 Studio",
+        href: "pages/widget_studio.html",
+        enabled: true,
+      },
+      {
+        id: "explore",
+        label: "🔍 Explore",
+        href: "pages/explore.html",
+        enabled: true,
+      },
+      {
+        id: "community",
+        label: "👥 Community",
+        href: "pages/users.html",
+        enabled: true,
+      },
+      {
+        id: "inventory",
+        label: "📦 Inventory",
+        href: "pages/inventory.html",
+        enabled: false,
+      },
+      {
+        id: "profile",
+        label: "👤 Profile",
+        href: "pages/profile-edit.html",
+        enabled: false,
+      },
+    ];
+
+    // Clear existing options
+    quickLinksContainer.innerHTML = "";
+
+    // Create customization options for each link
+    availableLinks.forEach((link) => {
+      const linkOption = document.createElement("div");
+      linkOption.className = "quick-link-option";
+      linkOption.style.cssText = `
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--primary-neon);
+        border-radius: 6px;
+        margin-bottom: 8px;
+      `;
+
+      linkOption.innerHTML = `
+        <input 
+          type="checkbox" 
+          id="link-${link.id}" 
+          ${link.enabled ? "checked" : ""}
+          style="margin: 0;"
+        >
+        <label for="link-${link.id}" style="color: var(--text-primary); cursor: pointer; flex: 1;">
+          ${link.label}
+        </label>
+        <span style="color: var(--text-secondary); font-size: 0.8rem;">
+          ${link.enabled ? "Enabled" : "Disabled"}
+        </span>
+      `;
+
+      quickLinksContainer.appendChild(linkOption);
+    });
+
+    DEBUG.log("Customization options populated successfully");
+  } catch (error) {
+    DEBUG.error("Error populating customization options", error);
+  }
+}
+
+// Apply banner layout changes
+function applyBannerLayout(layout) {
+  DEBUG.log("Applying banner layout", { layout });
+
+  try {
+    const profileBanner = document.getElementById("profileBanner");
+    const bannerUserSection = profileBanner?.querySelector(
+      ".banner-user-section"
+    );
+    const bannerQuickLinks = profileBanner?.querySelector(
+      ".banner-quick-links"
+    );
+    const bannerActions = profileBanner?.querySelector(".banner-actions");
+
+    if (!profileBanner) {
+      DEBUG.warn("Profile banner not found");
+      return;
+    }
+
+    // Reset styles
+    profileBanner.style.flexDirection = "row";
+    profileBanner.style.gap = "20px";
+    profileBanner.style.padding = "12px 20px";
+
+    switch (layout) {
+      case "horizontal":
+        // Default horizontal layout
+        profileBanner.style.flexDirection = "row";
+        profileBanner.style.gap = "20px";
+        break;
+
+      case "compact":
+        // Compact layout with smaller gaps
+        profileBanner.style.flexDirection = "row";
+        profileBanner.style.gap = "12px";
+        profileBanner.style.padding = "8px 16px";
+        break;
+
+      case "minimal":
+        // Minimal layout with vertical arrangement
+        profileBanner.style.flexDirection = "column";
+        profileBanner.style.gap = "8px";
+        profileBanner.style.padding = "16px 20px";
+        break;
+    }
+
+    DEBUG.log("Banner layout applied successfully", { layout });
+  } catch (error) {
+    DEBUG.error("Error applying banner layout", error);
+  }
+}
+
+// Apply banner theme changes
+function applyBannerTheme(theme) {
+  DEBUG.log("Applying banner theme", { theme });
+
+  try {
+    const profileBanner = document.getElementById("profileBanner");
+    const quickLinks = profileBanner?.querySelectorAll(".banner-quick-link");
+
+    if (!profileBanner) {
+      DEBUG.warn("Profile banner not found");
+      return;
+    }
+
+    // Reset to default theme
+    profileBanner.style.background =
+      "linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)";
+    profileBanner.style.borderColor = "var(--primary-neon)";
+
+    switch (theme) {
+      case "neon":
+        // Default neon theme
+        profileBanner.style.background =
+          "linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%)";
+        profileBanner.style.borderColor = "var(--primary-neon)";
+        break;
+
+      case "monochrome":
+        // Monochrome theme
+        profileBanner.style.background =
+          "linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%)";
+        profileBanner.style.borderColor = "#ffffff";
+        break;
+
+      case "pastel":
+        // Pastel theme
+        profileBanner.style.background =
+          "linear-gradient(135deg, #2a1a2a 0%, #3a2a3a 100%)";
+        profileBanner.style.borderColor = "#ff69b4";
+        break;
+    }
+
+    DEBUG.log("Banner theme applied successfully", { theme });
+  } catch (error) {
+    DEBUG.error("Error applying banner theme", error);
+  }
+}
+
+// Save banner customization
+function saveBannerCustomization() {
+  DEBUG.log("Saving banner customization");
+
+  try {
+    // Get current settings
+    const activeLayout =
+      document.querySelector(".layout-option.active")?.dataset.layout ||
+      "horizontal";
+    const activeTheme =
+      document.querySelector(".theme-option.active")?.dataset.theme || "neon";
+
+    // Get enabled quick links
+    const enabledLinks = [];
+    const linkCheckboxes = document.querySelectorAll(
+      "#quickLinksCustomization input[type='checkbox']:checked"
+    );
+    linkCheckboxes.forEach((checkbox) => {
+      const linkId = checkbox.id.replace("link-", "");
+      enabledLinks.push(linkId);
+    });
+
+    // Save to localStorage
+    const bannerSettings = {
+      layout: activeLayout,
+      theme: activeTheme,
+      enabledLinks: enabledLinks,
+      lastUpdated: new Date().toISOString(),
+    };
+
+    localStorage.setItem("bannerCustomization", JSON.stringify(bannerSettings));
+
+    // Apply settings
+    applyBannerLayout(activeLayout);
+    applyBannerTheme(activeTheme);
+    updateQuickLinks(enabledLinks);
+
+    // Show success message
+    if (window.showToast) {
+      window.showToast("Banner customization saved! 🎨", "success", 3000);
+    }
+
+    // Show customization indicator
+    const indicator = document.getElementById("bannerCustomizationIndicator");
+    if (indicator) {
+      indicator.style.display = "block";
+      setTimeout(() => {
+        indicator.style.display = "none";
+      }, 3000);
+    }
+
+    // Close modal
+    const bannerModal = document.getElementById("bannerCustomizationModal");
+    if (bannerModal) {
+      bannerModal.style.display = "none";
+      document.body.style.overflow = "";
+    }
+
+    DEBUG.log("Banner customization saved successfully", bannerSettings);
+  } catch (error) {
+    DEBUG.error("Error saving banner customization", error);
+    if (window.showToast) {
+      window.showToast("Failed to save banner customization", "error");
+    }
+  }
+}
+
+// Reset banner customization
+function resetBannerCustomization() {
+  DEBUG.log("Resetting banner customization");
+
+  try {
+    // Clear localStorage
+    localStorage.removeItem("bannerCustomization");
+
+    // Reset to default settings
+    applyBannerLayout("horizontal");
+    applyBannerTheme("neon");
+    updateQuickLinks(["projects", "studio", "explore", "community"]);
+
+    // Reset modal options
+    const layoutOptions = document.querySelectorAll(".layout-option");
+    layoutOptions.forEach((option) => {
+      option.classList.remove("active");
+      if (option.dataset.layout === "horizontal") {
+        option.classList.add("active");
+      }
+    });
+
+    const themeOptions = document.querySelectorAll(".theme-option");
+    themeOptions.forEach((option) => {
+      option.classList.remove("active");
+      if (option.dataset.theme === "neon") {
+        option.classList.add("active");
+      }
+    });
+
+    // Show success message
+    if (window.showToast) {
+      window.showToast("Banner customization reset! 🔄", "info", 3000);
+    }
+
+    DEBUG.log("Banner customization reset successfully");
+  } catch (error) {
+    DEBUG.error("Error resetting banner customization", error);
+    if (window.showToast) {
+      window.showToast("Failed to reset banner customization", "error");
+    }
+  }
+}
+
+// Update quick links based on enabled links
+function updateQuickLinks(enabledLinks) {
+  DEBUG.log("Updating quick links", { enabledLinks });
+
+  try {
+    const bannerQuickLinks = document.querySelector(".banner-quick-links");
+    if (!bannerQuickLinks) {
+      DEBUG.warn("Banner quick links container not found");
+      return;
+    }
+
+    // Clear existing links
+    bannerQuickLinks.innerHTML = "";
+
+    // Available links mapping
+    const linkMap = {
+      projects: {
+        label: "📊 Projects",
+        href: "pages/my-projects.html",
+        color: "primary",
+      },
+      studio: {
+        label: "🎨 Studio",
+        href: "pages/widget_studio.html",
+        color: "secondary",
+      },
+      explore: {
+        label: "🔍 Explore",
+        href: "pages/explore.html",
+        color: "accent",
+      },
+      community: {
+        label: "👥 Community",
+        href: "pages/users.html",
+        color: "error",
+      },
+      inventory: {
+        label: "📦 Inventory",
+        href: "pages/inventory.html",
+        color: "success",
+      },
+      profile: {
+        label: "👤 Profile",
+        href: "pages/profile-edit.html",
+        color: "warning",
+      },
+    };
+
+    // Add enabled links
+    enabledLinks.forEach((linkId) => {
+      const linkData = linkMap[linkId];
+      if (linkData) {
+        const linkElement = document.createElement("a");
+        linkElement.href = linkData.href;
+        linkElement.className = "banner-quick-link";
+        linkElement.setAttribute("data-color", linkData.color);
+        linkElement.title = linkData.label;
+        linkElement.style.cssText = `
+          padding: 8px 12px;
+          background: rgba(0, 240, 255, 0.15);
+          border: 1px solid #00f0ff;
+          border-radius: 6px;
+          color: #00f0ff;
+          text-decoration: none;
+          font-size: 11px;
+          font-weight: 600;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 4px;
+        `;
+        linkElement.textContent = linkData.label;
+
+        bannerQuickLinks.appendChild(linkElement);
+      }
+    });
+
+    DEBUG.log("Quick links updated successfully");
+  } catch (error) {
+    DEBUG.error("Error updating quick links", error);
+  }
+}
+
+// Load saved banner customization on page load
+function loadBannerCustomization() {
+  DEBUG.log("Loading saved banner customization");
+
+  try {
+    const savedSettings = localStorage.getItem("bannerCustomization");
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+
+      // Apply saved settings
+      applyBannerLayout(settings.layout || "horizontal");
+      applyBannerTheme(settings.theme || "neon");
+      updateQuickLinks(
+        settings.enabledLinks || ["projects", "studio", "explore", "community"]
+      );
+
+      DEBUG.log("Banner customization loaded successfully", settings);
+    } else {
+      DEBUG.log("No saved banner customization found, using defaults");
+    }
+  } catch (error) {
+    DEBUG.error("Error loading banner customization", error);
+  }
+}
+
+// Add restore button for closed banners
+function addBannerRestoreButton() {
+  DEBUG.log("Adding banner restore button to header");
+
+  try {
+    // Check if restore button already exists
+    if (document.getElementById("bannerRestoreBtn")) {
+      return;
+    }
+
+    const header = document.querySelector("header");
+    if (!header) {
+      DEBUG.warn("Header not found for restore button");
+      return;
+    }
+
+    // Create restore button
+    const restoreBtn = document.createElement("button");
+    restoreBtn.id = "bannerRestoreBtn";
+    restoreBtn.innerHTML = "🏴‍☠️";
+    restoreBtn.title = "Restore Profile Banner";
+    restoreBtn.style.cssText = `
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 255, 255, 0.2);
+      border: 2px solid var(--primary-neon);
+      border-radius: 50%;
+      color: var(--primary-neon);
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      margin-left: 20px;
+    `;
+
+    // Add hover effects
+    restoreBtn.addEventListener("mouseenter", () => {
+      restoreBtn.style.background = "rgba(0, 255, 255, 0.3)";
+      restoreBtn.style.transform = "scale(1.1)";
+      restoreBtn.style.boxShadow = "0 0 20px rgba(0, 255, 255, 0.5)";
+    });
+
+    restoreBtn.addEventListener("mouseleave", () => {
+      restoreBtn.style.background = "rgba(0, 255, 255, 0.2)";
+      restoreBtn.style.transform = "scale(1)";
+      restoreBtn.style.boxShadow = "none";
+    });
+
+    // Add click handler
+    restoreBtn.addEventListener("click", () => {
+      DEBUG.log("Restoring banner from closed state");
+
+      const profileBanner = document.getElementById("profileBanner");
+      if (profileBanner) {
+        updateBannerState("visible", true);
+
+        // Remove closed state from localStorage
+        localStorage.removeItem("bannerClosed");
+
+        // Remove restore button
+        restoreBtn.remove();
+
+        // Show success message
+        if (window.showToast) {
+          window.showToast("Profile banner restored! 🏴‍☠️", "success", 3000);
+        }
+      }
+    });
+
+    // Add to header navigation area (middle section)
+    const headerContent = header.querySelector('div[style*="display: flex"]');
+    if (headerContent) {
+      // Insert the button in the middle of the navigation
+      const nav = headerContent.querySelector("nav");
+      if (nav) {
+        nav.appendChild(restoreBtn);
+      } else {
+        // Fallback: add after the title section
+        const titleSection = headerContent.querySelector(
+          'div[style*="display: flex"][style*="align-items: center"]'
+        );
+        if (titleSection) {
+          titleSection.appendChild(restoreBtn);
+        } else {
+          headerContent.appendChild(restoreBtn);
+        }
+      }
+    } else {
+      // Fallback: add to header directly
+      header.appendChild(restoreBtn);
+    }
+
+    DEBUG.log("Banner restore button added successfully");
+
+    // Add console command for debugging
+    window.restoreBanner = () => {
+      localStorage.removeItem("bannerClosed");
+      location.reload();
+    };
+
+    console.log(
+      "💡 Tip: Run 'restoreBanner()' in console to force restore the banner"
+    );
+  } catch (error) {
+    DEBUG.error("Error adding banner restore button", error);
+  }
+}
+
+// Add banner activation button for minimized state
+function addBannerActivationButton() {
+  DEBUG.log("Adding banner activation button");
+
+  try {
+    // Check if activation button already exists
+    if (document.getElementById("bannerActivationBtn")) {
+      return;
+    }
+
+    const header = document.querySelector("header");
+    if (!header) {
+      DEBUG.warn("Header not found for activation button");
+      return;
+    }
+
+    // Create activation button
+    const activationBtn = document.createElement("button");
+    activationBtn.id = "bannerActivationBtn";
+    activationBtn.innerHTML = "🔗";
+    activationBtn.title = "Expand Profile Banner";
+    activationBtn.style.cssText = `
+      width: 40px;
+      height: 40px;
+      background: rgba(0, 255, 255, 0.2);
+      border: 2px solid var(--primary-neon);
+      border-radius: 50%;
+      color: var(--primary-neon);
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      animation: pulse 2s infinite;
+      margin-left: 20px;
+    `;
+
+    // Add hover effects
+    activationBtn.addEventListener("mouseenter", () => {
+      activationBtn.style.background = "rgba(0, 255, 255, 0.3)";
+      activationBtn.style.transform = "scale(1.1)";
+      activationBtn.style.boxShadow = "0 0 20px rgba(0, 255, 255, 0.5)";
+    });
+
+    activationBtn.addEventListener("mouseleave", () => {
+      activationBtn.style.background = "rgba(0, 255, 255, 0.2)";
+      activationBtn.style.transform = "scale(1)";
+      activationBtn.style.boxShadow = "none";
+    });
+
+    // Add click handler
+    activationBtn.addEventListener("click", () => {
+      DEBUG.log("Activating banner from minimized state");
+
+      updateBannerState("visible", false);
+
+      // Remove activation button
+      activationBtn.remove();
+
+      // Show success message
+      if (window.showToast) {
+        window.showToast("Profile banner expanded! 🔗", "success", 2000);
+      }
+    });
+
+    // Add to header navigation area (middle section)
+    const headerContent = header.querySelector('div[style*="display: flex"]');
+    if (headerContent) {
+      const nav = headerContent.querySelector("nav");
+      if (nav) {
+        nav.appendChild(activationBtn);
+      } else {
+        const titleSection = headerContent.querySelector(
+          'div[style*="display: flex"][style*="align-items: center"]'
+        );
+        if (titleSection) {
+          titleSection.appendChild(activationBtn);
+        } else {
+          headerContent.appendChild(activationBtn);
+        }
+      }
+    } else {
+      header.appendChild(activationBtn);
+    }
+
+    DEBUG.log("Banner activation button added successfully");
+  } catch (error) {
+    DEBUG.error("Error adding banner activation button", error);
+  }
+}
+
+// Centralized banner state management
+function updateBannerState(state, animate = true) {
+  DEBUG.log(`Updating banner state to: ${state}`);
+
+  const profileBanner = document.getElementById("profileBanner");
+  const bannerSection = document.getElementById("profile-banner-section");
+  const bannerChain = document.querySelector(".banner-chain");
+  const chainLink = document.querySelector(".chain-link");
+
+  if (!profileBanner || !bannerSection) {
+    DEBUG.warn("Banner elements not found for state update");
+    return;
+  }
+
+  // Remove all state classes first
+  profileBanner.classList.remove("hidden", "minimized", "entered");
+
+  // Apply new state
+  switch (state) {
+    case "visible":
+      profileBanner.classList.add("entered");
+      bannerSection.style.transform = "translateX(-50%)";
+      bannerSection.style.opacity = "1";
+      if (animate) {
+        profileBanner.style.animation =
+          "bannerDropAndSway 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards";
+      }
+      // Show chain elements
+      if (bannerChain) bannerChain.style.opacity = "1";
+      if (chainLink) chainLink.style.opacity = "1";
+      // Remove activation button if it exists
+      const activationBtn = document.getElementById("bannerActivationBtn");
+      if (activationBtn) activationBtn.remove();
+      break;
+
+    case "minimized":
+      profileBanner.classList.add("minimized");
+      bannerSection.style.transform = "translateX(-50%)";
+      bannerSection.style.opacity = "1";
+      profileBanner.style.animation = "none";
+      // Hide chain elements
+      if (bannerChain) bannerChain.style.opacity = "0";
+      if (chainLink) chainLink.style.opacity = "0";
+      // Show banner activation button
+      addBannerActivationButton();
+      break;
+
+    case "hidden":
+      profileBanner.classList.add("hidden");
+      bannerSection.style.transform = "translateX(-50%) translateY(-100%)";
+      bannerSection.style.opacity = "0";
+      if (animate) {
+        profileBanner.style.animation =
+          "zipUpToHeader 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards";
+      }
+      // Hide chain elements immediately
+      if (bannerChain) bannerChain.style.opacity = "0";
+      if (chainLink) chainLink.style.opacity = "0";
+      break;
+
+    case "fullscreen-hidden":
+      bannerSection.style.transform = "translateX(-50%) translateY(-100%)";
+      bannerSection.style.opacity = "0";
+      profileBanner.style.animation = "none";
+      // Hide chain elements
+      if (bannerChain) bannerChain.style.opacity = "0";
+      if (chainLink) chainLink.style.opacity = "0";
+      break;
+  }
+
+  DEBUG.log(`Banner state updated to: ${state}`);
+}
+
+// Initialize banner card controls (minimize, close, etc.)
+// TODO: Future enhancement - Add customizable animations from user inventory
+// TODO: Future enhancement - Add achievement-unlocked banner styles and effects
+// TODO: Future enhancement - Add seasonal/holiday banner themes
+function initializeBannerCardControls() {
+  DEBUG.log("Initializing hanging banner controls");
+
+  try {
+    const profileBanner = document.getElementById("profileBanner");
+    const minimizeBtn = document.getElementById("minimizeBannerBtn");
+    const closeBtn = document.getElementById("closeBannerBtn");
+
+    if (!profileBanner) {
+      DEBUG.warn("Profile banner not found for controls");
+      return;
+    }
+
+    // Add entrance animation completion handler
+    profileBanner.addEventListener("animationend", (e) => {
+      if (e.animationName === "bannerDropAndSway") {
+        DEBUG.log("Hanging banner entrance animation completed");
+        profileBanner.classList.add("entered");
+
+        // Show welcome message for banner
+        if (window.showToast) {
+          setTimeout(() => {
+            window.showToast(
+              "Welcome! Your hanging profile banner is ready 🏴‍☠️",
+              "info",
+              4000
+            );
+          }, 1000);
+        }
+      }
+    });
+
+    // Minimize button functionality
+    if (minimizeBtn) {
+      minimizeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Toggling banner minimize state");
+
+        const isCurrentlyMinimized =
+          profileBanner.classList.contains("minimized");
+        const newState = isCurrentlyMinimized ? "visible" : "minimized";
+
+        updateBannerState(newState, false);
+
+        minimizeBtn.textContent = isCurrentlyMinimized ? "−" : "+";
+        minimizeBtn.title = isCurrentlyMinimized
+          ? "Minimize Banner"
+          : "Expand Banner";
+
+        if (window.showToast) {
+          window.showToast(
+            isCurrentlyMinimized ? "Banner expanded" : "Banner minimized",
+            "info",
+            2000
+          );
+        }
+      });
+    }
+
+    // Close button functionality
+    if (closeBtn) {
+      closeBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        DEBUG.log("Closing banner with zip-up animation");
+
+        updateBannerState("hidden", true);
+
+        if (window.showToast) {
+          window.showToast(
+            "Banner zipped up! Use restore button to bring it back 🏴‍☠️",
+            "info",
+            3000
+          );
+        }
+
+        // Store closed state
+        localStorage.setItem("bannerClosed", "true");
+
+        // Add restore button after animation completes
+        setTimeout(() => {
+          addBannerRestoreButton();
+        }, 700);
+      });
+    }
+
+    // Check if banner was previously closed
+    const wasClosed = localStorage.getItem("bannerClosed");
+    if (wasClosed === "true") {
+      DEBUG.log("Banner was previously closed, hiding it");
+      updateBannerState("hidden", false);
+
+      // Add a restore button to the header for closed banners
+      addBannerRestoreButton();
+    } else {
+      DEBUG.log("Banner is visible, starting entrance animation");
+      updateBannerState("visible", true);
+    }
+
+    // Add drag functionality for the island
+    let isDragging = false;
+    let startX, startY, initialX, initialY;
+
+    profileBanner.addEventListener("mousedown", (e) => {
+      // Only allow dragging from the user section
+      if (e.target.closest(".banner-user-section")) {
+        isDragging = true;
+        startX = e.clientX;
+        startY = e.clientY;
+
+        const rect = profileBanner.getBoundingClientRect();
+        initialX = rect.left;
+        initialY = rect.top;
+
+        profileBanner.style.cursor = "grabbing";
+        profileBanner.style.transition = "none";
+
+        // Remove centered positioning for dragging
+        profileBanner.parentElement.style.left = "auto";
+        profileBanner.parentElement.style.transform = "none";
+
+        DEBUG.log("Started dragging banner island");
+      }
+    });
+
+    document.addEventListener("mousemove", (e) => {
+      if (!isDragging) return;
+
+      e.preventDefault();
+
+      const deltaX = e.clientX - startX;
+      const deltaY = e.clientY - startY;
+
+      const newX = initialX + deltaX;
+      const newY = initialY + deltaY;
+
+      // Constrain to viewport
+      const maxX = window.innerWidth - profileBanner.offsetWidth;
+      const maxY = window.innerHeight - profileBanner.offsetHeight;
+
+      const constrainedX = Math.max(0, Math.min(newX, maxX));
+      const constrainedY = Math.max(0, Math.min(newY, maxY));
+
+      // Update parent container position
+      profileBanner.parentElement.style.left = constrainedX + "px";
+      profileBanner.parentElement.style.top = constrainedY + "px";
+      profileBanner.parentElement.style.transform = "none";
+    });
+
+    document.addEventListener("mouseup", () => {
+      if (isDragging) {
+        isDragging = false;
+        profileBanner.style.cursor = "";
+        profileBanner.style.transition = "";
+
+        // Store new position
+        const rect = profileBanner.parentElement.getBoundingClientRect();
+        localStorage.setItem(
+          "bannerPosition",
+          JSON.stringify({
+            x: rect.left,
+            y: rect.top,
+            dragged: true,
+          })
+        );
+
+        DEBUG.log("Stopped dragging banner island");
+      }
+    });
+
+    // Load saved position
+    const savedPosition = localStorage.getItem("bannerPosition");
+    if (savedPosition && !wasClosed) {
+      try {
+        const position = JSON.parse(savedPosition);
+        if (position.dragged) {
+          // Restore dragged position
+          profileBanner.parentElement.style.left = position.x + "px";
+          profileBanner.parentElement.style.top = position.y + "px";
+          profileBanner.parentElement.style.transform = "none";
+          DEBUG.log("Loaded saved dragged banner position", position);
+        } else {
+          // Use default centered position
+          DEBUG.log("Using default centered banner position");
+        }
+      } catch (error) {
+        DEBUG.error("Failed to load saved banner position", error);
+      }
+    }
+
+    DEBUG.log("Banner card controls initialized successfully");
+  } catch (error) {
+    DEBUG.error("Error initializing banner card controls", error);
+  }
+}
+
+// Load banner customization when DOM is ready
+document.addEventListener("DOMContentLoaded", () => {
+  setTimeout(() => {
+    loadBannerCustomization();
+  }, 1000);
+});
 
 DEBUG.log("Enhanced inque social app initialization complete");
