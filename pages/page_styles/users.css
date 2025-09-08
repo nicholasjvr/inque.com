@@ -1,12 +1,44 @@
-/* === ENHANCED USERS PAGE STYLES === */
+/* === NEON BRUTALISM USERS PAGE STYLES === */
+
+:root {
+    --primary-neon: #00ffff;
+    --secondary-neon: #ff00ff;
+    --accent-neon: #ffff00;
+    --error-neon: #ff4444;
+    --success-neon: #44ff44;
+    --warning-neon: #ffaa00;
+    --text-primary: #ffffff;
+    --text-secondary: #cccccc;
+    --bg-primary: #0a0a0a;
+    --bg-secondary: #1a1a1a;
+    --bg-tertiary: #2a2a2a;
+    --border-width: 3px;
+    --border-radius: 0px;
+    --shadow-glow: 0 0 20px rgba(0, 255, 255, 0.3);
+}
+
+body {
+    font-family: "JetBrains Mono", "Inter", monospace;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    margin: 0;
+    padding: 0;
+}
 
 .page-header {
-    padding: 40px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    padding: 16px 20px;
     text-align: center;
-    border-bottom: 1px solid var(--primary-color);
-    background: linear-gradient(135deg, rgba(16, 21, 32, 0.95) 0%, rgba(26, 34, 50, 0.95) 100%);
+    border-bottom: var(--border-width) solid var(--primary-neon);
+    background: var(--bg-secondary);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
+    box-shadow: var(--shadow-glow);
 }
 
 /* Breadcrumb Navigation */
@@ -17,27 +49,42 @@
     gap: 8px;
     margin-bottom: 1rem;
     font-size: 14px;
+    flex-wrap: wrap;
 }
 
 .breadcrumb-link {
-    color: var(--primary-color);
+    color: var(--primary-neon);
     text-decoration: none;
-    padding: 4px 8px;
-    border-radius: 4px;
+    padding: 6px 12px;
+    border: 2px solid var(--primary-neon);
+    border-radius: var(--border-radius);
+    background: var(--bg-secondary);
     transition: all 0.2s ease;
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .breadcrumb-link:hover {
-    background: rgba(0, 240, 255, 0.1);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
+    box-shadow: var(--shadow-glow);
+    transform: translateY(-2px);
 }
 
 .breadcrumb-separator {
-    color: #666;
+    color: var(--text-secondary);
+    font-weight: bold;
 }
 
 .breadcrumb-current {
-    color: var(--text-light);
-    font-weight: 500;
+    color: var(--text-primary);
+    font-weight: 600;
+    padding: 6px 12px;
+    border: 2px solid var(--accent-neon);
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius);
 }
 
 .header-actions {
@@ -45,51 +92,63 @@
     justify-content: center;
     gap: 12px;
     margin-bottom: 1rem;
+    flex-wrap: wrap;
 }
 
 .action-btn {
     padding: 8px 16px;
-    background: rgba(0, 240, 255, 0.1);
-    border: 1px solid var(--primary-color);
-    border-radius: 6px;
-    color: var(--primary-color);
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--primary-neon);
+    border-radius: var(--border-radius);
+    color: var(--primary-neon);
     text-decoration: none;
     font-size: 14px;
-    font-weight: 500;
+    font-weight: 600;
+    font-family: "JetBrains Mono", monospace;
+    text-transform: uppercase;
+    letter-spacing: 1px;
     transition: all 0.2s ease;
+    box-shadow: var(--shadow-glow);
 }
 
 .action-btn:hover {
-    background: rgba(0, 240, 255, 0.2);
-    transform: translateY(-1px);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 .page-header h1 {
     font-family: 'Orbitron', monospace;
-    font-size: 32px;
-    color: var(--primary-color);
+    font-size: 2rem;
+    color: var(--primary-neon);
     margin: 0;
-    text-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    text-shadow: 0 0 20px rgba(0, 255, 255, 0.5);
 }
 
 .back-link {
     display: inline-block;
     margin-top: 15px;
-    color: var(--primary-color);
+    color: var(--primary-neon);
     text-decoration: none;
     font-size: 16px;
-    border: 1px solid var(--primary-color);
+    border: var(--border-width) solid var(--primary-neon);
     padding: 8px 16px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     transition: all 0.3s ease;
-    background: rgba(0, 240, 255, 0.1);
+    background: var(--bg-secondary);
+    font-family: "JetBrains Mono", monospace;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    box-shadow: var(--shadow-glow);
 }
 
 .back-link:hover {
-    background-color: var(--primary-color);
-    color: var(--secondary-color);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 #users-container {
@@ -100,6 +159,7 @@
     max-width: 1200px;
     margin: 0 auto;
     min-height: 60vh;
+    margin-top: 140px;
 }
 
 /* Loading State */
@@ -113,10 +173,10 @@
 }
 
 .loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 3px solid rgba(0, 240, 255, 0.3);
-    border-top: 3px solid var(--primary-color);
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(0, 255, 255, 0.3);
+    border-top: 4px solid var(--primary-neon);
     border-radius: 50%;
     animation: spin 1s linear infinite;
 }
@@ -132,32 +192,36 @@
 }
 
 .loading-text {
-    color: var(--primary-color);
+    color: var(--primary-neon);
     font-family: 'Orbitron', monospace;
-    font-size: 18px;
+    font-size: 1.2rem;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 /* Empty State */
 .users-empty {
     text-align: center;
     padding: 60px 20px;
-    color: var(--text-light);
+    color: var(--text-secondary);
 }
 
 .users-empty h3 {
     font-family: 'Orbitron', monospace;
-    color: var(--primary-color);
-    margin-bottom: 10px;
+    color: var(--primary-neon);
+    font-size: 1.5rem;
+    margin-bottom: 16px;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 .users-empty p {
-    opacity: 0.7;
+    opacity: 0.8;
+    margin-bottom: 24px;
 }
 
 .user-card {
-    background: linear-gradient(135deg, rgba(16, 21, 32, 0.9) 0%, rgba(26, 34, 50, 0.9) 100%);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    border-radius: 16px;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--primary-neon);
+    border-radius: var(--border-radius);
     padding: 25px;
     text-align: center;
     display: flex;
@@ -169,13 +233,28 @@
     transition: all 0.3s ease;
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    box-shadow: var(--shadow-glow);
 }
 
 .user-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(0, 240, 255, 0.2);
-    border-color: var(--primary-color);
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4);
+    border-color: var(--accent-neon);
+}
+
+.user-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.user-card:hover::before {
+    left: 100%;
 }
 
 .user-card-hover {
@@ -184,7 +263,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background: linear-gradient(135deg, rgba(16, 21, 32, 0.95) 0%, rgba(26, 34, 50, 0.95) 100%);
+    background: var(--bg-tertiary);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -192,7 +271,7 @@
     gap: 15px;
     opacity: 0;
     transition: all 0.3s ease;
-    border-radius: 16px;
+    border-radius: var(--border-radius);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
 }
@@ -203,13 +282,13 @@
 
 .user-card-hover .chat-btn,
 .user-card-hover .view-profile-btn {
-    background: linear-gradient(135deg, var(--primary-color), #00d4ff);
-    color: var(--secondary-color);
-    border: none;
+    background: var(--primary-neon);
+    color: var(--bg-primary);
+    border: var(--border-width) solid var(--primary-neon);
     padding: 12px 24px;
-    border-radius: 8px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    font-family: 'Orbitron', monospace;
+    font-family: 'JetBrains Mono', monospace;
     text-decoration: none;
     display: inline-block;
     width: 80%;
@@ -218,14 +297,15 @@
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
+    box-shadow: var(--shadow-glow);
 }
 
 .user-card-hover .chat-btn:hover,
 .user-card-hover .view-profile-btn:hover {
-    background: linear-gradient(135deg, transparent, transparent);
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
-    transform: scale(1.05);
+    background: var(--bg-primary);
+    color: var(--primary-neon);
+    transform: translateY(-2px);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 .user-card-pic {
@@ -234,26 +314,26 @@
     border-radius: 50%;
     background-size: cover;
     background-position: center;
-    border: 3px solid var(--primary-color);
-    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+    border: var(--border-width) solid var(--primary-neon);
+    box-shadow: var(--shadow-glow);
     transition: all 0.3s ease;
 }
 
 .user-card:hover .user-card-pic {
-    border-color: #00d4ff;
-    box-shadow: 0 0 30px rgba(0, 240, 255, 0.5);
+    border-color: var(--accent-neon);
+    box-shadow: 0 0 30px rgba(255, 255, 0, 0.5);
 }
 
 .user-card-name {
     font-family: 'Orbitron', monospace;
-    font-size: 20px;
-    color: var(--primary-color);
+    font-size: 1.4rem;
+    color: var(--primary-neon);
     margin: 0;
-    font-weight: 600;
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+    font-weight: 700;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
-/* === MODERN ERROR MODAL === */
+/* === NEON BRUTALISM ERROR MODAL === */
 .error-modal {
     position: fixed;
     top: 0;
@@ -268,6 +348,8 @@
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
 }
 
 .error-modal.show {
@@ -276,16 +358,16 @@
 }
 
 .error-modal-content {
-    background: linear-gradient(135deg, rgba(16, 21, 32, 0.98) 0%, rgba(26, 34, 50, 0.98) 100%);
-    border: 2px solid #ff4757;
-    border-radius: 16px;
+    background: var(--bg-secondary);
+    border: var(--border-width) solid var(--error-neon);
+    border-radius: var(--border-radius);
     padding: 30px;
     max-width: 500px;
     width: 90%;
     text-align: center;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(255, 71, 87, 0.3);
+    box-shadow: 0 0 40px rgba(255, 68, 68, 0.4);
     transform: scale(0.8);
     transition: all 0.3s ease;
 }
@@ -296,7 +378,7 @@
 
 .error-icon {
     font-size: 60px;
-    color: #ff4757;
+    color: var(--error-neon);
     margin-bottom: 20px;
     animation: pulse 2s infinite;
 }
@@ -315,15 +397,16 @@
 
 .error-title {
     font-family: 'Orbitron', monospace;
-    color: #ff4757;
-    font-size: 24px;
+    color: var(--error-neon);
+    font-size: 1.5rem;
     margin-bottom: 15px;
     font-weight: 600;
+    text-shadow: 0 0 10px rgba(255, 68, 68, 0.3);
 }
 
 .error-message {
-    color: var(--text-light);
-    font-size: 16px;
+    color: var(--text-primary);
+    font-size: 1rem;
     line-height: 1.6;
     margin-bottom: 25px;
 }
@@ -337,38 +420,41 @@
 
 .error-btn {
     padding: 12px 24px;
-    border-radius: 8px;
-    font-family: 'Orbitron', monospace;
+    border-radius: var(--border-radius);
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    border: none;
+    border: var(--border-width) solid;
     text-transform: uppercase;
     letter-spacing: 1px;
+    box-shadow: var(--shadow-glow);
 }
 
 .error-btn.primary {
-    background: linear-gradient(135deg, #ff4757, #ff3742);
-    color: white;
+    background: var(--error-neon);
+    color: var(--bg-primary);
+    border-color: var(--error-neon);
 }
 
 .error-btn.secondary {
-    background: transparent;
-    color: var(--primary-color);
-    border: 2px solid var(--primary-color);
+    background: var(--bg-secondary);
+    color: var(--primary-neon);
+    border-color: var(--primary-neon);
 }
 
 .error-btn:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(255, 71, 87, 0.3);
+    box-shadow: 0 0 30px rgba(255, 68, 68, 0.5);
 }
 
 .error-btn.secondary:hover {
-    background: var(--primary-color);
-    color: var(--secondary-color);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
-/* === ENHANCED CHAT MODAL === */
+/* === NEON BRUTALISM CHAT MODAL === */
 .modal {
     position: fixed;
     z-index: 1000;
@@ -386,41 +472,42 @@
 }
 
 .modal-content {
-    background: linear-gradient(135deg, rgba(16, 21, 32, 0.98) 0%, rgba(26, 34, 50, 0.98) 100%);
+    background: var(--bg-secondary);
     margin: auto;
     padding: 0;
-    border: 2px solid var(--primary-color);
+    border: var(--border-width) solid var(--primary-neon);
     width: 90%;
     max-width: 600px;
-    border-radius: 16px;
+    border-radius: var(--border-radius);
     display: flex;
     flex-direction: column;
     max-height: 80vh;
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    box-shadow: 0 20px 60px rgba(0, 240, 255, 0.2);
+    box-shadow: var(--shadow-glow);
 }
 
 .modal-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid rgba(0, 240, 255, 0.3);
+    border-bottom: var(--border-width) solid var(--primary-neon);
     padding: 20px 25px;
-    background: rgba(0, 240, 255, 0.05);
-    border-radius: 16px 16px 0 0;
+    background: var(--bg-tertiary);
+    border-radius: var(--border-radius) var(--border-radius) 0 0;
 }
 
 .modal-header h2 {
-    color: var(--primary-color);
+    color: var(--primary-neon);
     font-family: 'Orbitron', monospace;
-    font-size: 22px;
+    font-size: 1.4rem;
     margin: 0;
     font-weight: 600;
+    text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
 }
 
 .close-button {
-    color: var(--primary-color);
+    color: var(--primary-neon);
     font-size: 28px;
     font-weight: bold;
     cursor: pointer;
@@ -431,12 +518,15 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background: rgba(0, 240, 255, 0.1);
+    background: var(--bg-secondary);
+    border: 2px solid var(--primary-neon);
 }
 
 .close-button:hover {
-    background: rgba(0, 240, 255, 0.2);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
     transform: scale(1.1);
+    box-shadow: var(--shadow-glow);
 }
 
 .modal-body {
@@ -452,13 +542,14 @@
 
 .message {
     padding: 12px 18px;
-    border-radius: 20px;
+    border-radius: var(--border-radius);
     max-width: 75%;
     word-wrap: break-word;
     font-size: 14px;
     line-height: 1.4;
     position: relative;
     animation: messageSlideIn 0.3s ease;
+    font-family: "JetBrains Mono", monospace;
 }
 
 @keyframes messageSlideIn {
@@ -474,71 +565,74 @@
 }
 
 .message.sent {
-    background: linear-gradient(135deg, var(--primary-color), #00d4ff);
-    color: var(--secondary-color);
+    background: var(--primary-neon);
+    color: var(--bg-primary);
     align-self: flex-end;
-    border-bottom-right-radius: 5px;
-    box-shadow: 0 4px 15px rgba(0, 240, 255, 0.3);
+    border: var(--border-width) solid var(--primary-neon);
+    box-shadow: var(--shadow-glow);
 }
 
 .message.received {
-    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
-    color: var(--text-light);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
     align-self: flex-start;
-    border-bottom-left-radius: 5px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    border: var(--border-width) solid var(--text-secondary);
 }
 
 .modal-footer {
     display: flex;
-    border-top: 1px solid rgba(0, 240, 255, 0.3);
+    border-top: var(--border-width) solid var(--primary-neon);
     padding: 20px 25px;
-    background: rgba(0, 240, 255, 0.05);
-    border-radius: 0 0 16px 16px;
+    background: var(--bg-tertiary);
+    border-radius: 0 0 var(--border-radius) var(--border-radius);
     gap: 15px;
     flex-shrink: 0;
 }
 
 #chat-message-input {
     flex-grow: 1;
-    background: rgba(255, 255, 255, 0.1);
-    color: var(--text-light);
-    border: 1px solid rgba(0, 240, 255, 0.3);
-    border-radius: 12px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    border: var(--border-width) solid var(--primary-neon);
+    border-radius: var(--border-radius);
     padding: 12px 16px;
-    font-family: 'Inter', sans-serif;
+    font-family: 'JetBrains Mono', monospace;
     font-size: 14px;
     transition: all 0.3s ease;
+    box-shadow: var(--shadow-glow);
 }
 
 #chat-message-input:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 15px rgba(0, 240, 255, 0.3);
+    border-color: var(--accent-neon);
+    box-shadow: 0 0 20px rgba(255, 255, 0, 0.3);
 }
 
 #chat-message-input::placeholder {
-    color: rgba(255, 255, 255, 0.5);
+    color: var(--text-secondary);
 }
 
 #chat-send-btn {
-    background: linear-gradient(135deg, var(--primary-color), #00d4ff);
-    color: var(--secondary-color);
-    border: none;
+    background: var(--primary-neon);
+    color: var(--bg-primary);
+    border: var(--border-width) solid var(--primary-neon);
     padding: 12px 24px;
-    border-radius: 12px;
+    border-radius: var(--border-radius);
     cursor: pointer;
-    font-family: 'Orbitron', monospace;
+    font-family: 'JetBrains Mono', monospace;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 1px;
     transition: all 0.3s ease;
     min-width: 80px;
+    box-shadow: var(--shadow-glow);
 }
 
 #chat-send-btn:hover {
+    background: var(--bg-primary);
+    color: var(--primary-neon);
     transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3);
+    box-shadow: 0 0 30px rgba(0, 255, 255, 0.5);
 }
 
 #chat-send-btn:disabled {
@@ -547,20 +641,40 @@
     transform: none;
 }
 
-/* === MOBILE RESPONSIVE === */
+/* === MOBILE OPTIMIZATION === */
 @media (max-width: 768px) {
     .page-header {
-        padding: 30px 20px;
+        padding: 12px 16px;
     }
 
     .page-header h1 {
-        font-size: 24px;
+        font-size: 1.5rem;
+    }
+
+    .nav-breadcrumb {
+        font-size: 12px;
+        gap: 6px;
+    }
+
+    .breadcrumb-link {
+        padding: 4px 8px;
+        font-size: 12px;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 
     #users-container {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
         gap: 20px;
         padding: 20px;
+        margin-top: 120px;
     }
 
     .user-card {
@@ -588,10 +702,48 @@
 }
 
 @media (max-width: 480px) {
+    .page-header {
+        padding: 10px 12px;
+    }
+
+    .page-header h1 {
+        font-size: 1.3rem;
+    }
+
+    .nav-breadcrumb {
+        flex-direction: column;
+        gap: 4px;
+    }
+
+    .header-actions {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .action-btn {
+        width: 100%;
+        max-width: 200px;
+        text-align: center;
+    }
+
     #users-container {
         grid-template-columns: 1fr;
         gap: 15px;
         padding: 15px;
+        margin-top: 140px;
+    }
+
+    .user-card {
+        padding: 16px;
+    }
+
+    .user-card-pic {
+        width: 80px;
+        height: 80px;
+    }
+
+    .user-card-name {
+        font-size: 1.2rem;
     }
 
     .error-modal-content {
@@ -600,5 +752,62 @@
 
     .error-actions {
         flex-direction: column;
+    }
+
+    .modal-content {
+        width: 98%;
+        margin: 10px;
+    }
+
+    .modal-header,
+    .modal-footer {
+        padding: 12px 16px;
+    }
+
+    .modal-body {
+        padding: 16px;
+    }
+
+    #chat-message-input {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+    }
+}
+
+/* === ACCESSIBILITY === */
+@media (prefers-reduced-motion: reduce) {
+
+    .user-card,
+    .action-btn,
+    .breadcrumb-link,
+    .error-btn,
+    .chat-btn,
+    .view-profile-btn,
+    .close-button,
+    #chat-send-btn {
+        transition: none;
+    }
+
+    .user-card:hover,
+    .action-btn:hover,
+    .breadcrumb-link:hover,
+    .error-btn:hover,
+    .chat-btn:hover,
+    .view-profile-btn:hover,
+    .close-button:hover,
+    #chat-send-btn:hover {
+        transform: none;
+    }
+
+    .loading-spinner {
+        animation: none;
+    }
+
+    .user-card::before {
+        display: none;
+    }
+
+    .error-icon {
+        animation: none;
     }
 }

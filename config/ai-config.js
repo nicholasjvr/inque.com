@@ -1,19 +1,21 @@
 // AI Configuration for Chatbot
-// Import API key from secure, git-ignored file
-import { getGenkitApiKey } from "./genkit-api-key.js";
+// Uses environment variables for CI/CD and local development
+
+// Debug log to show when AI config is loaded
+console.log("[DEBUG] AI Configuration module loaded");
+console.log(
+  "[DEBUG] Environment check - GOOGLE_AI_API_KEY present:",
+  !!process.env.GOOGLE_AI_API_KEY
+);
 
 export const AI_CONFIG = {
-  // Google AI API Key - Retrieved from secure config
-  GOOGLE_AI_API_KEY: getGenkitApiKey(),
-
-  // AI Model settings
+  GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY,
   MODEL: "gemini-pro",
 
   // Chatbot behavior settings
   MAX_RESPONSE_LENGTH: 500,
-  TYPING_DELAY: 1000, // milliseconds
+  TYPING_DELAY: 1000,
 
-  // Fallback responses for when AI is unavailable
   FALLBACK_RESPONSES: {
     features:
       "This application includes user profiles, widget management, interactive canvas, timeline management, and social features. What would you like to know more about?",
@@ -33,13 +35,16 @@ export const AI_CONFIG = {
 
 // Helper function to get API key
 export function getApiKey() {
+  console.log("[DEBUG] getApiKey() function called");
   // Check if API key is set
   if (!AI_CONFIG.GOOGLE_AI_API_KEY) {
     console.warn(
-      "[AI CONFIG] Please set your Google AI API key in config/genkit-api-key.js"
+      "[AI CONFIG] Please set your GOOGLE_AI_API_KEY environment variable"
     );
+    console.log("[DEBUG] API key not found in environment variables");
     return null;
   }
+  console.log("[DEBUG] API key found and returned successfully");
   return AI_CONFIG.GOOGLE_AI_API_KEY;
 }
 

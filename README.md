@@ -1,7 +1,3 @@
-# Nicholas JVR - Portfolio & Social Platform
-
-> A modern, interactive portfolio and social platform built with vanilla JavaScript, Firebase, and cutting-edge web technologies.
-
 ## �� Features
 
 ### Core Functionality
