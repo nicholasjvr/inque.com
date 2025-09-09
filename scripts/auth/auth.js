@@ -1637,7 +1637,7 @@ document.addEventListener("DOMContentLoaded", () => {
             submitBtn.textContent = originalText;
             submitBtn.disabled = false;
           }
-        });
+        
       } catch (error) {
         console.error("reCAPTCHA error:", error);
         socialAuth.showToast(
@@ -1684,7 +1684,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(error.message);
             console.error("Login error:", error);
           });
-      });
+      }
     });
   }
 

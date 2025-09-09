@@ -190,8 +190,10 @@ class WidgetStudioManager {
     const clearButtons = document.querySelectorAll(".clear-files-btn");
     clearButtons.forEach((btn) => {
       btn.addEventListener("click", (e) => {
-        const slot = e.target.dataset.slot;
-        this.clearSlotFiles(slot);
+        const slot = parseInt(e.target.dataset.slot, 10);
+        if (!isNaN(slot)) {
+          this.clearSlotFiles(slot);
+        }
       });
     });
 
@@ -298,8 +300,11 @@ class WidgetStudioManager {
     // Clear existing file list
     filesListDiv.innerHTML = "";
 
+    // Normalize to an Array in case a FileList was passed
+    const filesArray = Array.isArray(files) ? files : Array.from(files);
+
     // Add each file to the list
-    files.forEach((file) => {
+    filesArray.forEach((file) => {
       const fileItem = this.createFileItem(file);
       filesListDiv.appendChild(fileItem);
     });
