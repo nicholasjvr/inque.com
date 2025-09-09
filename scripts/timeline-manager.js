@@ -354,11 +354,8 @@ async function initializeTimeline() {
   DEBUG.log("Timeline Manager: Initialization complete");
 }
 
-// Initialize timeline manager when DOM is ready
 document.addEventListener("DOMContentLoaded", async function () {
   DEBUG.log("Timeline Manager: DOM Content Loaded - Starting initialization");
-
-  // Initialize the timeline functionality
   await initializeTimeline();
 });
 
@@ -367,7 +364,6 @@ window.timelineManager = {
   renderAllWidgetCards: renderAllWidgetCards,
   renderWidgetCard: renderWidgetCard,
   initializeTimeline: initializeTimeline,
-  // Add other public methods as needed
 };
 
 DEBUG.log("Timeline Manager: Script loaded successfully");

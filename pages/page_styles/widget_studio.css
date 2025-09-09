@@ -254,6 +254,17 @@ body {
     transform: scale(0.98);
 }
 
+.file-upload-area.has-files {
+    border-color: var(--studio-success);
+    background: rgba(74, 222, 128, 0.1);
+    border-style: solid;
+}
+
+.file-upload-area.has-files:hover {
+    border-color: var(--studio-success);
+    background: rgba(74, 222, 128, 0.15);
+}
+
 .file-input {
     position: absolute;
     top: 0;

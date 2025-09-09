@@ -2642,8 +2642,10 @@ function addBannerRestoreButton() {
         // Remove closed state from localStorage
         localStorage.removeItem("bannerClosed");
 
-        // Remove restore button
-        restoreBtn.remove();
+        // Remove restore button after a short delay to ensure state is updated
+        setTimeout(() => {
+          restoreBtn.remove();
+        }, 100);
 
         // Show success message
         if (window.showToast) {
@@ -2676,16 +2678,6 @@ function addBannerRestoreButton() {
     }
 
     DEBUG.log("Banner restore button added successfully");
-
-    // Add console command for debugging
-    window.restoreBanner = () => {
-      localStorage.removeItem("bannerClosed");
-      location.reload();
-    };
-
-    console.log(
-      "💡 Tip: Run 'restoreBanner()' in console to force restore the banner"
-    );
   } catch (error) {
     DEBUG.error("Error adding banner restore button", error);
   }
@@ -2743,10 +2735,12 @@ function addBannerActivationButton() {
     activationBtn.addEventListener("click", () => {
       DEBUG.log("Activating banner from minimized state");
 
-      updateBannerState("visible", false);
+      updateBannerState("visible", true);
 
-      // Remove activation button
-      activationBtn.remove();
+      // Remove activation button after a short delay to ensure state is updated
+      setTimeout(() => {
+        activationBtn.remove();
+      }, 100);
 
       // Show success message
       if (window.showToast) {
@@ -2780,29 +2774,37 @@ function addBannerActivationButton() {
   }
 }
 
-// Centralized banner state management
+// Centralized banner state management for consolidated structure
 function updateBannerState(state, animate = true) {
   DEBUG.log(`Updating banner state to: ${state}`);
 
   const profileBanner = document.getElementById("profileBanner");
   const bannerSection = document.getElementById("profile-banner-section");
-  const bannerChain = document.querySelector(".banner-chain");
-  const chainLink = document.querySelector(".chain-link");
+  const bannerChain = document.getElementById("bannerChain");
+  const chainLink = document.getElementById("chainLink");
+  const headerBannerContainer = document.getElementById(
+    "header-banner-container"
+  );
 
-  if (!profileBanner || !bannerSection) {
+  if (!profileBanner || !bannerSection || !headerBannerContainer) {
     DEBUG.warn("Banner elements not found for state update");
     return;
   }
 
   // Remove all state classes first
   profileBanner.classList.remove("hidden", "minimized", "entered");
+  headerBannerContainer.classList.remove(
+    "hidden",
+    "minimized",
+    "fullscreen-hidden"
+  );
 
   // Apply new state
   switch (state) {
     case "visible":
       profileBanner.classList.add("entered");
-      bannerSection.style.transform = "translateX(-50%)";
-      bannerSection.style.opacity = "1";
+      headerBannerContainer.style.opacity = "1";
+      headerBannerContainer.style.pointerEvents = "auto";
       if (animate) {
         profileBanner.style.animation =
           "bannerDropAndSway 1.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards";
@@ -2813,24 +2815,32 @@ function updateBannerState(state, animate = true) {
       // Remove activation button if it exists
       const activationBtn = document.getElementById("bannerActivationBtn");
       if (activationBtn) activationBtn.remove();
+      // Clear minimized state
+      localStorage.removeItem("bannerMinimized");
+      DEBUG.log("Banner visible state restored, minimized state cleared");
       break;
 
     case "minimized":
       profileBanner.classList.add("minimized");
-      bannerSection.style.transform = "translateX(-50%)";
-      bannerSection.style.opacity = "1";
+      headerBannerContainer.classList.add("minimized");
+      headerBannerContainer.style.opacity = "1";
+      headerBannerContainer.style.pointerEvents = "auto";
       profileBanner.style.animation = "none";
       // Hide chain elements
       if (bannerChain) bannerChain.style.opacity = "0";
       if (chainLink) chainLink.style.opacity = "0";
       // Show banner activation button
       addBannerActivationButton();
+      // Store minimized state
+      localStorage.setItem("bannerMinimized", "true");
+      DEBUG.log("Banner minimized state stored");
       break;
 
     case "hidden":
       profileBanner.classList.add("hidden");
-      bannerSection.style.transform = "translateX(-50%) translateY(-100%)";
-      bannerSection.style.opacity = "0";
+      headerBannerContainer.classList.add("hidden");
+      headerBannerContainer.style.opacity = "0";
+      headerBannerContainer.style.pointerEvents = "none";
       if (animate) {
         profileBanner.style.animation =
           "zipUpToHeader 0.6s cubic-bezier(0.55, 0.055, 0.675, 0.19) forwards";
@@ -2841,8 +2851,9 @@ function updateBannerState(state, animate = true) {
       break;
 
     case "fullscreen-hidden":
-      bannerSection.style.transform = "translateX(-50%) translateY(-100%)";
-      bannerSection.style.opacity = "0";
+      headerBannerContainer.classList.add("fullscreen-hidden");
+      headerBannerContainer.style.opacity = "0";
+      headerBannerContainer.style.pointerEvents = "none";
       profileBanner.style.animation = "none";
       // Hide chain elements
       if (bannerChain) bannerChain.style.opacity = "0";
@@ -2851,6 +2862,150 @@ function updateBannerState(state, animate = true) {
   }
 
   DEBUG.log(`Banner state updated to: ${state}`);
+
+  // Dispatch custom event for UI positioning adjustments
+  window.dispatchEvent(
+    new CustomEvent("banner-state-changed", {
+      detail: { state: state },
+    })
+  );
+}
+
+// Initialize UI positioning adjustments to prevent button overlap
+function initializeUIPositioning() {
+  DEBUG.log("Initializing UI positioning adjustments");
+
+  try {
+    const fullscreenToggle = document.getElementById("fullscreenToggle");
+    const toastContainer = document.getElementById("toast-container");
+    const headerBannerContainer = document.getElementById(
+      "header-banner-container"
+    );
+
+    if (!fullscreenToggle || !toastContainer) {
+      DEBUG.warn("UI elements not found for positioning adjustments");
+      return;
+    }
+
+    // Function to adjust positioning based on banner state
+    const adjustUIPositioning = () => {
+      const isMobile = window.innerWidth <= 768;
+      const isBannerVisible =
+        headerBannerContainer &&
+        !headerBannerContainer.classList.contains("hidden") &&
+        !headerBannerContainer.classList.contains("fullscreen-hidden");
+
+      if (isMobile && isBannerVisible) {
+        // Adjust positioning when banner is visible on mobile
+        fullscreenToggle.style.top = "200px";
+        toastContainer.style.top = "200px";
+        DEBUG.log("UI positioning adjusted for mobile with visible banner");
+      } else if (isMobile) {
+        // Standard mobile positioning
+        fullscreenToggle.style.top = "100px";
+        toastContainer.style.top = "100px";
+        DEBUG.log("UI positioning adjusted for mobile without banner");
+      } else {
+        // Desktop positioning
+        fullscreenToggle.style.top = "140px";
+        toastContainer.style.top = "140px";
+        DEBUG.log("UI positioning adjusted for desktop");
+      }
+    };
+
+    // Initial adjustment
+    adjustUIPositioning();
+
+    // Listen for banner state changes
+    window.addEventListener("banner-state-changed", adjustUIPositioning);
+
+    // Listen for resize events
+    window.addEventListener("resize", () => {
+      setTimeout(adjustUIPositioning, 100);
+    });
+
+    DEBUG.log("UI positioning adjustments initialized successfully");
+  } catch (error) {
+    DEBUG.error("Error initializing UI positioning adjustments", error);
+  }
+}
+
+// Initialize mobile-specific banner behavior
+function initializeMobileBannerBehavior() {
+  DEBUG.log("Initializing mobile-specific banner behavior");
+
+  try {
+    const profileBanner = document.getElementById("profileBanner");
+    const headerBannerContainer = document.getElementById(
+      "header-banner-container"
+    );
+
+    if (!profileBanner || !headerBannerContainer) {
+      DEBUG.warn("Banner elements not found for mobile behavior");
+      return;
+    }
+
+    // Check if we're on mobile
+    const isMobile = window.innerWidth <= 768;
+
+    if (isMobile) {
+      DEBUG.log(
+        "Mobile device detected - applying mobile banner optimizations"
+      );
+
+      // Add mobile-specific classes
+      headerBannerContainer.classList.add("mobile-optimized");
+      profileBanner.classList.add("mobile-optimized");
+
+      // Optimize touch interactions
+      profileBanner.style.touchAction = "manipulation";
+      profileBanner.style.webkitTouchCallout = "none";
+      profileBanner.style.webkitUserSelect = "none";
+      profileBanner.style.userSelect = "none";
+
+      // Add mobile-specific event listeners
+      profileBanner.addEventListener(
+        "touchstart",
+        (e) => {
+          // Prevent default touch behaviors that might interfere
+          e.preventDefault();
+        },
+        { passive: false }
+      );
+
+      // Handle orientation changes
+      window.addEventListener("orientationchange", () => {
+        DEBUG.log("Orientation changed - recalculating banner position");
+        setTimeout(() => {
+          // Force reflow to ensure proper positioning
+          headerBannerContainer.style.transform = "translateZ(0)";
+          setTimeout(() => {
+            headerBannerContainer.style.transform = "";
+          }, 100);
+        }, 100);
+      });
+
+      // Handle resize events for mobile
+      let resizeTimeout;
+      window.addEventListener("resize", () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          const newIsMobile = window.innerWidth <= 768;
+          if (newIsMobile !== isMobile) {
+            DEBUG.log("Screen size changed - reinitializing mobile behavior");
+            initializeMobileBannerBehavior();
+          }
+        }, 250);
+      });
+    } else {
+      DEBUG.log("Desktop device detected - using standard banner behavior");
+      // Remove mobile classes if they exist
+      headerBannerContainer.classList.remove("mobile-optimized");
+      profileBanner.classList.remove("mobile-optimized");
+    }
+  } catch (error) {
+    DEBUG.error("Error initializing mobile banner behavior", error);
+  }
 }
 
 // Initialize banner card controls (minimize, close, etc.)
@@ -2944,113 +3099,169 @@ function initializeBannerCardControls() {
       });
     }
 
-    // Check if banner was previously closed
+    // Check if banner was previously closed or minimized
     const wasClosed = localStorage.getItem("bannerClosed");
+    const wasMinimized = localStorage.getItem("bannerMinimized");
+
     if (wasClosed === "true") {
       DEBUG.log("Banner was previously closed, hiding it");
       updateBannerState("hidden", false);
 
       // Add a restore button to the header for closed banners
       addBannerRestoreButton();
+    } else if (wasMinimized === "true") {
+      DEBUG.log("Banner was previously minimized, showing minimized state");
+      updateBannerState("minimized", false);
     } else {
       DEBUG.log("Banner is visible, starting entrance animation");
       updateBannerState("visible", true);
     }
 
-    // Add drag functionality for the island
-    let isDragging = false;
-    let startX, startY, initialX, initialY;
+    // Banner is now fixed to header - no drag functionality needed
+    // The banner stays attached to the header and centers automatically
+    DEBUG.log(
+      "Banner positioning fixed to header - drag functionality removed for better mobile UX"
+    );
 
-    profileBanner.addEventListener("mousedown", (e) => {
-      // Only allow dragging from the user section
-      if (e.target.closest(".banner-user-section")) {
-        isDragging = true;
-        startX = e.clientX;
-        startY = e.clientY;
+    // Clear any saved drag positions since banner is now fixed
+    localStorage.removeItem("bannerPosition");
 
-        const rect = profileBanner.getBoundingClientRect();
-        initialX = rect.left;
-        initialY = rect.top;
+    // Initialize mobile-specific banner behavior
+    initializeMobileBannerBehavior();
 
-        profileBanner.style.cursor = "grabbing";
-        profileBanner.style.transition = "none";
-
-        // Remove centered positioning for dragging
-        profileBanner.parentElement.style.left = "auto";
-        profileBanner.parentElement.style.transform = "none";
-
-        DEBUG.log("Started dragging banner island");
-      }
-    });
-
-    document.addEventListener("mousemove", (e) => {
-      if (!isDragging) return;
-
-      e.preventDefault();
-
-      const deltaX = e.clientX - startX;
-      const deltaY = e.clientY - startY;
-
-      const newX = initialX + deltaX;
-      const newY = initialY + deltaY;
-
-      // Constrain to viewport
-      const maxX = window.innerWidth - profileBanner.offsetWidth;
-      const maxY = window.innerHeight - profileBanner.offsetHeight;
-
-      const constrainedX = Math.max(0, Math.min(newX, maxX));
-      const constrainedY = Math.max(0, Math.min(newY, maxY));
-
-      // Update parent container position
-      profileBanner.parentElement.style.left = constrainedX + "px";
-      profileBanner.parentElement.style.top = constrainedY + "px";
-      profileBanner.parentElement.style.transform = "none";
-    });
-
-    document.addEventListener("mouseup", () => {
-      if (isDragging) {
-        isDragging = false;
-        profileBanner.style.cursor = "";
-        profileBanner.style.transition = "";
-
-        // Store new position
-        const rect = profileBanner.parentElement.getBoundingClientRect();
-        localStorage.setItem(
-          "bannerPosition",
-          JSON.stringify({
-            x: rect.left,
-            y: rect.top,
-            dragged: true,
-          })
-        );
-
-        DEBUG.log("Stopped dragging banner island");
-      }
-    });
-
-    // Load saved position
-    const savedPosition = localStorage.getItem("bannerPosition");
-    if (savedPosition && !wasClosed) {
-      try {
-        const position = JSON.parse(savedPosition);
-        if (position.dragged) {
-          // Restore dragged position
-          profileBanner.parentElement.style.left = position.x + "px";
-          profileBanner.parentElement.style.top = position.y + "px";
-          profileBanner.parentElement.style.transform = "none";
-          DEBUG.log("Loaded saved dragged banner position", position);
-        } else {
-          // Use default centered position
-          DEBUG.log("Using default centered banner position");
-        }
-      } catch (error) {
-        DEBUG.error("Failed to load saved banner position", error);
-      }
-    }
+    // Initialize mobile drawer functionality
+    initializeMobileDrawer();
 
     DEBUG.log("Banner card controls initialized successfully");
+
+    // Debug function removed for cleaner UI
+
+    // Initialize UI positioning adjustments
+    initializeUIPositioning();
   } catch (error) {
     DEBUG.error("Error initializing banner card controls", error);
+  }
+}
+
+// Initialize mobile drawer functionality
+function initializeMobileDrawer() {
+  DEBUG.log("Initializing mobile drawer functionality");
+
+  try {
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    const mobileDrawer = document.getElementById("mobileDrawer");
+    const mobileDrawerClose = document.getElementById("mobileDrawerClose");
+    const mobileDrawerOverlay = document.getElementById("mobileDrawerOverlay");
+    const mobileAuthBtn = document.getElementById("mobileAuthBtn");
+    const authBtn = document.getElementById("authBtn");
+
+    if (!mobileMenuToggle || !mobileDrawer || !mobileDrawerClose) {
+      DEBUG.warn("Mobile drawer elements not found");
+      return;
+    }
+
+    // Toggle drawer open
+    const openDrawer = () => {
+      DEBUG.log("Opening mobile drawer");
+      mobileDrawer.classList.add("open");
+      document.body.style.overflow = "hidden"; // Prevent background scrolling
+    };
+
+    // Toggle drawer closed
+    const closeDrawer = () => {
+      DEBUG.log("Closing mobile drawer");
+      mobileDrawer.classList.remove("open");
+      document.body.style.overflow = ""; // Restore scrolling
+    };
+
+    // Event listeners
+    mobileMenuToggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      openDrawer();
+    });
+
+    mobileDrawerClose.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeDrawer();
+    });
+
+    mobileDrawerOverlay.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      closeDrawer();
+    });
+
+    // Close drawer when clicking on navigation items
+    const mobileNavItems = document.querySelectorAll(".mobile-nav-item");
+    mobileNavItems.forEach((item) => {
+      item.addEventListener("click", (e) => {
+        // Don't close for external links immediately
+        if (item.href && item.href.includes("pages/")) {
+          // Small delay to allow navigation
+          setTimeout(() => {
+            closeDrawer();
+          }, 100);
+        } else {
+          closeDrawer();
+        }
+      });
+    });
+
+    // Sync mobile auth button with main auth button
+    if (mobileAuthBtn && authBtn) {
+      mobileAuthBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeDrawer();
+        // Trigger the main auth button click
+        authBtn.click();
+      });
+    }
+
+    // Handle escape key
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && mobileDrawer.classList.contains("open")) {
+        closeDrawer();
+      }
+    });
+
+    // Handle window resize - close drawer on desktop
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 768 && mobileDrawer.classList.contains("open")) {
+        closeDrawer();
+      }
+    });
+
+    // Sync user info between main banner and mobile drawer
+    const syncUserInfo = () => {
+      const userName = document.getElementById("userName");
+      const userStatus = document.getElementById("userStatus");
+      const mobileUserName = document.getElementById("mobileUserName");
+      const mobileUserStatus = document.getElementById("mobileUserStatus");
+
+      if (userName && mobileUserName) {
+        mobileUserName.textContent = userName.textContent;
+      }
+      if (userStatus && mobileUserStatus) {
+        mobileUserStatus.textContent = userStatus.textContent;
+      }
+    };
+
+    // Initial sync
+    syncUserInfo();
+
+    // Watch for changes in user info
+    const observer = new MutationObserver(syncUserInfo);
+    const userInfoElement = document.getElementById("userName");
+    if (userInfoElement) {
+      observer.observe(userInfoElement, { childList: true, subtree: true });
+    }
+
+    DEBUG.log("Mobile drawer functionality initialized successfully");
+  } catch (error) {
+    DEBUG.error("Error initializing mobile drawer", error);
   }
 }
 

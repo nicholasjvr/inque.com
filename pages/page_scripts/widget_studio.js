@@ -55,6 +55,9 @@ class WidgetStudioManager {
       // Initialize profile dashboard integration
       await this.initializeProfileIntegration();
 
+      // Test cloud upload connection
+      await this.testCloudUploadConnection();
+
       this.log("Widget Studio page initialization complete");
     } catch (error) {
       this.error("Failed to initialize Widget Studio page", error);
@@ -133,6 +136,27 @@ class WidgetStudioManager {
       }
     } catch (error) {
       this.error("Failed to initialize profile integration", error);
+    }
+  }
+
+  async testCloudUploadConnection() {
+    try {
+      this.log("Testing cloud upload connection");
+
+      // Check if cloud upload manager is available
+      if (!cloudUploadManager) {
+        throw new Error("Cloud upload manager not available");
+      }
+
+      // Check if Firebase functions are available
+      if (!cloudUploadManager.functions) {
+        throw new Error("Firebase functions not initialized");
+      }
+
+      this.log("Cloud upload connection test passed");
+    } catch (error) {
+      this.error("Cloud upload connection test failed", error);
+      this.showToast("Warning: Cloud upload may not work properly", "warning");
     }
   }
 
@@ -235,9 +259,18 @@ class WidgetStudioManager {
       this.handleFileSelection(e.target.files, slotNumber);
     });
 
-    // Make upload area clickable
-    uploadArea.addEventListener("click", () => {
-      fileInput.click();
+    // Make upload area clickable - prevent double triggers
+    uploadArea.addEventListener("click", (e) => {
+      // Only trigger if not clicking on the file input itself
+      if (e.target !== fileInput) {
+        e.preventDefault();
+        fileInput.click();
+      }
+    });
+
+    // Prevent file input from triggering when clicking upload area
+    fileInput.addEventListener("click", (e) => {
+      e.stopPropagation();
     });
   }
 
@@ -271,6 +304,9 @@ class WidgetStudioManager {
     // Update UI to show selected files
     this.updateFileDisplay(slotNumber, files);
 
+    // Update file input display (for debugging/visual feedback)
+    this.updateFileInputDisplay(slotNumber, files);
+
     // Update slot status
     this.updateSlotStatus(slotNumber, "Files Selected");
 
@@ -302,6 +338,40 @@ class WidgetStudioManager {
     files.forEach((file) => {
       const fileItem = this.createFileItem(file);
       filesListDiv.appendChild(fileItem);
+    });
+  }
+
+  updateFileInputDisplay(slotNumber, files) {
+    const fileInput = document.getElementById(`fileInput${slotNumber}`);
+    if (!fileInput) return;
+
+    // Create a new FileList-like object for the input
+    // Note: We can't directly set files on input, but we can show file names
+    const fileNames = Array.from(files)
+      .map((file) => file.name)
+      .join(", ");
+
+    // Add a visual indicator that files are selected
+    const uploadArea = document.getElementById(`uploadArea${slotNumber}`);
+    if (uploadArea) {
+      // Add a class to show files are selected
+      uploadArea.classList.add("has-files");
+
+      // Update placeholder text to show file count
+      const placeholder = document.getElementById(`placeholder${slotNumber}`);
+      if (placeholder) {
+        const originalText = placeholder.innerHTML;
+        placeholder.innerHTML = `
+          <span class="upload-icon">✅</span>
+          <p>${files.length} file(s) selected</p>
+          <span class="upload-hint">Click to change files</span>
+        `;
+      }
+    }
+
+    this.log(`File input display updated for slot ${slotNumber}`, {
+      fileCount: files.length,
+      fileNames: fileNames,
     });
   }
 
@@ -390,9 +460,29 @@ class WidgetStudioManager {
       `selectedFiles${slotNumber}`
     );
     const placeholderDiv = document.getElementById(`placeholder${slotNumber}`);
+    const uploadArea = document.getElementById(`uploadArea${slotNumber}`);
+    const fileInput = document.getElementById(`fileInput${slotNumber}`);
 
     if (selectedFilesDiv) selectedFilesDiv.style.display = "none";
-    if (placeholderDiv) placeholderDiv.style.display = "block";
+    if (placeholderDiv) {
+      placeholderDiv.style.display = "block";
+      // Reset placeholder to original state
+      placeholderDiv.innerHTML = `
+        <span class="upload-icon">📁</span>
+        <p>Drop files here or click to upload</p>
+        <span class="upload-hint">Supports HTML, CSS, JS, images, and more</span>
+      `;
+    }
+
+    // Reset upload area styling
+    if (uploadArea) {
+      uploadArea.classList.remove("has-files");
+    }
+
+    // Clear file input
+    if (fileInput) {
+      fileInput.value = "";
+    }
 
     this.updateSlotStatus(slotNumber, "Available");
     this.updateSlotButtons(slotNumber, false);
@@ -553,12 +643,18 @@ class WidgetStudioManager {
       const tags = document.getElementById(`tags${slotNumber}`)?.value || "";
 
       // Upload via Cloud Functions
-      const result = await cloudUploadManager.uploadWidget(files, slotNumber, {
-        title,
-        description,
-        tags,
-        slot: slotNumber,
-      });
+      const result = await cloudUploadManager.uploadWidgetFiles(
+        files,
+        slotNumber,
+        {
+          title,
+          description,
+          tags,
+          slot: slotNumber,
+        }
+      );
+
+      this.log(`Upload result for slot ${slotNumber}`, result);
 
       if (result.success) {
         this.log(`Upload successful for slot ${slotNumber}`, result);
@@ -588,6 +684,7 @@ class WidgetStudioManager {
         // Update stats
         this.updateStudioStats();
       } else {
+        this.error(`Upload failed for slot ${slotNumber}`, result);
         throw new Error(result.message || "Upload failed");
       }
     } catch (error) {
