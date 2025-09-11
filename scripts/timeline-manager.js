@@ -246,8 +246,11 @@ async function loadWidgetIntoIframe(project, iframeEl) {
 
     const fileMap = {};
     files.forEach((f) => {
-      if (f && f.fileName && f.downloadURL) {
-        fileMap[f.fileName] = f.downloadURL;
+      if (!f) return;
+      const name = f.fileName || f.name;
+      const url = f.downloadURL || f.url || f.downloadUrl;
+      if (name && url) {
+        fileMap[name] = url;
       }
     });
 
@@ -270,6 +273,9 @@ async function loadWidgetIntoIframe(project, iframeEl) {
 
     DEBUG.log("Timeline Manager: Loading widget HTML", { htmlFileName });
     const res = await fetch(fileMap[htmlFileName]);
+    if (!res.ok) {
+      throw new Error(`Failed to fetch HTML (${res.status})`);
+    }
     const originalHtml = await res.text();
 
     const resolveMappedUrl = (path) => {
@@ -297,6 +303,11 @@ async function loadWidgetIntoIframe(project, iframeEl) {
     DEBUG.error("Timeline Manager: Error preparing widget iframe", error);
     throw error;
   }
+}
+
+// Provide a small helper to re-render a specific card; for now, re-render all
+function renderWidgetCard(index) {
+  renderAllWidgetCards();
 }
 
 // Initialize timeline functionality

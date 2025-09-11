@@ -70,8 +70,8 @@ async function sendMessage() {
   }
 }
 
-// Get AI response using Genkit
-async function getAIResponse(message) {
+// Get AI response using Genkit (kept for future use; not exported to avoid name clash)
+async function getAIResponseLocal(message) {
   console.log("[CHATBOT] Getting AI response for:", message);
 
   try {
@@ -167,7 +167,7 @@ function addMessage(content, sender) {
 
 // Removed duplicate sendMessage function - using the one above
 
-// Get AI response using Genkit API
+// Get AI response using Genkit API (primary)
 async function getAIResponse(message) {
   try {
     // Import AI config
