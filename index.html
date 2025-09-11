@@ -8,6 +8,7 @@
     />
     <title>inQ - Platform - Your AI IDE Development Hub</title>
     <link rel="stylesheet" href="core/styles.css" />
+    <link rel="stylesheet" href="pages/page_styles/workflow-manager.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
       rel="stylesheet"
@@ -1053,6 +1054,742 @@
         /* Ensure fullscreen button doesn't overlap with banner on small screens */
         .header-banner-container ~ .fullscreen-toggle {
           top: 180px;
+        }
+      }
+
+      /* Customer Service Button Styles */
+      .customer-service-button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      .cs-button-main {
+        background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+        border: 3px solid var(--primary-neon);
+        border-radius: 50px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--bg-primary);
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow: 
+          0 8px 32px rgba(0, 255, 255, 0.4),
+          0 0 0 1px rgba(0, 255, 255, 0.2),
+          inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        min-width: 160px;
+        justify-content: center;
+      }
+
+      .cs-button-main:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow: 
+          0 12px 48px rgba(0, 255, 255, 0.6),
+          0 0 0 2px rgba(0, 255, 255, 0.4),
+          inset 0 2px 0 rgba(255, 255, 255, 0.4);
+        background: linear-gradient(135deg, var(--secondary-neon), var(--accent-neon));
+      }
+
+      .cs-button-main:active {
+        transform: translateY(-2px) scale(1.02);
+        transition: all 0.1s ease;
+      }
+
+      /* AI Tools Container */
+      .ai-tools-container {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        z-index: 1000;
+      }
+
+      /* Workflow Manager Button */
+      .workflow-manager-button {
+        position: relative;
+        cursor: pointer;
+        transition: all 0.3s ease;
+      }
+
+      .wm-button-main {
+        background: linear-gradient(135deg, #ff6b6b, #ff8e8e);
+        border: 3px solid #ff4444;
+        border-radius: 50px;
+        padding: 12px 20px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+        transition: all 0.3s ease;
+        min-width: 120px;
+        justify-content: center;
+      }
+
+      .wm-button-main:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(255, 107, 107, 0.4);
+        background: linear-gradient(135deg, #ff5252, #ff7979);
+      }
+
+      .wm-button-main:active {
+        transform: scale(0.95);
+        box-shadow: 0 2px 8px rgba(255, 107, 107, 0.4);
+      }
+
+      .wm-icon {
+        font-size: 18px;
+        animation: workflowPulse 2s ease-in-out infinite;
+      }
+
+      .wm-text {
+        font-family: "JetBrains Mono", monospace;
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .wm-pulse-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border: 2px solid #ff6b6b;
+        border-radius: 50px;
+        animation: workflowPulseRing 2s ease-in-out infinite;
+        pointer-events: none;
+      }
+
+      @keyframes workflowPulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+      }
+
+      @keyframes workflowPulseRing {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.4);
+          opacity: 0;
+        }
+      }
+
+      .cs-icon {
+        font-size: 20px;
+        animation: csIconBounce 2s ease-in-out infinite;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+
+      .cs-text {
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .cs-pulse-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border: 2px solid var(--primary-neon);
+        border-radius: 50px;
+        opacity: 0;
+        animation: csPulseRing 3s ease-out infinite;
+        pointer-events: none;
+      }
+
+      .cs-notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: var(--error-neon);
+        color: var(--bg-primary);
+        border: 2px solid var(--bg-primary);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        font-family: "JetBrains Mono", monospace;
+        box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+        animation: csBadgePulse 1.5s ease-in-out infinite;
+      }
+
+      /* Animations */
+      @keyframes csIconBounce {
+        0%, 100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-2px);
+        }
+      }
+
+      @keyframes csPulseRing {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.4);
+          opacity: 0;
+        }
+      }
+
+      @keyframes csBadgePulse {
+        0%, 100% {
+          transform: scale(1);
+          box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+        }
+        50% {
+          transform: scale(1.1);
+          box-shadow: 0 4px 16px rgba(255, 68, 68, 0.6);
+        }
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .customer-service-button {
+          bottom: 20px;
+          right: 20px;
+        }
+
+        .cs-button-main {
+          padding: 12px 20px;
+          font-size: 12px;
+          min-width: 140px;
+        }
+
+        .cs-icon {
+          font-size: 18px;
+        }
+
+        .cs-notification-badge {
+          width: 20px;
+          height: 20px;
+          font-size: 10px;
+          top: -6px;
+          right: -6px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .customer-service-button {
+          bottom: 15px;
+          right: 15px;
+        }
+
+        .cs-button-main {
+          padding: 10px 16px;
+          font-size: 11px;
+          min-width: 120px;
+          gap: 8px;
+        }
+
+        .cs-icon {
+          font-size: 16px;
+        }
+      }
+
+      /* Hide on very small screens or when banner is open */
+      @media (max-width: 360px) {
+        .customer-service-button {
+          bottom: 10px;
+          right: 10px;
+        }
+
+        .cs-button-main {
+          padding: 8px 12px;
+          font-size: 10px;
+          min-width: 100px;
+        }
+
+        .cs-text {
+          display: none;
+        }
+      }
+
+      /* Ensure it doesn't overlap with other elements */
+      .customer-service-button {
+        z-index: 9998;
+      }
+
+      /* Animation for first appearance */
+      .customer-service-button {
+        animation: csSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      @keyframes csSlideIn {
+        0% {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Chatbot Card Styles */
+      .chatbot-card {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: min(450px, 35vw);
+        height: min(600px, 70vh);
+        background: var(--bg-secondary);
+        border: 3px solid var(--primary-neon);
+        border-radius: 16px;
+        box-shadow: 
+          0 20px 60px rgba(0, 255, 255, 0.3),
+          0 0 0 1px rgba(0, 255, 255, 0.2),
+          inset 0 2px 0 rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%) translateY(20px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 9999;
+        backdrop-filter: blur(15px);
+        overflow: hidden;
+      }
+
+      .chatbot-card.open {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+
+      .chatbot-card.minimized {
+        height: 70px;
+        width: min(350px, 28vw);
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+
+      .chatbot-card.minimized .chatbot-card-body {
+        display: none;
+      }
+
+      .chatbot-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(135deg, var(--bg-tertiary), var(--bg-secondary));
+        border-bottom: 2px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .chatbot-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chatbot-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: var(--bg-primary);
+        border: 2px solid var(--primary-neon);
+        box-shadow: 0 4px 12px rgba(0, 255, 255, 0.4);
+      }
+
+      .chatbot-title h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .chatbot-status {
+        color: var(--success-neon);
+        font-size: 12px;
+        font-family: "JetBrains Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .chatbot-status::before {
+        content: "●";
+        animation: statusPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes statusPulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+      }
+
+      .chatbot-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chatbot-minimize-btn,
+      .chatbot-close-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-neon);
+        background: var(--bg-primary);
+        color: var(--primary-neon);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        font-family: "JetBrains Mono", monospace;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        position: relative;
+        z-index: 10;
+      }
+
+      .chatbot-minimize-btn:hover {
+        background: var(--warning-neon);
+        border-color: var(--warning-neon);
+        color: var(--bg-primary);
+        transform: scale(1.1);
+      }
+
+      .chatbot-close-btn:hover {
+        background: var(--error-neon);
+        border-color: var(--error-neon);
+        color: var(--bg-primary);
+        transform: scale(1.1);
+      }
+
+      .chatbot-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .message {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+        background: var(--bg-tertiary);
+        border: 2px solid var(--primary-neon);
+      }
+
+      .user-message .message-avatar {
+        background: var(--primary-neon);
+        color: var(--bg-primary);
+      }
+
+      .ai-message .message-avatar {
+        background: var(--secondary-neon);
+        color: var(--bg-primary);
+      }
+
+      .message-content {
+        flex: 1;
+        background: var(--bg-secondary);
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--primary-neon);
+        box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
+        position: relative;
+      }
+
+      .user-message .message-content {
+        background: rgba(0, 255, 255, 0.1);
+        border-color: var(--primary-neon);
+      }
+
+      .ai-message .message-content {
+        background: rgba(255, 0, 255, 0.1);
+        border-color: var(--secondary-neon);
+      }
+
+      .message-content p {
+        margin: 0;
+        color: var(--text-primary);
+        line-height: 1.5;
+        font-size: 14px;
+      }
+
+      .chatbot-input-container {
+        display: flex;
+        padding: 16px;
+        gap: 12px;
+        background: var(--bg-secondary);
+        border-top: 2px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        background: var(--bg-primary);
+        border: 2px solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .chatbot-input:focus {
+        border-color: var(--secondary-neon);
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+      }
+
+      .chatbot-send-btn {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(135deg, var(--primary-neon), var(--secondary-neon));
+        border: 2px solid var(--primary-neon);
+        border-radius: 12px;
+        color: var(--bg-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      .chatbot-send-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+      }
+
+      .chatbot-send-btn:active {
+        transform: translateY(0) scale(1);
+      }
+
+      .chatbot-suggestions {
+        padding: 16px;
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .suggestions-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        margin: 0 0 12px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .suggestion-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .suggestion-chip {
+        background: rgba(0, 255, 255, 0.1);
+        border: 1px solid var(--primary-neon);
+        color: var(--primary-neon);
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .suggestion-chip:hover {
+        background: rgba(0, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+      }
+
+      .typing {
+        opacity: 0.7;
+      }
+
+      .typing .message-content p::after {
+        content: "...";
+        animation: typingDots 1.5s infinite;
+      }
+
+      @keyframes typingDots {
+        0%, 20% { content: "..."; }
+        40% { content: "...."; }
+        60% { content: "....."; }
+        80%, 100% { content: "......"; }
+      }
+
+      /* Responsive breakpoints for chatbot card */
+      @media (max-width: 1200px) {
+        .chatbot-card {
+          width: min(400px, 40vw);
+          height: min(550px, 65vh);
+        }
+        
+        .chatbot-card.minimized {
+          width: min(320px, 32vw);
+          height: 65px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .chatbot-card {
+          width: calc(100vw - 40px);
+          height: min(500px, 60vh);
+          bottom: 20px;
+          right: 20px;
+          left: 20px;
+        }
+
+        .chatbot-card.minimized {
+          width: calc(100vw - 40px);
+          height: 60px;
+        }
+
+        .chatbot-messages {
+          padding: 16px;
+        }
+
+        .message-avatar {
+          width: 28px;
+          height: 28px;
+          font-size: 12px;
+        }
+
+        .message-content {
+          padding: 10px 12px;
+        }
+
+        .message-content p {
+          font-size: 13px;
+        }
+
+        .chatbot-input-container {
+          padding: 12px;
+        }
+
+        .chatbot-input {
+          font-size: 13px;
+          padding: 10px 12px;
+        }
+
+        .chatbot-send-btn {
+          width: 40px;
+          height: 40px;
+          font-size: 14px;
+        }
+
+        .suggestion-chips {
+          gap: 4px;
+        }
+
+        .suggestion-chip {
+          padding: 4px 8px;
+          font-size: 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .chatbot-card {
+          width: calc(100vw - 20px);
+          bottom: 15px;
+          right: 10px;
+          left: 10px;
+          height: min(450px, 55vh);
+        }
+
+        .chatbot-card.minimized {
+          width: calc(100vw - 20px);
+          height: 55px;
+        }
+
+        .chatbot-header-info {
+          gap: 8px;
+        }
+
+        .chatbot-avatar {
+          width: 32px;
+          height: 32px;
+          font-size: 16px;
+        }
+
+        .chatbot-title h3 {
+          font-size: 14px;
+        }
+
+        .chatbot-status {
+          font-size: 10px;
+        }
+
+        .chatbot-minimize-btn,
+        .chatbot-close-btn {
+          width: 24px;
+          height: 24px;
+          font-size: 12px;
         }
       }
     </style>
@@ -2343,6 +3080,160 @@
       "
     ></div>
 
+    <!-- Floating AI Tools Buttons -->
+    <div class="ai-tools-container">
+      <!-- AI Assistant Button -->
+      <div id="customerServiceButton" class="customer-service-button">
+        <div class="cs-button-main" onclick="openChatbot()">
+          <div class="cs-icon">🤖</div>
+          <div class="cs-text">AI Assistant</div>
+        </div>
+        <div class="cs-pulse-ring"></div>
+        <div class="cs-notification-badge" id="csNotificationBadge" style="display: none;">1</div>
+      </div>
+
+      <!-- Workflow Manager Button -->
+      <div id="workflowManagerButton" class="workflow-manager-button">
+        <div class="wm-button-main" onclick="openWorkflowManager()">
+          <div class="wm-icon">⚙️</div>
+          <div class="wm-text">Workflows</div>
+        </div>
+        <div class="wm-pulse-ring"></div>
+      </div>
+    </div>
+
+    <!-- AI Chatbot Card -->
+    <div id="chatbotCard" class="chatbot-card">
+      <div class="chatbot-card-header">
+        <div class="chatbot-header-info">
+          <div class="chatbot-avatar">🤖</div>
+          <div class="chatbot-title">
+            <h3>AI Assistant</h3>
+            <span class="chatbot-status">Online</span>
+          </div>
+        </div>
+        <div class="chatbot-controls">
+          <button class="chatbot-minimize-btn" id="chatbotMinimizeBtn" title="Minimize">
+            <span>−</span>
+          </button>
+          <button class="chatbot-close-btn" id="chatbotCloseBtn" title="Close">
+            <span>×</span>
+          </button>
+        </div>
+      </div>
+      
+      <div class="chatbot-card-body">
+        <div class="chatbot-messages" id="chatMessages">
+          <div class="message ai-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <p>Hello! I'm your AI assistant. I can help you understand the features of this application, answer questions about widgets, and guide you through the platform. What would you like to know?</p>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chatbot-input-container">
+          <input type="text" id="chatInput" class="chatbot-input" placeholder="Ask me anything..." maxlength="500">
+          <button id="sendChatBtn" class="chatbot-send-btn">
+            <span class="send-icon">📤</span>
+          </button>
+        </div>
+        
+        <div class="chatbot-suggestions">
+          <p class="suggestions-title">Quick questions:</p>
+          <div class="suggestion-chips">
+            <button class="suggestion-chip" data-question="What is this application about?">What is this app about?</button>
+            <button class="suggestion-chip" data-question="How do I upload a widget?">How do I upload widgets?</button>
+            <button class="suggestion-chip" data-question="What are the main features?">What are the main features?</button>
+            <button class="suggestion-chip" data-question="How do I edit my profile?">How do I edit my profile?</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Workflow Manager Modal -->
+    <div id="workflowManagerModal" class="modal" style="display: none;">
+      <div class="modal-content workflow-manager-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">🤖 AI Agent Workflow Manager</h2>
+          <span class="close-button workflow-manager-close-button">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="workflow-manager-container">
+            <!-- Workflow Tabs -->
+            <div class="workflow-tabs">
+              <button class="tab-button active" data-tab="workflows">Workflows</button>
+              <button class="tab-button" data-tab="templates">Templates</button>
+              <button class="tab-button" data-tab="scheduled">Scheduled</button>
+              <button class="tab-button" data-tab="history">History</button>
+            </div>
+
+            <!-- Workflows Tab -->
+            <div id="workflows-tab" class="tab-content active">
+              <div class="workflow-header">
+                <h3>Available Workflows</h3>
+                <button id="createWorkflowBtn" class="btn btn-primary">
+                  <span class="btn-icon">➕</span>
+                  Create Workflow
+                </button>
+              </div>
+              
+              <div class="workflow-list" id="workflowList">
+                <!-- Workflows will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Templates Tab -->
+            <div id="templates-tab" class="tab-content">
+              <div class="template-header">
+                <h3>Workflow Templates</h3>
+                <p>Choose from pre-built workflow templates to get started quickly</p>
+              </div>
+              
+              <div class="template-grid" id="templateGrid">
+                <!-- Templates will be loaded here -->
+              </div>
+            </div>
+
+            <!-- Scheduled Tab -->
+            <div id="scheduled-tab" class="tab-content">
+              <div class="scheduled-header">
+                <h3>Scheduled Workflows</h3>
+                <button id="scheduleWorkflowBtn" class="btn btn-secondary">
+                  <span class="btn-icon">⏰</span>
+                  Schedule Workflow
+                </button>
+              </div>
+              
+              <div class="scheduled-list" id="scheduledList">
+                <!-- Scheduled workflows will be loaded here -->
+              </div>
+            </div>
+
+            <!-- History Tab -->
+            <div id="history-tab" class="tab-content">
+              <div class="history-header">
+                <h3>Workflow Execution History</h3>
+                <div class="history-filters">
+                  <select id="statusFilter">
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="failed">Failed</option>
+                    <option value="running">Running</option>
+                  </select>
+                  <input type="date" id="dateFilter" placeholder="Filter by date">
+                </div>
+              </div>
+              
+              <div class="history-list" id="historyList">
+                <!-- History will be loaded here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Missing DOM Elements for Legacy Compatibility -->
     <div id="profile-banner" style="display: none">
       <div id="profileName">User</div>
@@ -2493,5 +3384,7 @@
     ></script>
     <script type="module" src="scripts/upload/cloud-upload.js"></script>
     <script type="module" src="scripts/social/social-features.js"></script>
+    <script type="module" src="pages/page_modals/modal_scripts/chatbot.js"></script>
+    <script type="module" src="pages/page_modals/modal_scripts/workflow-manager.js"></script>
   </body>
 </html>

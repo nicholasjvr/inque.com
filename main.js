@@ -670,10 +670,60 @@ function initializeAdditionalModals() {
     }
   };
 
+  // Global function to open Chatbot card
+  window.openChatbot = function () {
+    DEBUG.log("Opening Chatbot card");
+    const chatbotCard = document.getElementById("chatbotCard");
+    if (chatbotCard) {
+      chatbotCard.classList.add("open");
+      chatbotCard.classList.remove("minimized");
+
+      // Initialize chatbot when card opens
+      setTimeout(() => {
+        if (typeof initializeChatbot === "function") {
+          initializeChatbot();
+          DEBUG.log("Chatbot initialized successfully");
+        } else {
+          DEBUG.warn("initializeChatbot function not found");
+        }
+      }, 100);
+
+      DEBUG.log("Chatbot card opened successfully");
+    } else {
+      DEBUG.error("Chatbot card not found");
+      console.error("Chatbot card element not found in DOM");
+    }
+  };
+
+  // Global function to open Workflow Manager modal
+  window.openWorkflowManager = function () {
+    DEBUG.log("Opening Workflow Manager modal");
+    const workflowModal = document.getElementById("workflowManagerModal");
+    if (workflowModal) {
+      workflowModal.style.display = "block";
+
+      // Initialize workflow manager when modal opens
+      setTimeout(() => {
+        if (typeof initializeWorkflowManager === "function") {
+          initializeWorkflowManager();
+          DEBUG.log("Workflow Manager initialized successfully");
+        } else {
+          DEBUG.warn("initializeWorkflowManager function not found");
+        }
+      }, 100);
+
+      DEBUG.log("Workflow Manager modal opened successfully");
+    } else {
+      DEBUG.error("Workflow Manager modal not found");
+      console.error("Workflow Manager modal element not found in DOM");
+    }
+  };
+
   DEBUG.log("Additional modals initialization completed");
 
   // Debug function to check modal status
   window.debugModals = function () {
+    const chatbotCard = document.getElementById("chatbotCard");
     DEBUG.log("=== MODAL DEBUG INFO ===");
     DEBUG.log("Widget Studio Modal:", {
       element: !!widgetStudioModal,
@@ -685,9 +735,15 @@ function initializeAdditionalModals() {
       display: editProfileModal ? editProfileModal.style.display : "N/A",
       id: editProfileModal ? editProfileModal.id : "N/A",
     });
+    DEBUG.log("Chatbot Card:", {
+      element: !!chatbotCard,
+      classes: chatbotCard ? chatbotCard.className : "N/A",
+      id: chatbotCard ? chatbotCard.id : "N/A",
+    });
     DEBUG.log("Global functions:", {
       openWidgetStudio: typeof window.openWidgetStudio,
       openEditProfile: typeof window.openEditProfile,
+      openChatbot: typeof window.openChatbot,
     });
     DEBUG.log("=== END MODAL DEBUG ===");
   };

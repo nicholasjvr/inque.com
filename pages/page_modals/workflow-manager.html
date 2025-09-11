@@ -1,0 +1,182 @@
+<!-- Workflow Manager Modal -->
+<div id="workflowManagerModal" class="modal">
+  <div class="modal-content workflow-manager-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">🤖 AI Agent Workflow Manager</h2>
+      <span class="close-button workflow-manager-close-button">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="workflow-manager-container">
+        <!-- Workflow Tabs -->
+        <div class="workflow-tabs">
+          <button class="tab-button active" data-tab="workflows">
+            Workflows
+          </button>
+          <button class="tab-button" data-tab="templates">Templates</button>
+          <button class="tab-button" data-tab="scheduled">Scheduled</button>
+          <button class="tab-button" data-tab="history">History</button>
+        </div>
+
+        <!-- Workflows Tab -->
+        <div id="workflows-tab" class="tab-content active">
+          <div class="workflow-header">
+            <h3>Available Workflows</h3>
+            <button id="createWorkflowBtn" class="btn btn-primary">
+              <span class="btn-icon">➕</span>
+              Create Workflow
+            </button>
+          </div>
+
+          <div class="workflow-list" id="workflowList">
+            <!-- Workflows will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Templates Tab -->
+        <div id="templates-tab" class="tab-content">
+          <div class="template-header">
+            <h3>Workflow Templates</h3>
+            <p>
+              Choose from pre-built workflow templates to get started quickly
+            </p>
+          </div>
+
+          <div class="template-grid" id="templateGrid">
+            <!-- Templates will be loaded here -->
+          </div>
+        </div>
+
+        <!-- Scheduled Tab -->
+        <div id="scheduled-tab" class="tab-content">
+          <div class="scheduled-header">
+            <h3>Scheduled Workflows</h3>
+            <button id="scheduleWorkflowBtn" class="btn btn-secondary">
+              <span class="btn-icon">⏰</span>
+              Schedule Workflow
+            </button>
+          </div>
+
+          <div class="scheduled-list" id="scheduledList">
+            <!-- Scheduled workflows will be loaded here -->
+          </div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history-tab" class="tab-content">
+          <div class="history-header">
+            <h3>Workflow Execution History</h3>
+            <div class="history-filters">
+              <select id="statusFilter">
+                <option value="">All Status</option>
+                <option value="completed">Completed</option>
+                <option value="failed">Failed</option>
+                <option value="running">Running</option>
+              </select>
+              <input type="date" id="dateFilter" placeholder="Filter by date" />
+            </div>
+          </div>
+
+          <div class="history-list" id="historyList">
+            <!-- History will be loaded here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Workflow Execution Modal -->
+<div id="workflowExecutionModal" class="modal">
+  <div class="modal-content workflow-execution-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">🚀 Executing Workflow</h2>
+      <span class="close-button workflow-execution-close-button">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="workflow-execution-container">
+        <div class="workflow-info">
+          <h3 id="executingWorkflowName">Workflow Name</h3>
+          <p id="executingWorkflowDescription">Workflow description</p>
+          <div class="workflow-progress">
+            <div class="progress-bar">
+              <div class="progress-fill" id="workflowProgress"></div>
+            </div>
+            <span class="progress-text" id="progressText">0%</span>
+          </div>
+        </div>
+
+        <div class="workflow-steps" id="workflowSteps">
+          <!-- Workflow steps will be shown here -->
+        </div>
+
+        <div
+          class="workflow-results"
+          id="workflowResults"
+          style="display: none"
+        >
+          <h4>Results</h4>
+          <div class="results-content" id="resultsContent">
+            <!-- Results will be displayed here -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Create Workflow Modal -->
+<div id="createWorkflowModal" class="modal">
+  <div class="modal-content create-workflow-modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">🛠️ Create Custom Workflow</h2>
+      <span class="close-button create-workflow-close-button">&times;</span>
+    </div>
+    <div class="modal-body">
+      <div class="create-workflow-container">
+        <form id="createWorkflowForm">
+          <div class="form-group">
+            <label for="workflowName">Workflow Name</label>
+            <input
+              type="text"
+              id="workflowName"
+              required
+              placeholder="Enter workflow name"
+            />
+          </div>
+
+          <div class="form-group">
+            <label for="workflowDescription">Description</label>
+            <textarea
+              id="workflowDescription"
+              placeholder="Describe what this workflow does"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label>Workflow Steps</label>
+            <div class="steps-container" id="stepsContainer">
+              <!-- Steps will be added here -->
+            </div>
+            <button type="button" id="addStepBtn" class="btn btn-secondary">
+              <span class="btn-icon">➕</span>
+              Add Step
+            </button>
+          </div>
+
+          <div class="form-actions">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              id="cancelCreateWorkflow"
+            >
+              Cancel
+            </button>
+            <button type="submit" class="btn btn-primary">
+              Create Workflow
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

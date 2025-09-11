@@ -17,6 +17,7 @@ export const AI_CONFIG = {
   TYPING_DELAY: 1000,
 
   FALLBACK_RESPONSES: {
+    // Core features
     features:
       "This application includes user profiles, widget management, interactive canvas, timeline management, and social features. What would you like to know more about?",
     widgets:
@@ -27,9 +28,42 @@ export const AI_CONFIG = {
       "Your profile shows your information, stats, and uploaded widgets. You can edit your profile, upload a photo, and customize your bio.",
     upload:
       "You can upload various file types including images, documents, and widget files. The system supports drag-and-drop and provides progress tracking.",
-    help: "I'm here to help! You can ask me about features, widgets, the canvas, profiles, or any other aspect of the application.",
+
+    // AI and automation features
+    ai: "This application includes AI-powered features like code analysis, security scanning, auto-fixing, and this chatbot assistant! The AI agents help with development workflow automation.",
+    agents:
+      "AI agents in this application include: code analyzer, security scanner, auto-fixer, documentation generator, and deployment automation tools.",
+    automation:
+      "The AI agents can automatically analyze your code, fix common issues, generate documentation, scan for security vulnerabilities, and help with deployment.",
+
+    // Development and technical
+    code: "This application supports JavaScript, HTML, CSS development with AI-powered code analysis, security scanning, and automated documentation generation.",
+    development:
+      "The development workflow includes AI agents for code quality, security scanning, auto-fixing, documentation, and deployment automation.",
+    security:
+      "Security features include AI-powered vulnerability scanning, automated security checks, and best practice recommendations.",
+
+    // User experience
+    help: "I'm here to help! You can ask me about features, widgets, the canvas, profiles, AI agents, or any other aspect of the application.",
+    getting_started:
+      "To get started: 1) Set up your profile, 2) Explore the canvas, 3) Upload some widgets, 4) Try the AI agents for code analysis!",
+    tutorial:
+      "Here's a quick tutorial: Start by editing your profile, then try the interactive canvas, upload a widget, and explore the AI-powered development tools.",
+
+    // Troubleshooting
+    error:
+      "If you're experiencing issues, try refreshing the page, checking your internet connection, or clearing your browser cache. The AI agents can also help diagnose problems.",
+    bug: "Found a bug? The AI agents can help analyze and fix common issues automatically. You can also report issues through the application's feedback system.",
+
+    // Advanced features
+    collaboration:
+      "Collaboration features include real-time canvas editing, shared projects, social interactions, and AI-powered code review assistance.",
+    integration:
+      "The application integrates with various services including Firebase for data storage, Google AI for intelligent features, and GitHub for version control.",
+
+    // Default fallback
     default:
-      "I'm here to help you understand this application! You can ask me about features, widgets, the canvas, profiles, or how to use different parts of the platform.",
+      "I'm here to help you understand this application! You can ask me about features, widgets, the canvas, profiles, AI agents, or how to use different parts of the platform.",
   },
 };
 
