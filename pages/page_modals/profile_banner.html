@@ -1,0 +1,256 @@
+<!-- Enhanced Profile Hub - Main Navigation & Control Center -->
+<div id="profileHub" class="profile-hub" data-state="minimized">
+  <!-- Hub Core Container -->
+  <div class="hub-core">
+    <!-- User Section -->
+    <div class="hub-user-section">
+      <div class="user-avatar-container">
+        <div id="hubUserAvatar" class="hub-user-avatar">
+          <span class="avatar-emoji">👤</span>
+          <div class="avatar-status-indicator" id="hubStatusIndicator"></div>
+        </div>
+      </div>
+
+      <div class="hub-user-info">
+        <div id="hubUserName" class="hub-user-name">Guest</div>
+        <div id="hubUserStatus" class="hub-user-status">Click to customize</div>
+        <div id="hubUserLevel" class="hub-user-level">LVL • ?</div>
+      </div>
+    </div>
+
+    <!-- Hub Controls -->
+    <div class="hub-controls">
+      <button
+        id="hubChatbotToggle"
+        class="hub-control-btn"
+        title="AI Assistant"
+      >
+        <span class="btn-icon">🤖</span>
+        <span class="btn-pulse" id="chatbotPulse"></span>
+      </button>
+
+      <button
+        id="hubCustomizeToggle"
+        class="hub-control-btn"
+        title="Customize Hub"
+      >
+        <span class="btn-icon">⚙️</span>
+      </button>
+
+      <button
+        id="hubAuthToggle"
+        class="hub-control-btn hub-auth-btn"
+        title="Login / Profile"
+      >
+        <span class="btn-icon">🔐</span>
+      </button>
+    </div>
+
+    <!-- Hub Expand/Collapse Button -->
+    <button id="hubToggleBtn" class="hub-toggle-btn" title="Expand Hub">
+      <span class="toggle-icon">⫷</span>
+    </button>
+  </div>
+
+  <!-- Expanded Hub Content -->
+  <div class="hub-expanded-content" id="hubExpandedContent">
+    <!-- Navigation Links -->
+    <div class="hub-navigation">
+      <h3 class="nav-section-title">Navigate</h3>
+      <div class="nav-links-grid">
+        <a href="pages/my-projects.html" class="nav-link" data-color="primary">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Projects</span>
+        </a>
+        <a
+          href="pages/widget_studio.html"
+          class="nav-link"
+          data-color="secondary"
+        >
+          <span class="nav-icon">🎨</span>
+          <span class="nav-label">Studio</span>
+        </a>
+        <a href="pages/explore.html" class="nav-link" data-color="accent">
+          <span class="nav-icon">🔍</span>
+          <span class="nav-label">Explore</span>
+        </a>
+        <a href="pages/users.html" class="nav-link" data-color="success">
+          <span class="nav-icon">👥</span>
+          <span class="nav-label">Community</span>
+        </a>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="hub-quick-actions">
+      <h3 class="nav-section-title">Quick Actions</h3>
+      <div class="quick-actions-grid">
+        <button class="quick-action-btn" data-action="newWidget">
+          <span class="action-icon">➕</span>
+          <span class="action-label">New Widget</span>
+        </button>
+        <button class="quick-action-btn" data-action="shareProfile">
+          <span class="action-icon">🔗</span>
+          <span class="action-label">Share</span>
+        </button>
+        <button class="quick-action-btn" data-action="notifications">
+          <span class="action-icon">🔔</span>
+          <span class="action-label">Notifications</span>
+          <span class="notification-badge" id="hubNotificationBadge">0</span>
+        </button>
+        <button class="quick-action-btn" data-action="settings">
+          <span class="action-icon">⚙️</span>
+          <span class="action-label">Settings</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- User Stats (when logged in) -->
+    <div class="hub-user-stats" id="hubUserStats" style="display: none">
+      <h3 class="nav-section-title">Stats</h3>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <span class="stat-value" id="hubWidgetCount">0</span>
+          <span class="stat-label">Widgets</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="hubFollowerCount">0</span>
+          <span class="stat-label">Followers</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-value" id="hubViewCount">0</span>
+          <span class="stat-label">Views</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Integrated Sliding Chatbot -->
+  <div class="hub-chatbot-container" id="hubChatbotContainer">
+    <div class="chatbot-slider" id="chatbotSlider">
+      <!-- Chatbot Header -->
+      <div class="chatbot-header">
+        <div class="chatbot-title">
+          <span class="chatbot-icon">🤖</span>
+          <span>AI Assistant</span>
+        </div>
+        <div class="chatbot-controls">
+          <button
+            id="chatbotMinimize"
+            class="chatbot-control-btn"
+            title="Minimize"
+          >
+            −
+          </button>
+          <button id="chatbotClose" class="chatbot-control-btn" title="Close">
+            ×
+          </button>
+        </div>
+      </div>
+
+      <!-- Chatbot Content -->
+      <div class="chatbot-content">
+        <div class="chat-messages" id="hubChatMessages">
+          <div class="message ai-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <p>
+                Hi! I'm your AI assistant integrated into your ProfileHub. How
+                can I help you navigate or customize your experience?
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-container">
+          <input
+            type="text"
+            id="hubChatInput"
+            class="chat-input"
+            placeholder="Ask me anything..."
+            maxlength="500"
+          />
+          <button id="hubSendChatBtn" class="send-chat-btn">
+            <span class="btn-icon">📤</span>
+          </button>
+        </div>
+
+        <!-- Quick Commands -->
+        <div class="chat-quick-commands" id="hubChatCommands">
+          <button class="command-chip" data-command="/navigate projects">
+            🔗 Projects
+          </button>
+          <button class="command-chip" data-command="/help customize">
+            ⚙️ Customize
+          </button>
+          <button class="command-chip" data-command="/stats">📊 Stats</button>
+          <button class="command-chip" data-command="/help">❓ Help</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Customization Panel -->
+  <div class="hub-customization-panel" id="hubCustomizationPanel">
+    <div class="customization-content">
+      <h3>Customize Your Hub</h3>
+
+      <!-- Theme Selection -->
+      <div class="customization-section">
+        <label class="section-label">Theme</label>
+        <div class="theme-selector">
+          <button class="theme-option active" data-theme="neo-brutalist">
+            Neo
+          </button>
+          <button class="theme-option" data-theme="minimal">Minimal</button>
+          <button class="theme-option" data-theme="cyberpunk">Cyber</button>
+          <button class="theme-option" data-theme="custom">Custom</button>
+        </div>
+      </div>
+
+      <!-- Color Customization -->
+      <div class="customization-section">
+        <label class="section-label">Primary Color</label>
+        <input
+          type="color"
+          id="hubPrimaryColor"
+          class="color-picker"
+          value="#00f0ff"
+        />
+      </div>
+
+      <!-- Position Settings -->
+      <div class="customization-section">
+        <label class="section-label">Hub Position</label>
+        <select id="hubPosition" class="position-selector">
+          <option value="top-right" selected>Top Right</option>
+          <option value="top-left">Top Left</option>
+          <option value="bottom-left">Bottom Left</option>
+          <option value="bottom-right">Bottom Right</option>
+        </select>
+      </div>
+
+      <!-- Hub Size -->
+      <div class="customization-section">
+        <label class="section-label">Hub Size</label>
+        <input
+          type="range"
+          id="hubSize"
+          class="size-slider"
+          min="0.8"
+          max="1.5"
+          step="0.1"
+          value="1"
+        />
+      </div>
+
+      <div class="customization-actions">
+        <button id="saveCustomization" class="save-btn">Save Changes</button>
+        <button id="resetCustomization" class="reset-btn">Reset</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ProfileHub Overlay -->
+<div id="profileHubOverlay" class="profile-hub-overlay"></div>

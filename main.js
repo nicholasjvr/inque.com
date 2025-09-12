@@ -1700,207 +1700,6 @@ function initializeEnhancedScrollAndFullscreen() {
   }
 }
 
-// Create fullscreen toggle button
-function createFullscreenToggleButton() {
-  DEBUG.log("Creating fullscreen toggle button");
-
-  const toggleButton = document.createElement("button");
-  toggleButton.id = "fullscreenToggle";
-  toggleButton.className = "fullscreen-toggle";
-  toggleButton.innerHTML = "⛶";
-  toggleButton.title = "Toggle Fullscreen Mode (F11)";
-
-  // Add click event listener
-  toggleButton.addEventListener("click", toggleFullscreenMode);
-
-  // Add to DOM
-  document.body.appendChild(toggleButton);
-
-  DEBUG.log("Fullscreen toggle button created and added to DOM");
-}
-
-// Toggle fullscreen mode
-function toggleFullscreenMode() {
-  DEBUG.log("Toggling fullscreen mode", {
-    currentState: window.fullscreenState.isFullscreen,
-  });
-
-  const body = document.body;
-  const header = document.querySelector("header");
-  const footer = document.querySelector("footer");
-  const main = document.querySelector("main");
-
-  if (!window.fullscreenState.isFullscreen) {
-    // Enter fullscreen mode
-    DEBUG.log("Entering fullscreen mode");
-
-    // Store current scroll position
-    window.fullscreenState.originalScrollPosition = window.pageYOffset;
-
-    // Add fullscreen class to body
-    body.classList.add("fullscreen-mode");
-
-    // Hide header and footer
-    if (header) {
-      header.style.transform = "translateY(-100%)";
-      DEBUG.log("Header hidden");
-    }
-
-    if (footer) {
-      footer.style.transform = "translateY(100%)";
-      DEBUG.log("Footer hidden");
-    }
-
-    // Hide banner when entering fullscreen (since header is hidden)
-    updateBannerState("fullscreen-hidden", false);
-
-    // Adjust main content
-    if (main) {
-      main.style.height = "100vh";
-      main.style.paddingTop = "20px";
-      main.style.paddingBottom = "20px";
-      DEBUG.log("Main content adjusted for fullscreen");
-    }
-
-    // Update button icon
-    const toggleButton = document.getElementById("fullscreenToggle");
-    if (toggleButton) {
-      toggleButton.innerHTML = "⛷";
-      toggleButton.title = "Exit Fullscreen Mode (F11)";
-    }
-
-    window.fullscreenState.isFullscreen = true;
-
-    // Show success notification
-    if (window.showToast) {
-      window.showToast(
-        "Fullscreen mode activated! Press F11 or click the button to exit.",
-        "success",
-        3000
-      );
-    }
-  } else {
-    // Exit fullscreen mode
-    DEBUG.log("Exiting fullscreen mode");
-
-    // Remove fullscreen class from body
-    body.classList.remove("fullscreen-mode");
-
-    // Show header and footer
-    if (header) {
-      header.style.transform = "translateY(0)";
-      DEBUG.log("Header shown");
-    }
-
-    if (footer) {
-      footer.style.transform = "translateY(0)";
-      DEBUG.log("Footer shown");
-    }
-
-    // Restore banner when exiting fullscreen (unless it was previously closed)
-    const wasClosed = localStorage.getItem("bannerClosed");
-
-    if (wasClosed !== "true") {
-      updateBannerState("visible", true);
-      DEBUG.log("Banner restored after exiting fullscreen");
-    }
-
-    // Restore main content
-    if (main) {
-      main.style.height = "";
-      main.style.paddingTop = "";
-      main.style.paddingBottom = "";
-      DEBUG.log("Main content restored");
-    }
-
-    // Update button icon
-    const toggleButton = document.getElementById("fullscreenToggle");
-    if (toggleButton) {
-      toggleButton.innerHTML = "⛶";
-      toggleButton.title = "Toggle Fullscreen Mode (F11)";
-    }
-
-    window.fullscreenState.isFullscreen = false;
-
-    // Restore scroll position
-    setTimeout(() => {
-      window.scrollTo(0, window.fullscreenState.originalScrollPosition);
-      DEBUG.log("Scroll position restored", {
-        position: window.fullscreenState.originalScrollPosition,
-      });
-    }, 100);
-
-    // Show success notification
-    if (window.showToast) {
-      window.showToast("Fullscreen mode deactivated!", "info", 2000);
-    }
-  }
-
-  DEBUG.log("Fullscreen mode toggled successfully", {
-    newState: window.fullscreenState.isFullscreen,
-  });
-}
-
-// Setup scroll event listeners for enhanced behavior
-function setupScrollEventListeners() {
-  DEBUG.log("Setting up scroll event listeners");
-
-  let scrollTimeout;
-  let lastScrollTop = 0;
-
-  window.addEventListener(
-    "scroll",
-    () => {
-      const currentScrollTop = window.pageYOffset;
-      const scrollDirection = currentScrollTop > lastScrollTop ? "down" : "up";
-
-      // Clear existing timeout
-      clearTimeout(scrollTimeout);
-
-      // Set timeout for scroll end detection
-      scrollTimeout = setTimeout(() => {
-        DEBUG.log("Scroll ended", {
-          position: currentScrollTop,
-          direction: scrollDirection,
-        });
-      }, 150);
-
-      // Update last scroll position
-      lastScrollTop = currentScrollTop;
-
-      // Add scroll-based effects
-      handleScrollEffects(currentScrollTop, scrollDirection);
-    },
-    { passive: true }
-  );
-
-  DEBUG.log("Scroll event listeners setup complete");
-}
-
-// Handle scroll-based visual effects
-function handleScrollEffects(scrollTop, direction) {
-  const header = document.querySelector("header");
-  const fullscreenToggle = document.getElementById("fullscreenToggle");
-
-  // Auto-hide header on scroll down (DISABLED - interferes with hanging banner)
-  // TODO: Re-enable this feature with proper banner positioning
-  if (false && !window.fullscreenState.isFullscreen && header) {
-    if (direction === "down" && scrollTop > 100) {
-      header.style.transform = "translateY(-100%)";
-      DEBUG.log("Header auto-hidden on scroll down");
-    } else if (direction === "up" || scrollTop <= 100) {
-      header.style.transform = "translateY(0)";
-      DEBUG.log("Header shown on scroll up");
-    }
-  }
-
-  // Adjust fullscreen toggle opacity based on scroll
-  if (fullscreenToggle) {
-    const opacity = Math.max(0.3, 1 - scrollTop / 500);
-    fullscreenToggle.style.opacity = opacity;
-  }
-}
-
 // Setup keyboard shortcuts
 function setupKeyboardShortcuts() {
   DEBUG.log("Setting up keyboard shortcuts for fullscreen");
@@ -3219,14 +3018,14 @@ function initializeMobileDrawer() {
     // Toggle drawer open
     const openDrawer = () => {
       DEBUG.log("Opening mobile drawer");
-      mobileDrawer.classList.add("open");
+      mobileDrawer.classList.add("active");
       document.body.style.overflow = "hidden"; // Prevent background scrolling
     };
 
     // Toggle drawer closed
     const closeDrawer = () => {
       DEBUG.log("Closing mobile drawer");
-      mobileDrawer.classList.remove("open");
+      mobileDrawer.classList.remove("active");
       document.body.style.overflow = ""; // Restore scrolling
     };
 
@@ -3278,14 +3077,17 @@ function initializeMobileDrawer() {
 
     // Handle escape key
     document.addEventListener("keydown", (e) => {
-      if (e.key === "Escape" && mobileDrawer.classList.contains("open")) {
+      if (e.key === "Escape" && mobileDrawer.classList.contains("active")) {
         closeDrawer();
       }
     });
 
     // Handle window resize - close drawer on desktop
     window.addEventListener("resize", () => {
-      if (window.innerWidth > 768 && mobileDrawer.classList.contains("open")) {
+      if (
+        window.innerWidth > 768 &&
+        mobileDrawer.classList.contains("active")
+      ) {
         closeDrawer();
       }
     });

@@ -706,198 +706,27 @@ class SocialAuthManager {
 
   updateUIForLoggedInUser() {
     this.log("Updating UI for logged in user");
-    // Use the unified methods
-    if (this.userProfile) {
-      this.updateProfileBanner(this.userProfile, true);
-      this.updateSidebarUserInfo(
-        this.userProfile,
-        true,
-        this.currentUser?.email
-      );
-    }
+    // UI updates are now handled by ProfileHub
+    // Just emit auth state change for ProfileHub to handle
+    this.dispatchAuthStateEvent(this.currentUser);
   }
 
   updateUIForLoggedOutUser() {
     this.log("Updating UI for logged out user");
-    const defaultProfile = {
-      name: "Welcome to inque!",
-      bio: "This is a space to create, share, and display your interactive projects. Sign up to start building your personal widget dashboard.",
-      lvl: "LVL • ?",
-      type: "TYPE • ?",
-      role: "ROLE • GUEST",
-      photoURL: this.getDefaultAvatar(),
-    };
-
-    this.updateProfileBanner(defaultProfile, false);
-    this.updateSidebarUserInfo(defaultProfile, false);
+    // UI updates are now handled by ProfileHub
+    // Just emit auth state change for ProfileHub to handle
+    this.dispatchAuthStateEvent(null);
   }
 
-  // Unified UI update methods
+  // Legacy method - UI updates now handled by ProfileHub
   updateProfileBanner(profileData, isLoggedIn = false) {
-    this.log("Updating profile banner", { isLoggedIn, profileData });
-
-    const {
-      profileName,
-      profileBio,
-      profileLvl,
-      profileType,
-      profileRole,
-      profilePicContainer,
-      profileStatusIndicator,
-      profileStatus,
-    } = this.domElements;
-
-    this.log("DOM elements found", {
-      profileName: !!profileName,
-      profileBio: !!profileBio,
-      profileLvl: !!profileLvl,
-      profileType: !!profileType,
-      profileRole: !!profileRole,
-      profilePicContainer: !!profilePicContainer,
-      profileStatusIndicator: !!profileStatusIndicator,
-      profileStatus: !!profileStatus,
-    });
-
-    if (profileName) {
-      profileName.textContent = profileData.name;
-      this.log("Updated profile name", profileData.name);
-    }
-    if (profileBio) {
-      profileBio.textContent = profileData.bio;
-      this.log("Updated profile bio", profileData.bio);
-    }
-    if (profileLvl) {
-      profileLvl.textContent = profileData.lvl.replace("LVL • ", "");
-      this.log("Updated profile level", profileData.lvl);
-    }
-    if (profileType) {
-      profileType.textContent = profileData.type.replace("TYPE • ", "");
-      this.log("Updated profile type", profileData.type);
-    }
-    if (profileRole) {
-      profileRole.textContent = profileData.role.replace("ROLE • ", "");
-      this.log("Updated profile role", profileData.role);
-    }
-
-    if (profilePicContainer) {
-      profilePicContainer.style.backgroundImage = `url(${
-        profileData.photoURL || this.getDefaultAvatar()
-      })`;
-      this.log("Updated profile picture", profileData.photoURL);
-    }
-
-    if (profileStatusIndicator) {
-      profileStatusIndicator.className = `profile-status-indicator ${
-        isLoggedIn ? "online" : "offline"
-      }`;
-      this.log("Updated status indicator", isLoggedIn ? "online" : "offline");
-    }
-
-    if (profileStatus) {
-      const statusBadge = profileStatus.querySelector(".status-badge");
-      if (statusBadge) {
-        statusBadge.className = `status-badge ${isLoggedIn ? "user" : "guest"}`;
-        statusBadge.textContent = isLoggedIn ? "User" : "Guest";
-        this.log("Updated status badge", isLoggedIn ? "user" : "guest");
-      }
-    }
-
-    this.log("Profile banner update completed");
+    this.log("Profile banner update delegated to ProfileHub");
+    // ProfileHub will handle this via auth state change events
   }
 
   updateSidebarUserInfo(profileData, isLoggedIn = false, userEmail = null) {
-    this.log("Updating sidebar user info", {
-      isLoggedIn,
-      profileData,
-      userEmail,
-    });
-
-    const {
-      sidebarAvatar,
-      sidebarUserName,
-      sidebarUserEmail,
-      sidebarUserStatus,
-      sidebarStatusDot,
-      sidebarLoginBtn,
-      sidebarUserActions,
-      sidebarStats,
-      sidebarLvl,
-      sidebarType,
-      sidebarRole,
-    } = this.domElements;
-
-    this.log("Sidebar DOM elements found", {
-      sidebarAvatar: !!sidebarAvatar,
-      sidebarUserName: !!sidebarUserName,
-      sidebarUserEmail: !!sidebarUserEmail,
-      sidebarUserStatus: !!sidebarUserStatus,
-      sidebarStatusDot: !!sidebarStatusDot,
-      sidebarLoginBtn: !!sidebarLoginBtn,
-      sidebarUserActions: !!sidebarUserActions,
-      sidebarStats: !!sidebarStats,
-      sidebarLvl: !!sidebarLvl,
-      sidebarType: !!sidebarType,
-      sidebarRole: !!sidebarRole,
-    });
-
-    if (sidebarAvatar) {
-      sidebarAvatar.style.backgroundImage = `url(${
-        profileData.photoURL || this.getDefaultAvatar()
-      })`;
-      this.log("Updated sidebar avatar", profileData.photoURL);
-    }
-
-    if (sidebarUserName) {
-      sidebarUserName.textContent = isLoggedIn ? profileData.name : "Guest";
-      this.log(
-        "Updated sidebar user name",
-        isLoggedIn ? profileData.name : "Guest"
-      );
-    }
-
-    if (sidebarUserEmail) {
-      if (isLoggedIn && userEmail) {
-        sidebarUserEmail.textContent = userEmail;
-        sidebarUserEmail.style.display = "block";
-        this.log("Updated sidebar email", userEmail);
-      } else {
-        sidebarUserEmail.style.display = "none";
-        this.log("Hidden sidebar email");
-      }
-    }
-
-    if (sidebarUserStatus && sidebarStatusDot) {
-      sidebarUserStatus.innerHTML = isLoggedIn
-        ? '<span class="status-dot logged-in"></span> Logged in'
-        : '<span class="status-dot guest"></span> Not logged in';
-    }
-
-    if (sidebarLoginBtn) {
-      sidebarLoginBtn.style.display = isLoggedIn ? "none" : "block";
-    }
-
-    if (sidebarUserActions) {
-      sidebarUserActions.style.display = isLoggedIn ? "block" : "none";
-    }
-
-    if (sidebarStats) {
-      sidebarStats.style.display = isLoggedIn ? "block" : "none";
-    }
-
-    if (sidebarLvl)
-      sidebarLvl.textContent = isLoggedIn
-        ? profileData.lvl.replace("LVL • ", "")
-        : "?";
-    if (sidebarType)
-      sidebarType.textContent = isLoggedIn
-        ? profileData.type.replace("TYPE • ", "")
-        : "?";
-    if (sidebarRole)
-      sidebarRole.textContent = isLoggedIn
-        ? profileData.role.replace("ROLE • ", "")
-        : "GUEST";
-
-    this.log("Sidebar user info update completed");
+    this.log("Sidebar user info update delegated to ProfileHub");
+    // ProfileHub will handle this via auth state change events
   }
 
   // Notification system methods
@@ -1517,7 +1346,7 @@ document.addEventListener("DOMContentLoaded", () => {
         submitBtn.disabled = true;
 
         // Check if reCAPTCHA is available (optional for development)
-        if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+        if (typeof grecaptcha !== "undefined" && grecaptcha.enterprise) {
           grecaptcha.enterprise.ready(async () => {
             const token = await grecaptcha.enterprise.execute(
               "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
@@ -1526,125 +1355,114 @@ document.addEventListener("DOMContentLoaded", () => {
             console.log("reCAPTCHA token (Sign Up):", token);
           });
         } else {
-          console.log("reCAPTCHA not available, proceeding without verification (development mode)");
+          console.log(
+            "reCAPTCHA not available, proceeding without verification (development mode)"
+          );
         }
 
-        try {
-          // Create the user account
-          const userCredential = await createUserWithEmailAndPassword(
-            auth,
-            email,
-            password
-          );
-          const user = userCredential.user;
-          console.log("User created:", user.uid);
-
-            // Create user profile in Firestore
-            const newUserProfile = {
-              name: email.split("@")[0],
-              bio: "A new user ready to create amazing things.",
-              lvl: "LVL • 1",
-              type: "TYPE • NEWB",
-              role: "ROLE • USER",
-              photoURL: defaultProfile.photoURL,
-              email: email,
-              createdAt: serverTimestamp(),
-              lastLogin: serverTimestamp(),
-            };
-
-            console.log("Creating user profile in Firestore...");
-            await setDoc(doc(db, "users", user.uid), newUserProfile);
-            console.log("User profile created in Firestore");
-
-            // Create widget slots in Storage (only if storage is available)
-            try {
-              console.log("Creating widget slots in Storage...");
-              const placeholderHtml = new Blob(
-                [
-                  `<html>
-                  <head><title>Widget Placeholder</title></head>
-                  <body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;font-family:Arial,sans-serif;'>
-                    <div style='text-align:center;'>
-                      <h2>Widget Placeholder</h2>
-                      <p>This is a placeholder widget.</p>
-                      <p>Upload your files to replace this!</p>
-                      <img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;border-radius:10px;'/>
-                    </div>
-                  </body>
-                </html>`,
-                ],
-                { type: "text/html" }
-              );
-
-              // Create widget slots
-              for (let i = 1; i <= 3; i++) {
-                const storageRef = ref(
-                  storage,
-                  `users/${user.uid}/app-widget-${i}/index.html`
-                );
-                await uploadBytes(storageRef, placeholderHtml);
-                console.log(`Created widget slot ${i}`);
-              }
-              console.log("All widget slots created successfully");
-            } catch (storageError) {
-              console.warn(
-                "Storage setup failed (this is okay for now):",
-                storageError
-              );
-              // Don't fail the signup if storage fails
-            }
-
-            // Create initial notifications
-            try {
-              await socialAuth.createNotification(user.uid, {
-                type: "system",
-                title: "Welcome to inque! 🎉",
-                message:
-                  "Your account has been created successfully. Start by uploading your first widget!",
-                icon: "🎉",
-              });
-            } catch (notificationError) {
-              console.warn(
-                "Failed to create welcome notification:",
-                notificationError
-              );
-            }
-
-            console.log("Signup completed successfully!");
-            socialAuth.showToast(
-              "Account created successfully! Welcome to inque! 🎉",
-              "success",
-              5000
-            );
-          } catch (error) {
-            console.error("Signup error:", error);
-
-            // Provide user-friendly error messages
-            let errorMessage = "Signup failed. Please try again.";
-            if (error.code === "auth/email-already-in-use") {
-              errorMessage =
-                "This email is already registered. Please try logging in instead.";
-            } else if (error.code === "auth/weak-password") {
-              errorMessage =
-                "Password is too weak. Please choose a stronger password.";
-            } else if (error.code === "auth/invalid-email") {
-              errorMessage = "Please enter a valid email address.";
-            }
-
-            socialAuth.showToast(errorMessage, "error", 5000);
-          } finally {
-            // Reset button state
-            submitBtn.textContent = originalText;
-            submitBtn.disabled = false;
-          }
-        });
-      } catch (error) {
-        console.error("reCAPTCHA error:", error);
-        socialAuth.showToast(
-          "Please complete the reCAPTCHA verification.",
-          "error"
+        // Create the user account
+        const userCredential = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
         );
+        const user = userCredential.user;
+        console.log("User created:", user.uid);
 
+        // Create user profile in Firestore
+        const newUserProfile = {
+          name: email.split("@")[0],
+          bio: "A new user ready to create amazing things.",
+          lvl: "LVL • 1",
+          type: "TYPE • NEWB",
+          role: "ROLE • USER",
+          photoURL: defaultProfile.photoURL,
+          email: email,
+          createdAt: serverTimestamp(),
+          lastLogin: serverTimestamp(),
+        };
+
+        console.log("Creating user profile in Firestore...");
+        await setDoc(doc(db, "users", user.uid), newUserProfile);
+        console.log("User profile created in Firestore");
+
+        // Create widget slots in Storage (only if storage is available)
+        try {
+          console.log("Creating widget slots in Storage...");
+          const placeholderHtml = new Blob(
+            [
+              `<html>
+              <head><title>Widget Placeholder</title></head>
+              <body style='display:flex;align-items:center;justify-content:center;height:100vh;background:#222;color:#fff;font-family:Arial,sans-serif;'>
+                <div style='text-align:center;'>
+                  <h2>Widget Placeholder</h2>
+                  <p>This is a placeholder widget.</p>
+                  <p>Upload your files to replace this!</p>
+                  <img src='https://media.giphy.com/media/3oEjI6SIIHBdRxXI40/giphy.gif' alt='Placeholder' style='max-width:200px;border-radius:10px;'/>
+                </div>
+              </body>
+            </html>`,
+            ],
+            { type: "text/html" }
+          );
+
+          // Create widget slots
+          for (let i = 1; i <= 3; i++) {
+            const storageRef = ref(
+              storage,
+              `users/${user.uid}/app-widget-${i}/index.html`
+            );
+            await uploadBytes(storageRef, placeholderHtml);
+            console.log(`Created widget slot ${i}`);
+          }
+          console.log("All widget slots created successfully");
+        } catch (storageError) {
+          console.warn(
+            "Storage setup failed (this is okay for now):",
+            storageError
+          );
+          // Don't fail the signup if storage fails
+        }
+
+        // Create initial notifications
+        try {
+          await socialAuth.createNotification(user.uid, {
+            type: "system",
+            title: "Welcome to inque! 🎉",
+            message:
+              "Your account has been created successfully. Start by uploading your first widget!",
+            icon: "🎉",
+          });
+        } catch (notificationError) {
+          console.warn(
+            "Failed to create welcome notification:",
+            notificationError
+          );
+        }
+
+        console.log("Signup completed successfully!");
+        socialAuth.showToast(
+          "Account created successfully! Welcome to inque! 🎉",
+          "success",
+          5000
+        );
+      } catch (error) {
+        console.error("Signup error:", error);
+
+        // Provide user-friendly error messages
+        let errorMessage = "Signup failed. Please try again.";
+        if (error.code === "auth/email-already-in-use") {
+          errorMessage =
+            "This email is already registered. Please try logging in instead.";
+        } else if (error.code === "auth/weak-password") {
+          errorMessage =
+            "Password is too weak. Please choose a stronger password.";
+        } else if (error.code === "auth/invalid-email") {
+          errorMessage = "Please enter a valid email address.";
+        }
+
+        socialAuth.showToast(errorMessage, "error", 5000);
+      } finally {
         // Reset button state
         const submitBtn = signUpForm.querySelector(".auth-submit-btn");
         submitBtn.textContent = "Create Account";
@@ -1658,7 +1476,7 @@ document.addEventListener("DOMContentLoaded", () => {
       e.preventDefault();
 
       // Check if reCAPTCHA is available (optional for development)
-      if (typeof grecaptcha !== 'undefined' && grecaptcha.enterprise) {
+      if (typeof grecaptcha !== "undefined" && grecaptcha.enterprise) {
         grecaptcha.enterprise.ready(async () => {
           const token = await grecaptcha.enterprise.execute(
             "6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc",
@@ -1668,7 +1486,9 @@ document.addEventListener("DOMContentLoaded", () => {
           performLogin();
         });
       } else {
-        console.log("reCAPTCHA not available, proceeding without verification (development mode)");
+        console.log(
+          "reCAPTCHA not available, proceeding without verification (development mode)"
+        );
         performLogin();
       }
 
@@ -1684,7 +1504,7 @@ document.addEventListener("DOMContentLoaded", () => {
             alert(error.message);
             console.error("Login error:", error);
           });
-      });
+      }
     });
   }
 
