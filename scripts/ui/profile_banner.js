@@ -156,7 +156,9 @@ class ProfileHubManager {
       );
     }
 
-    console.log("[PROFILE HUB] DOM references initialized successfully");
+    console.log(
+      "[PROFILE HUB] DOM references initialized successfully - Enhanced sliding modal system ready"
+    );
   }
 
   /**
@@ -197,11 +199,10 @@ class ProfileHubManager {
     });
 
     this.addEventListener(this.dom.customizeToggle, "click", () => {
-      // Gear icon no longer opens settings - settings moved to Quick Actions
       console.log(
-        "[PROFILE HUB] Gear icon clicked - settings moved to Quick Actions"
-      );
-      // Could show a helpful message or do nothing
+        "[PROFILE HUB] Gear quicklink clicked → navigating to Explore"
+      ); // debug [[memory:4664284]]
+      window.location.href = "pages/explore.html";
     });
 
     this.addEventListener(this.dom.authToggle, "click", () => {
@@ -399,6 +400,11 @@ class ProfileHubManager {
       `[PROFILE HUB] Toggling chatbot: ${this.state.ui.hubState} -> ${newState}`
     );
 
+    // Add debug log for enhanced chatbot sliding animation
+    console.log(
+      "[PROFILE HUB] Enhanced chatbot sliding animation triggered - smooth slide from right"
+    );
+
     this.setState({
       ui: {
         hubState: newState,
@@ -413,7 +419,7 @@ class ProfileHubManager {
   }
 
   /**
-   * Toggle customization panel
+   * Toggle customization panel with enhanced sliding animations
    */
   toggleCustomization() {
     const isOpen = this.state.ui.customizationState === "open";
@@ -423,9 +429,9 @@ class ProfileHubManager {
       `[PROFILE HUB] Toggling customization: ${this.state.ui.customizationState} -> ${newState}`
     );
 
-    // Add debug log for chatbot-style overlay initialization
+    // Add debug log for enhanced sliding modal initialization
     console.log(
-      "[PROFILE HUB] Chatbot-style overlay animation triggered - sliding up from bottom-right"
+      "[PROFILE HUB] Enhanced sliding modal animation triggered - smooth slide from right"
     );
 
     // Add debug log for orb visibility preservation
@@ -440,7 +446,8 @@ class ProfileHubManager {
       },
     });
 
-    // Note: Backdrop removed to prevent blur issues
+    // Enhanced sliding animation with backdrop
+    this.toggleCustomizationBackdrop(newState === "open");
 
     // Add debug log for state update completion
     console.log("[PROFILE HUB] Customization panel state updated successfully");
@@ -467,12 +474,15 @@ class ProfileHubManager {
       console.log("[PROFILE HUB] Created customization panel backdrop");
     }
 
+    // Enhanced backdrop animation with smooth transitions
     if (show) {
       backdrop.classList.add("active");
-      console.log("[PROFILE HUB] Backdrop overlay activated");
+      console.log(
+        "[PROFILE HUB] Enhanced backdrop overlay activated with sliding animation"
+      );
     } else {
       backdrop.classList.remove("active");
-      console.log("[PROFILE HUB] Backdrop overlay deactivated");
+      console.log("[PROFILE HUB] Enhanced backdrop overlay deactivated");
     }
   }
 
@@ -524,15 +534,67 @@ class ProfileHubManager {
     // Update notification badge
     this.updateNotificationBadge();
 
-    // Update customization panel
+    // Update customization panel with enhanced sliding animations
     if (this.dom.customizationPanel) {
-      this.dom.customizationPanel.classList.toggle(
-        "active",
-        ui.customizationState === "open"
-      );
+      const isOpening = ui.customizationState === "open";
+      const wasOpen = this.dom.customizationPanel.classList.contains("active");
+
+      // Remove previous animation classes
+      this.dom.customizationPanel.classList.remove("slide-in", "slide-out");
+
+      if (isOpening && !wasOpen) {
+        // Opening animation
+        this.dom.customizationPanel.classList.add("active", "slide-in");
+        console.log(
+          "[PROFILE HUB] Customization panel sliding in with enhanced animation"
+        );
+      } else if (!isOpening && wasOpen) {
+        // Closing animation
+        this.dom.customizationPanel.classList.add("slide-out");
+        setTimeout(() => {
+          this.dom.customizationPanel.classList.remove("active", "slide-out");
+        }, 400); // Match animation duration
+        console.log(
+          "[PROFILE HUB] Customization panel sliding out with enhanced animation"
+        );
+      } else if (isOpening) {
+        // Just add active class if already opening
+        this.dom.customizationPanel.classList.add("active");
+      }
     }
 
-    console.log("[PROFILE HUB] UI updated");
+    // Update chatbot container with enhanced sliding animations
+    if (this.dom.chatbotContainer) {
+      const isActive = ui.hubState === "chatbot-active";
+      const wasActive = this.dom.chatbotContainer.classList.contains("active");
+
+      // Remove previous animation classes
+      this.dom.chatbotContainer.classList.remove("slide-in", "slide-out");
+
+      if (isActive && !wasActive) {
+        // Opening animation
+        this.dom.chatbotContainer.classList.add("active", "slide-in");
+        console.log(
+          "[PROFILE HUB] Chatbot container sliding in with enhanced animation"
+        );
+      } else if (!isActive && wasActive) {
+        // Closing animation
+        this.dom.chatbotContainer.classList.add("slide-out");
+        setTimeout(() => {
+          this.dom.chatbotContainer.classList.remove("active", "slide-out");
+        }, 400); // Match animation duration
+        console.log(
+          "[PROFILE HUB] Chatbot container sliding out with enhanced animation"
+        );
+      } else if (isActive) {
+        // Just add active class if already active
+        this.dom.chatbotContainer.classList.add("active");
+      }
+    }
+
+    console.log(
+      "[PROFILE HUB] UI updated with enhanced sliding modal animations"
+    );
   }
 
   /**
@@ -1492,12 +1554,44 @@ async function loadProfileHubHTML() {
     // Add a small delay to ensure DOM is ready
     await new Promise((resolve) => setTimeout(resolve, 100));
 
-    const response = await fetch("pages/page_modals/profile_banner.html");
-    if (!response.ok) {
-      throw new Error(`Failed to load ProfileHub HTML: ${response.status}`);
+    // Try multiple paths for the HTML file
+    const possiblePaths = [
+      "pages/page_modals/profile_banner.html",
+      "./pages/page_modals/profile_banner.html",
+      "/pages/page_modals/profile_banner.html",
+    ];
+
+    let htmlContent = null;
+    let lastError = null;
+
+    for (const path of possiblePaths) {
+      try {
+        console.log(`[PROFILE HUB] Trying to load from: ${path}`);
+        const response = await fetch(path);
+        if (response.ok) {
+          htmlContent = await response.text();
+          console.log(`[PROFILE HUB] Successfully loaded HTML from: ${path}`);
+          break;
+        } else {
+          lastError = new Error(
+            `Failed to load ProfileHub HTML from ${path}: ${response.status}`
+          );
+        }
+      } catch (error) {
+        lastError = error;
+        console.warn(
+          `[PROFILE HUB] Failed to load from ${path}:`,
+          error.message
+        );
+      }
     }
 
-    const htmlContent = await response.text();
+    if (!htmlContent) {
+      throw (
+        lastError || new Error("Failed to load ProfileHub HTML from any path")
+      );
+    }
+
     const container = document.getElementById("profileHubContainer");
 
     if (container) {
@@ -1558,7 +1652,7 @@ function createFallbackProfileHub() {
             <span class="btn-icon">🤖</span>
             <span class="btn-pulse" id="chatbotPulse"></span>
           </button>
-          <button id="hubCustomizeToggle" class="hub-control-btn" title="Customize Hub">
+          <button id="hubCustomizeToggle" class="hub-control-btn" title="Explore">
             <span class="btn-icon">⚙️</span>
           </button>
           <button id="hubAuthToggle" class="hub-control-btn hub-auth-btn" title="Login / Profile">
@@ -1703,12 +1797,24 @@ function createFallbackProfileHub() {
 // Initialize ProfileHub when DOM is ready
 let profileHubManager = null;
 
-document.addEventListener("DOMContentLoaded", async () => {
-  console.log("[PROFILE HUB] DOM ready, initializing ProfileHub...");
+// Enhanced initialization with better error handling
+async function initializeProfileHubSystem() {
+  console.log("[PROFILE HUB] Starting ProfileHub system initialization...");
 
   try {
+    // Ensure the container exists
+    let container = document.getElementById("profileHubContainer");
+    if (!container) {
+      console.log("[PROFILE HUB] Creating ProfileHub container...");
+      createProfileHubContainer();
+      container = document.getElementById("profileHubContainer");
+    }
+
     // Load and inject ProfileHub HTML content
     await loadProfileHubHTML();
+
+    // Wait a bit for DOM to be fully ready
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     // Initialize the ProfileHub manager
     profileHubManager = new ProfileHubManager();
@@ -1717,6 +1823,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.profileHubManager = profileHubManager;
 
     console.log("[PROFILE HUB] ProfileHub system ready!");
+    return true;
   } catch (error) {
     console.error("[PROFILE HUB] Failed to initialize ProfileHub:", error);
 
@@ -1724,16 +1831,24 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("[PROFILE HUB] Attempting fallback initialization...");
     try {
       createFallbackProfileHub();
+      await new Promise((resolve) => setTimeout(resolve, 100));
       profileHubManager = new ProfileHubManager();
       window.profileHubManager = profileHubManager;
       console.log("[PROFILE HUB] Fallback initialization successful!");
+      return true;
     } catch (fallbackError) {
       console.error(
         "[PROFILE HUB] Fallback initialization also failed:",
         fallbackError
       );
+      return false;
     }
   }
+}
+
+document.addEventListener("DOMContentLoaded", async () => {
+  console.log("[PROFILE HUB] DOM ready, initializing ProfileHub...");
+  await initializeProfileHubSystem();
 });
 
 // Expose functions globally for compatibility
@@ -2060,4 +2175,74 @@ window.testSlidingModal = () => {
   } else {
     console.warn("[PROFILE HUB DEBUG] Customization panel not found");
   }
+};
+
+// Debug function to diagnose profile connection issues
+window.diagnoseProfileIssues = () => {
+  console.log("[PROFILE HUB DEBUG] Diagnosing profile connection issues...");
+
+  const diagnosis = {
+    timestamp: new Date().toISOString(),
+    profileHubContainer: !!document.getElementById("profileHubContainer"),
+    profileHub: !!document.getElementById("profileHub"),
+    profileHubManager: !!window.profileHubManager,
+    authUser: !!window.socialAuth?.currentUser,
+    firebaseAuth: !!window.auth?.currentUser,
+    widgetDisplay: !!window.widgetDisplay,
+    firestoreRules: "Check Firebase Console for updated rules",
+    networkStatus: navigator.onLine ? "online" : "offline",
+  };
+
+  console.log("[PROFILE HUB DEBUG] Diagnosis results:", diagnosis);
+
+  // Check for specific error patterns
+  if (!diagnosis.profileHubContainer) {
+    console.error(
+      "[PROFILE HUB DEBUG] Missing profileHubContainer - this is critical!"
+    );
+  }
+
+  if (!diagnosis.profileHub) {
+    console.error(
+      "[PROFILE HUB DEBUG] Missing profileHub element - HTML may not have loaded"
+    );
+  }
+
+  if (!diagnosis.profileHubManager) {
+    console.error("[PROFILE HUB DEBUG] ProfileHub manager not initialized");
+  }
+
+  if (!diagnosis.authUser && !diagnosis.firebaseAuth) {
+    console.warn("[PROFILE HUB DEBUG] No authenticated user found");
+  }
+
+  return diagnosis;
+};
+
+// Debug function to force reinitialize ProfileHub
+window.reinitializeProfileHub = async () => {
+  console.log("[PROFILE HUB DEBUG] Force reinitializing ProfileHub...");
+
+  // Clean up existing instance
+  if (window.profileHubManager) {
+    try {
+      window.profileHubManager.destroy();
+    } catch (error) {
+      console.warn(
+        "[PROFILE HUB DEBUG] Error destroying existing manager:",
+        error
+      );
+    }
+  }
+
+  // Clear container
+  const container = document.getElementById("profileHubContainer");
+  if (container) {
+    container.innerHTML = "";
+  }
+
+  // Reinitialize
+  await initializeProfileHubSystem();
+
+  console.log("[PROFILE HUB DEBUG] Reinitialization complete");
 };

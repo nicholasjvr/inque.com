@@ -111,6 +111,8 @@ export class WidgetDisplay {
    */
   async loadUserQuips() {
     try {
+      this.log("Loading user quips for user:", this.currentUser.uid);
+
       const quipsRef = collection(db, "quips");
       const q = query(quipsRef, where("userId", "==", this.currentUser.uid));
       const querySnapshot = await getDocs(q);
@@ -118,12 +120,39 @@ export class WidgetDisplay {
       this.userQuips = querySnapshot.docs.map((doc) => doc.id);
       this.log("Loaded user quips", {
         quipCount: this.userQuips.length,
+        quipIds: this.userQuips,
       });
 
       // Load quip metadata
       await this.loadQuipMetadata();
     } catch (error) {
       this.error("Error loading user quips", error);
+
+      // Check if it's a permissions error
+      if (error.code === "permission-denied") {
+        this.log("Permission denied - user may not be authenticated properly");
+        // Try to reload auth state
+        if (window.socialAuth && window.socialAuth.currentUser) {
+          this.log("Retrying with current auth user");
+          this.currentUser = window.socialAuth.currentUser;
+          // Retry once
+          try {
+            const quipsRef = collection(db, "quips");
+            const q = query(
+              quipsRef,
+              where("userId", "==", this.currentUser.uid)
+            );
+            const querySnapshot = await getDocs(q);
+            this.userQuips = querySnapshot.docs.map((doc) => doc.id);
+            this.log("Retry successful - loaded user quips", {
+              quipCount: this.userQuips.length,
+            });
+            await this.loadQuipMetadata();
+          } catch (retryError) {
+            this.error("Retry also failed", retryError);
+          }
+        }
+      }
     }
   }
 

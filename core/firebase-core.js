@@ -65,6 +65,37 @@ const storage = getStorage(app);
 
 DEBUG.log("Firebase services initialized successfully");
 
+// Set up auth state listener with better error handling
+onAuthStateChanged(
+  auth,
+  (user) => {
+    try {
+      if (user) {
+        DEBUG.log("User authenticated:", user.email);
+        // Emit global auth state change event
+        window.dispatchEvent(
+          new CustomEvent("auth-state-changed", {
+            detail: { user, isAuthenticated: true },
+          })
+        );
+      } else {
+        DEBUG.log("User not authenticated");
+        // Emit global auth state change event
+        window.dispatchEvent(
+          new CustomEvent("auth-state-changed", {
+            detail: { user: null, isAuthenticated: false },
+          })
+        );
+      }
+    } catch (error) {
+      DEBUG.error("Error in auth state change handler:", error);
+    }
+  },
+  (error) => {
+    DEBUG.error("Auth state change error:", error);
+  }
+);
+
 // Export instances for other modules to use
 export { db, auth, storage, onAuthStateChanged };
 

@@ -1,8 +1,0 @@
-# Using Node.js (what we just used)
-npx http-server -p 8000
-
-# Using Python (if you install it)
-python -m http.server 8000
-
-# Using PHP (if you have it)
-php -S localhost:8000

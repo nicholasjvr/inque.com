@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Improve Your Craft - inQ Knowledge Base</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --kb-primary: #00f0ff;
+        --kb-secondary: #ff00ff;
+        --kb-accent: #ffff00;
+        --kb-bg: #0a0a0a;
+        --kb-surface: #1a1a1a;
+        --kb-border: #333;
+        --kb-text: #ffffff;
+        --kb-text-secondary: #a0a0a0;
+      }
+
+      body {
+        background: var(--kb-bg);
+        color: var(--kb-text);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .kb-header {
+        background: linear-gradient(
+          135deg,
+          var(--kb-surface) 0%,
+          var(--kb-bg) 100%
+        );
+        border-bottom: 2px solid var(--kb-primary);
+        box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--kb-primary);
+        border-radius: 8px;
+        color: var(--kb-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+      }
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(
+          135deg,
+          var(--kb-primary),
+          var(--kb-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .kb-main {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .kb-intro {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(
+          135deg,
+          var(--kb-surface) 0%,
+          rgba(0, 240, 255, 0.05) 100%
+        );
+        border: 2px solid var(--kb-primary);
+        border-radius: 20px;
+        margin-bottom: 3rem;
+        backdrop-filter: blur(10px);
+      }
+
+      .kb-intro h1 {
+        font-size: 3rem;
+        color: var(--kb-primary);
+        margin: 0 0 1rem 0;
+        font-family: "Orbitron", monospace;
+      }
+
+      .kb-intro p {
+        font-size: 1.2rem;
+        color: var(--kb-text-secondary);
+        margin: 0 0 2rem 0;
+        line-height: 1.6;
+      }
+
+      .coming-soon {
+        background: rgba(255, 255, 0, 0.1);
+        border: 2px solid var(--kb-accent);
+        border-radius: 12px;
+        padding: 2rem;
+        margin: 2rem 0;
+      }
+
+      .coming-soon h2 {
+        color: var(--kb-accent);
+        margin: 0 0 1rem 0;
+        font-size: 1.5rem;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin-top: 3rem;
+      }
+
+      .feature-card {
+        background: var(--kb-surface);
+        border: 1px solid var(--kb-border);
+        border-radius: 16px;
+        padding: 2rem;
+        transition: all 0.3s ease;
+      }
+
+      .feature-card:hover {
+        border-color: var(--kb-primary);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px rgba(0, 240, 255, 0.1);
+      }
+
+      .feature-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .feature-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: var(--kb-primary);
+        margin: 0 0 1rem 0;
+      }
+
+      .feature-desc {
+        color: var(--kb-text-secondary);
+        line-height: 1.6;
+        margin: 0;
+      }
+
+      .cta-section {
+        text-align: center;
+        padding: 3rem 2rem;
+        background: linear-gradient(
+          135deg,
+          rgba(255, 0, 255, 0.1) 0%,
+          rgba(0, 240, 255, 0.05) 100%
+        );
+        border: 2px solid var(--kb-secondary);
+        border-radius: 20px;
+        margin-top: 3rem;
+      }
+
+      .cta-btn {
+        padding: 1rem 2rem;
+        background: linear-gradient(
+          135deg,
+          var(--kb-primary),
+          var(--kb-secondary)
+        );
+        border: none;
+        border-radius: 8px;
+        color: var(--kb-bg);
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+      }
+
+      .cta-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(0, 240, 255, 0.4);
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .header-content {
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .kb-main {
+          padding: 1rem;
+        }
+
+        .kb-intro {
+          padding: 2rem 1rem;
+        }
+
+        .kb-intro h1 {
+          font-size: 2rem;
+        }
+
+        .feature-grid {
+          grid-template-columns: 1fr;
+          gap: 1.5rem;
+        }
+      }
+    </style>
+    <link rel="stylesheet" crossorigin href="../assets/styles-CTLfl5Gx.css">
+    <link rel="stylesheet" crossorigin href="../assets/users-BX6ofvUI.css">
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="kb-header">
+      <div class="header-content">
+        <a href="../index.html" class="back-btn">
+          <span>←</span>
+          <span>Back to Home</span>
+        </a>
+        <h1 class="page-title">💡 Improve Your Craft</h1>
+        <div></div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="kb-main">
+      <!-- Intro Section -->
+      <div class="kb-intro">
+        <h1>🚧 Coming Soon!</h1>
+        <p>
+          The inQ Knowledge Base is under construction. Soon you'll have access
+          to a comprehensive collection of tips, guides, and community wisdom to
+          help you master AI IDE development.
+        </p>
+
+        <div class="coming-soon">
+          <h2>🎯 What's Coming</h2>
+          <p>
+            We're building something amazing! The knowledge base will include
+            community-driven tutorials, best practices, troubleshooting guides,
+            and collaborative learning resources.
+          </p>
+        </div>
+      </div>
+
+      <!-- Planned Features -->
+      <div class="feature-grid">
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3 class="feature-title">Community Guides</h3>
+          <p class="feature-desc">
+            Step-by-step tutorials and guides written by experienced developers
+            in our community. Learn from real-world examples and proven
+            techniques.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💡</div>
+          <h3 class="feature-title">Tips & Tricks</h3>
+          <p class="feature-desc">
+            Quick tips, shortcuts, and productivity hacks for working with AI
+            IDEs. Discover hidden features and optimize your development
+            workflow.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔧</div>
+          <h3 class="feature-title">Troubleshooting</h3>
+          <p class="feature-desc">
+            Common issues and their solutions, error fixes, and debugging
+            strategies. Get unstuck faster with community-sourced solutions.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🏆</div>
+          <h3 class="feature-title">Best Practices</h3>
+          <p class="feature-desc">
+            Learn industry standards, coding conventions, and architectural
+            patterns that lead to maintainable and scalable code.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🎯</div>
+          <h3 class="feature-title">Project Ideas</h3>
+          <p class="feature-desc">
+            Get inspired with curated project ideas, challenges, and exercises
+            designed to improve your skills at every level.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🤝</div>
+          <h3 class="feature-title">Community Q&A</h3>
+          <p class="feature-desc">
+            Ask questions, share knowledge, and collaborate with fellow
+            developers. Build connections and learn from each other.
+          </p>
+        </div>
+      </div>
+
+      <!-- Call to Action -->
+      <div class="cta-section">
+        <h2
+          style="color: var(--kb-primary); margin: 0 0 1rem 0; font-size: 2rem"
+        >
+          Want to Contribute?
+        </h2>
+        <p
+          style="
+            color: var(--kb-text-secondary);
+            margin: 0 0 2rem 0;
+            font-size: 1.1rem;
+          "
+        >
+          Join our community and help build the ultimate knowledge base for AI
+          IDE developers. Share your expertise and learn from others!
+        </p>
+        <a href="../pages/users.html" class="cta-btn">
+          🚀 Join the Community
+        </a>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div
+      id="toast-container"
+      style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      "
+    ></div>
+
+    <script>
+      // Simple toast notification system for this page
+      function showToast(message, type = "info") {
+        const toastContainer = document.getElementById("toast-container");
+        if (!toastContainer) return;
+
+        const toast = document.createElement("div");
+        toast.style.cssText = `
+                background: var(--kb-bg);
+                border: 1px solid var(--kb-border);
+                border-radius: 8px;
+                padding: 15px 20px;
+                color: var(--kb-text);
+                font-size: 14px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+                backdrop-filter: blur(10px);
+                transform: translateX(100%);
+                opacity: 0;
+                transition: all 0.3s ease;
+                max-width: 350px;
+            `;
+
+        if (type === "info") {
+          toast.style.borderColor = "var(--kb-primary)";
+        } else if (type === "success") {
+          toast.style.borderColor = "#4caf50";
+        } else if (type === "error") {
+          toast.style.borderColor = "#f44336";
+        }
+
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+
+        // Show toast
+        setTimeout(() => {
+          toast.style.transform = "translateX(0)";
+          toast.style.opacity = "1";
+        }, 100);
+
+        // Auto-remove after 4 seconds
+        setTimeout(() => {
+          toast.style.transform = "translateX(100%)";
+          toast.style.opacity = "0";
+          setTimeout(() => {
+            if (toast.parentNode) {
+              toast.parentNode.removeChild(toast);
+            }
+          }, 300);
+        }, 4000);
+      }
+
+      // Show welcome message
+      setTimeout(() => {
+        showToast(
+          "📚 Knowledge Base preview - More features coming soon!",
+          "info"
+        );
+      }, 1000);
+    </script>
+  </body>
+</html>

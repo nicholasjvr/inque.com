@@ -3,7 +3,7 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 1000;
+    z-index: 100;
     font-family: 'Inter', sans-serif;
     user-select: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
@@ -60,13 +60,17 @@
 
 .profile-hub[data-state="expanded"] .hub-expanded-content {
     display: block;
-    animation: slideDown 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: slideDownEnhanced 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
 .profile-hub[data-state="chatbot-active"] .hub-chatbot-container {
-    transform: translateX(0);
+    transform: translateX(0) scale(1);
     opacity: 1;
     pointer-events: auto;
+    filter: blur(0px);
+    box-shadow:
+        0 15px 50px rgba(0, 240, 255, 0.25),
+        0 0 0 1px rgba(0, 240, 255, 0.15);
 }
 
 
@@ -530,11 +534,13 @@
     top: 0;
     right: 100%;
     margin-right: 12px;
-    transform: translateX(-20px);
+    transform: translateX(-50px) scale(0.95);
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1001;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 101;
+    filter: blur(1px);
+    transform-origin: right center;
 }
 
 /* Position-specific chatbot container styles - RIGHT SIDE ONLY */
@@ -754,8 +760,8 @@
     right: 320px !important;
     /* Position to the left of the profile hub */
     bottom: auto !important;
-    transform: translateX(20px);
-    /* Start slightly to the right */
+    transform: translateX(100px) scale(0.9);
+    /* Enhanced slide animation - starts further out and scaled down */
     /* Slide in from right side next to hub */
     width: 300px;
     max-width: 90vw;
@@ -768,9 +774,12 @@
     padding: 20px;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 1002;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    z-index: 102;
     overflow-y: auto;
+    /* Enhanced visual effects */
+    filter: blur(2px);
+    transform-origin: right center;
 }
 
 /* Backdrop overlay for customization panel */
@@ -780,18 +789,40 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: rgba(0, 0, 0, 0.1);
-    backdrop-filter: blur(1px);
-    -webkit-backdrop-filter: blur(1px);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s ease;
-    z-index: 1001;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 101;
+    /* Enhanced backdrop with gradient */
+    background: linear-gradient(135deg,
+            rgba(0, 0, 0, 0.1) 0%,
+            rgba(0, 240, 255, 0.05) 50%,
+            rgba(0, 0, 0, 0.2) 100%);
 }
 
 .hub-customization-panel-backdrop.active {
     opacity: 1;
     pointer-events: auto;
+}
+
+/* Enhanced sliding modal classes */
+.hub-customization-panel.slide-in {
+    animation: slideInFromRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.hub-customization-panel.slide-out {
+    animation: slideOutToRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+.hub-chatbot-container.slide-in {
+    animation: slideInFromRight 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.hub-chatbot-container.slide-out {
+    animation: slideOutToRight 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
 
 /* Hide mobile menu toggle when customization panel is active */
@@ -807,8 +838,8 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 
 /* Active state - slides in from right side next to hub */
 .hub-customization-panel.active {
-    transform: translateX(0) !important;
-    /* Slide in from right side next to hub */
+    transform: translateX(0) scale(1) !important;
+    /* Enhanced slide animation - slides in and scales up */
     opacity: 1 !important;
     pointer-events: auto !important;
     position: fixed !important;
@@ -818,6 +849,13 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     bottom: auto !important;
     /* Enhanced sliding animation */
     transform-origin: right center !important;
+    filter: blur(0px);
+    /* Remove blur when active */
+    box-shadow:
+        0 20px 60px rgba(0, 240, 255, 0.3),
+        0 0 0 1px rgba(0, 240, 255, 0.2),
+        inset 0 2px 0 rgba(255, 255, 255, 0.1);
+    /* Enhanced shadow when active */
 }
 
 .customization-content h3 {
@@ -928,7 +966,7 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
+    z-index: 99;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
@@ -949,6 +987,66 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     to {
         opacity: 1;
         transform: translateY(0);
+    }
+}
+
+@keyframes slideDownEnhanced {
+    0% {
+        opacity: 0;
+        transform: translateY(-20px) scale(0.95);
+        filter: blur(2px);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: translateY(-5px) scale(0.98);
+        filter: blur(1px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes slideInFromRight {
+    0% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.9);
+        filter: blur(3px);
+    }
+
+    60% {
+        opacity: 0.8;
+        transform: translateX(-10px) scale(1.02);
+        filter: blur(1px);
+    }
+
+    100% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0px);
+    }
+}
+
+@keyframes slideOutToRight {
+    0% {
+        opacity: 1;
+        transform: translateX(0) scale(1);
+        filter: blur(0px);
+    }
+
+    40% {
+        opacity: 0.8;
+        transform: translateX(-10px) scale(1.02);
+        filter: blur(1px);
+    }
+
+    100% {
+        opacity: 0;
+        transform: translateX(100px) scale(0.9);
+        filter: blur(3px);
     }
 }
 

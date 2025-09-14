@@ -1,0 +1,399 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Widget Studio - Inque</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="../assets/portal_placeholder-DZGQolNY.gif"
+    />
+    <script type="module" crossorigin src="../assets/widgetStudio-BBSnxwhd.js"></script>
+    <link rel="modulepreload" crossorigin href="../assets/modulepreload-polyfill-B5Qt9EMX.js">
+    <link rel="modulepreload" crossorigin href="../assets/firebase-core-BO8UvLyb.js">
+    <link rel="modulepreload" crossorigin href="../assets/cloud-upload-DzQTDkpW.js">
+    <link rel="modulepreload" crossorigin href="../assets/profile_banner-Eu8vPd6E.js">
+    <link rel="modulepreload" crossorigin href="../assets/profile-dashboard-manager-DumQz_VG.js">
+    <link rel="stylesheet" crossorigin href="../assets/styles-CTLfl5Gx.css">
+    <link rel="stylesheet" crossorigin href="../assets/widget_studio-xPyVQT3-.css">
+  </head>
+  <body>
+    <!-- Navigation Header -->
+    <header class="widget-studio-header">
+      <div class="header-content">
+        <div class="header-left">
+          <a href="../index.html" class="back-btn">
+            <span class="btn-icon">←</span>
+            Back to Home
+          </a>
+          <h1 class="page-title">🎨 Widget Studio</h1>
+        </div>
+        <div class="header-right">
+          <div class="user-info" id="userInfo">
+            <div class="user-avatar" id="userAvatar">
+              <span class="avatar-placeholder">👤</span>
+            </div>
+            <span class="user-name" id="userName">Loading...</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="widget-studio-main">
+      <div class="studio-container">
+        <!-- Studio Welcome Section -->
+        <div class="studio-welcome">
+          <div class="welcome-content">
+            <h2>Welcome to Your Widget Studio</h2>
+            <p>
+              Create, preview, and manage your interactive widgets. Each slot
+              can hold a complete project with multiple files.
+            </p>
+            <div class="studio-stats">
+              <div class="stat-item">
+                <span class="stat-number" id="totalWidgets">0</span>
+                <span class="stat-label">Total Widgets</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="activeSlots">0</span>
+                <span class="stat-label">Active Slots</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-number" id="totalFiles">0</span>
+                <span class="stat-label">Total Files</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Widget Slots Grid -->
+        <div class="widget-slots-grid">
+          <!-- Slot 1 -->
+          <div class="widget-slot" data-slot="1">
+            <div class="slot-header">
+              <h3>Slot 1</h3>
+              <span class="slot-status" id="slot1Status">Available</span>
+            </div>
+
+            <div class="slot-content">
+              <!-- File Upload Area -->
+              <div class="file-upload-area" id="uploadArea1">
+                <input
+                  type="file"
+                  class="file-input"
+                  data-slot="1"
+                  multiple
+                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  id="fileInput1"
+                />
+                <div class="upload-placeholder" id="placeholder1">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                  <span class="upload-hint"
+                    >Supports HTML, CSS, JS, images, and more</span
+                  >
+                </div>
+              </div>
+
+              <!-- Selected Files Display -->
+              <div
+                class="selected-files"
+                id="selectedFiles1"
+                style="display: none"
+              >
+                <h4>Selected Files</h4>
+                <div class="files-list" id="filesList1"></div>
+                <button class="clear-files-btn" data-slot="1">
+                  Clear All Files
+                </button>
+              </div>
+
+              <!-- Widget Information -->
+              <div class="widget-info">
+                <div class="info-group">
+                  <label for="title1">Widget Title</label>
+                  <input
+                    type="text"
+                    class="widget-title"
+                    data-slot="1"
+                    id="title1"
+                    placeholder="Enter widget title"
+                  />
+                </div>
+                <div class="info-group">
+                  <label for="description1">Description</label>
+                  <textarea
+                    class="widget-description"
+                    data-slot="1"
+                    id="description1"
+                    placeholder="Describe your widget"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="info-group">
+                  <label for="tags1">Tags (optional)</label>
+                  <input
+                    type="text"
+                    class="widget-tags"
+                    data-slot="1"
+                    id="tags1"
+                    placeholder="e.g., game, utility, showcase"
+                  />
+                </div>
+              </div>
+
+              <!-- Slot Actions -->
+              <div class="slot-actions">
+                <button class="preview-btn" data-slot="1" id="previewBtn1">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-btn" data-slot="1" id="uploadBtn1">
+                  <span class="btn-icon">🚀</span>
+                  Upload to Slot 1
+                </button>
+              </div>
+
+              <!-- Upload Progress -->
+              <div class="upload-progress" id="progress1" style="display: none">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill1"></div>
+                </div>
+                <span class="progress-text" id="progressText1">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slot 2 -->
+          <div class="widget-slot" data-slot="2">
+            <div class="slot-header">
+              <h3>Slot 2</h3>
+              <span class="slot-status" id="slot2Status">Available</span>
+            </div>
+
+            <div class="slot-content">
+              <!-- File Upload Area -->
+              <div class="file-upload-area" id="uploadArea2">
+                <input
+                  type="file"
+                  class="file-input"
+                  data-slot="2"
+                  multiple
+                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  id="fileInput2"
+                />
+                <div class="upload-placeholder" id="placeholder2">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                  <span class="upload-hint"
+                    >Supports HTML, CSS, JS, images, and more</span
+                  >
+                </div>
+              </div>
+
+              <!-- Selected Files Display -->
+              <div
+                class="selected-files"
+                id="selectedFiles2"
+                style="display: none"
+              >
+                <h4>Selected Files</h4>
+                <div class="files-list" id="filesList2"></div>
+                <button class="clear-files-btn" data-slot="2">
+                  Clear All Files
+                </button>
+              </div>
+
+              <!-- Widget Information -->
+              <div class="widget-info">
+                <div class="info-group">
+                  <label for="title2">Widget Title</label>
+                  <input
+                    type="text"
+                    class="widget-title"
+                    data-slot="2"
+                    id="title2"
+                    placeholder="Enter widget title"
+                  />
+                </div>
+                <div class="info-group">
+                  <label for="description2">Description</label>
+                  <textarea
+                    class="widget-description"
+                    data-slot="2"
+                    id="description2"
+                    placeholder="Describe your widget"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="info-group">
+                  <label for="tags2">Tags (optional)</label>
+                  <input
+                    type="text"
+                    class="widget-tags"
+                    data-slot="2"
+                    id="tags2"
+                    placeholder="e.g., game, utility, showcase"
+                  />
+                </div>
+              </div>
+
+              <!-- Slot Actions -->
+              <div class="slot-actions">
+                <button class="preview-btn" data-slot="2" id="previewBtn2">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-btn" data-slot="2" id="uploadBtn2">
+                  <span class="btn-icon">🚀</span>
+                  Upload to Slot 2
+                </button>
+              </div>
+
+              <!-- Upload Progress -->
+              <div class="upload-progress" id="progress2" style="display: none">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill2"></div>
+                </div>
+                <span class="progress-text" id="progressText2">0%</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Slot 3 -->
+          <div class="widget-slot" data-slot="3">
+            <div class="slot-header">
+              <h3>Slot 3</h3>
+              <span class="slot-status" id="slot3Status">Available</span>
+            </div>
+
+            <div class="slot-content">
+              <!-- File Upload Area -->
+              <div class="file-upload-area" id="uploadArea3">
+                <input
+                  type="file"
+                  class="file-input"
+                  data-slot="3"
+                  multiple
+                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  id="fileInput3"
+                />
+                <div class="upload-placeholder" id="placeholder3">
+                  <span class="upload-icon">📁</span>
+                  <p>Drop files here or click to upload</p>
+                  <span class="upload-hint"
+                    >Supports HTML, CSS, JS, images, and more</span
+                  >
+                </div>
+              </div>
+
+              <!-- Selected Files Display -->
+              <div
+                class="selected-files"
+                id="selectedFiles3"
+                style="display: none"
+              >
+                <h4>Selected Files</h4>
+                <div class="files-list" id="filesList3"></div>
+                <button class="clear-files-btn" data-slot="3">
+                  Clear All Files
+                </button>
+              </div>
+
+              <!-- Widget Information -->
+              <div class="widget-info">
+                <div class="info-group">
+                  <label for="title2">Widget Title</label>
+                  <input
+                    type="text"
+                    class="widget-title"
+                    data-slot="3"
+                    id="title3"
+                    placeholder="Enter widget title"
+                  />
+                </div>
+                <div class="info-group">
+                  <label for="description3">Description</label>
+                  <textarea
+                    class="widget-description"
+                    data-slot="3"
+                    id="description3"
+                    placeholder="Describe your widget"
+                    rows="3"
+                  ></textarea>
+                </div>
+                <div class="info-group">
+                  <label for="tags3">Tags (optional)</label>
+                  <input
+                    type="text"
+                    class="widget-tags"
+                    data-slot="3"
+                    id="tags3"
+                    placeholder="e.g., game, utility, showcase"
+                  />
+                </div>
+              </div>
+
+              <!-- Slot Actions -->
+              <div class="slot-actions">
+                <button class="preview-btn" data-slot="3" id="previewBtn3">
+                  <span class="btn-icon">👁️</span>
+                  Preview
+                </button>
+                <button class="upload-btn" data-slot="3" id="uploadBtn3">
+                  <span class="btn-icon">🚀</span>
+                  Upload to Slot 3
+                </button>
+              </div>
+
+              <!-- Upload Progress -->
+              <div class="upload-progress" id="progress3" style="display: none">
+                <div class="progress-bar">
+                  <div class="progress-fill" id="progressFill3"></div>
+                </div>
+                <span class="progress-text" id="progressText3">0%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Studio Actions -->
+        <div class="studio-actions">
+          <button class="save-all-btn" id="saveAllBtn">
+            <span class="btn-icon">💾</span>
+            Save All Changes
+          </button>
+          <button class="refresh-btn" id="refreshBtn">
+            <span class="btn-icon">🔄</span>
+            Refresh Studio
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Preview Modal -->
+    <div class="preview-modal" id="previewModal">
+      <div class="preview-modal-content">
+        <div class="preview-modal-header">
+          <h3>Widget Preview</h3>
+          <button class="preview-modal-close" id="previewModalClose">
+            &times;
+          </button>
+        </div>
+        <div class="preview-modal-body" id="previewModalBody">
+          <!-- Preview content will be inserted here -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Profile Banner Integration -->
+    <div id="profileBannerContainer"></div>
+
+    <!-- Scripts -->
+  </body>
+</html>

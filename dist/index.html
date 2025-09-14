@@ -16,8 +16,549 @@
       rel="stylesheet"
     />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-    <script type="module" crossorigin src="/assets/index-Dx751Gdu.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-yDVgHkJl.css">
+
+    <!-- 3D Title Styles -->
+    <style>
+      .title-3d {
+        perspective: 1000px;
+        transform-style: preserve-3d;
+        animation: titleFloat 6s ease-in-out infinite;
+      }
+
+      .title-line-1,
+      .title-line-2 {
+        display: block;
+        font-size: 6.5rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 0.15em;
+        color: #00f0ff;
+        text-shadow:
+          0 0 1px #00f0ff,
+          0 0 1px #00f0ff,
+          0 0 1px #00f0ff,
+          0 0 1px #00f0ff,
+          0 0 1px #00f0ff,
+          0 0 1px #00f0ff;
+        transform: rotateX(8deg) rotateY(-2deg);
+        animation: titleGlow 3s ease-in-out infinite alternate;
+        margin: 25px 0;
+        font-family: "Orbitron", monospace;
+        position: relative;
+        z-index: 10;
+        line-height: 1.1;
+      }
+
+      .title-line-1 {
+        animation-delay: 0s;
+        background: linear-gradient(45deg, #00f0ff, #ff6b35, #00f0ff);
+        background-size: 200% 200%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 4s ease-in-out infinite;
+      }
+
+      .title-line-2 {
+        animation-delay: 0.5s;
+        font-size: 4.5rem;
+        color: #ff6b35;
+        text-shadow:
+          0 0 1px #ff6b35,
+          0 0 1cqb #ff6b35,
+          0 0 1px #ff6b35,
+          0 0 1px #ff6b35;
+        transform: rotateX(-5deg) rotateY(3deg);
+      }
+
+      .title-line-1::before,
+      .title-line-2::before {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: rgba(0, 240, 255, 0.3);
+        transform: translateZ(-50px);
+        z-index: -1;
+      }
+
+      .title-line-1::after,
+      .title-line-2::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        color: rgba(231, 76, 20, 0.2);
+        transform: translateZ(-100px);
+        z-index: -2;
+      }
+
+      @keyframes titleFloat {
+        0%,
+        100% {
+          transform: translateY(0px) rotateX(0deg);
+        }
+        50% {
+          transform: translateY(-10px) rotateX(5deg);
+        }
+      }
+
+      @keyframes titleGlow {
+        0% {
+          text-shadow:
+            0 0 1px currentColor,
+            0 0 2px currentColor,
+            0 0 3px currentColor,
+            0 0 4px currentColor;
+        }
+        100% {
+          text-shadow:
+            0 0 10px currentColor,
+            0 0 20px currentColor,
+            0 0 25px currentColor,
+            0 0 10px currentColor,
+            0 0 10px currentColor,
+        }
+      }
+
+      @keyframes gradientShift {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      @keyframes titlePulse {
+        0%,
+        100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.05);
+        }
+      }
+
+      .title-3d:hover .title-line-1,
+      .title-3d:hover .title-line-2 {
+        animation: titlePulse 0.6s ease-in-out;
+        transform: scale(1.1) rotateX(0deg) rotateY(0deg);
+      }
+
+      /* Custom Font Styles */
+      .font-neon {
+        font-family: "Neon Lights", monospace;
+        text-shadow:
+          0 0 5px #00f0ff,
+          0 0 10px #00f0ff,
+          0 0 15px #00f0ff,
+          0 0 20px #00f0ff,
+          0 0 35px #00f0ff,
+          0 0 40px #00f0ff;
+      }
+
+      .font-chromatic {
+        font-family: "Chromatic", serif;
+        background: linear-gradient(45deg, #ff0080, #00ff80, #8000ff, #ff8000);
+        background-size: 400% 400%;
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        animation: gradientShift 3s ease-in-out infinite;
+      }
+
+      .font-button {
+        font-family: "Button", sans-serif;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: 0.2em;
+        color: #ff6b35;
+        text-shadow:
+          2px 2px 0px #ff0080,
+          4px 4px 0px #8000ff,
+          6px 6px 0px #00ff80;
+      }
+
+      .font-excluded {
+        font-family: "Excluded", serif;
+        font-style: italic;
+        color: #ff0080;
+        text-shadow:
+          0 0 10px #ff0080,
+          0 0 20px #ff0080,
+          0 0 30px #ff0080;
+      }
+
+      .title-header-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        text-align: center;
+      }
+
+      .title-main-container {
+        margin-bottom: 40px;
+        position: relative;
+        padding: 40px 0;
+      }
+
+      .title-controls {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 25px;
+        margin-top: 25px;
+        padding: 25px;
+      }
+
+      .font-control {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .control-label {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 600;
+        white-space: nowrap;
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+      }
+
+      .font-dropdown {
+        background: rgba(0, 0, 0, 0.9);
+        border: 2px solid var(--primary-neon);
+        color: var(--primary-neon);
+        padding: 10px 20px;
+        border-radius: 10px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        min-width: 180px;
+        text-shadow: 0 0 5px currentColor;
+      }
+
+      .font-dropdown:hover {
+        background: rgba(0, 240, 255, 0.1);
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+        transform: translateY(-2px);
+      }
+
+      .font-dropdown:focus {
+        outline: none;
+        box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
+      }
+
+      .title-actions {
+        display: flex;
+        gap: 15px;
+      }
+
+      .action-btn {
+        background: rgba(0, 0, 0, 0.9);
+        border: 2px solid var(--secondary-neon);
+        color: var(--secondary-neon);
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        text-shadow: 0 0 10px currentColor;
+      }
+
+      .action-btn:hover {
+        background: rgba(255, 107, 53, 0.2);
+        border-color: var(--accent-neon);
+        color: var(--accent-neon);
+        transform: scale(1.15) translateY(-3px);
+        box-shadow: 0 0 25px rgba(255, 107, 53, 0.5);
+      }
+
+      .action-btn:active {
+        transform: scale(0.95);
+      }
+
+      /* Social Links Styles */
+      .social-links-container {
+        margin-top: 30px;
+        padding: 25px;
+        background: rgba(0, 0, 0, 0.8);
+        border-radius: 20px;
+        border: 2px solid rgba(0, 240, 255, 0.3);
+        backdrop-filter: blur(2px);
+      }
+
+      .social-links-header {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      .social-label {
+        color: var(--text-secondary);
+        font-size: 1rem;
+        font-weight: 600;
+        text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
+        letter-spacing: 0.1em;
+      }
+
+      .social-links-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 15px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .social-link {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 10px;
+        background: rgba(0, 0, 0, 0.6);
+        border: 2px solid transparent;
+        border-radius: 15px;
+        text-decoration: none;
+        color: var(--text-secondary);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .social-link::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          45deg,
+          transparent,
+          rgba(255, 255, 255, 0.1),
+          transparent
+        );
+        transform: translateX(-100%);
+        transition: transform 0.6s ease;
+      }
+
+      .social-link:hover::before {
+        transform: translateX(100%);
+      }
+
+      .social-icon {
+        font-size: 2rem;
+        margin-bottom: 8px;
+        transition: all 0.3s ease;
+        filter: drop-shadow(0 0 5px currentColor);
+      }
+
+      .social-text {
+        font-size: 0.9rem;
+        font-weight: 500;
+        text-align: center;
+        transition: all 0.3s ease;
+      }
+
+      /* Individual Social Link Styles */
+      .social-link.github:hover {
+        border-color: #333;
+        background: rgba(51, 51, 51, 0.3);
+        color: #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(51, 51, 51, 0.5);
+      }
+
+      .social-link.github:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #fff);
+      }
+
+      .social-link.linkedin:hover {
+        border-color: #0077b5;
+        background: rgba(0, 119, 181, 0.3);
+        color: #0077b5;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(0, 119, 181, 0.5);
+      }
+
+      .social-link.linkedin:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #0077b5);
+      }
+
+      .social-link.patreon:hover {
+        border-color: #ff424d;
+        background: rgba(255, 66, 77, 0.3);
+        color: #ff424d;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(255, 66, 77, 0.5);
+      }
+
+      .social-link.patreon:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #ff424d);
+      }
+
+      .social-link.twitter:hover {
+        border-color: #1da1f2;
+        background: rgba(29, 161, 242, 0.3);
+        color: #1da1f2;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(29, 161, 242, 0.5);
+      }
+
+      .social-link.twitter:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #1da1f2);
+      }
+
+      .social-link.discord:hover {
+        border-color: #7289da;
+        background: rgba(114, 137, 218, 0.3);
+        color: #7289da;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(114, 137, 218, 0.5);
+      }
+
+      .social-link.discord:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #7289da);
+      }
+
+      .social-link.youtube:hover {
+        border-color: #ff0000;
+        background: rgba(255, 0, 0, 0.3);
+        color: #ff0000;
+        transform: translateY(-3px);
+        box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
+      }
+
+      .social-link.youtube:hover .social-icon {
+        transform: scale(1.2);
+        filter: drop-shadow(0 0 10px #ff0000);
+      }
+
+      @keyframes headerGlow {
+        0% {
+          box-shadow:
+            0 0 60px rgba(0, 240, 255, 0.4),
+            0 0 120px rgba(255, 107, 53, 0.3),
+            inset 0 0 60px rgba(0, 0, 0, 0.6);
+        }
+        100% {
+          box-shadow:
+            0 0 80px rgba(0, 240, 255, 0.6),
+            0 0 140px rgba(255, 107, 53, 0.4),
+            inset 0 0 80px rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .title-line-1 {
+          font-size: 4rem;
+        }
+        .title-line-2 {
+          font-size: 3rem;
+        }
+
+        .title-header-section {
+          padding: 60px 20px;
+          min-height: 350px;
+        }
+
+        .title-controls {
+          flex-direction: column;
+          align-items: center;
+          gap: 20px;
+          padding: 20px;
+        }
+
+        .font-control {
+          flex-direction: column;
+          gap: 10px;
+        }
+
+        .action-btn {
+          width: 45px;
+          height: 45px;
+          font-size: 1.2rem;
+        }
+
+        .social-links-grid {
+          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+          gap: 12px;
+        }
+
+        .social-link {
+          padding: 12px 8px;
+        }
+
+        .social-icon {
+          font-size: 1.5rem;
+        }
+
+        .social-text {
+          font-size: 0.8rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .title-line-1 {
+          font-size: 3rem;
+        }
+        .title-line-2 {
+          font-size: 2.5rem;
+        }
+
+        .title-header-section {
+          padding: 50px 15px;
+          min-height: 300px;
+        }
+
+        .social-links-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+
+        .social-link {
+          padding: 10px 5px;
+        }
+
+        .social-icon {
+          font-size: 1.3rem;
+        }
+
+        .social-text {
+          font-size: 0.75rem;
+        }
+      }
+    </style>
+    <script type="module" crossorigin src="./assets/main-CAA-g-Do.js"></script>
+    <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
+    <link rel="modulepreload" crossorigin href="./assets/firebase-core-BO8UvLyb.js">
+    <link rel="modulepreload" crossorigin href="./assets/profile-dashboard-manager-DumQz_VG.js">
+    <link rel="modulepreload" crossorigin href="./assets/timeline-manager-B2jLQ0HO.js">
+    <link rel="modulepreload" crossorigin href="./assets/cloud-upload-DzQTDkpW.js">
+    <link rel="modulepreload" crossorigin href="./assets/widget-upload-EdH-RL5r.js">
+    <link rel="modulepreload" crossorigin href="./assets/profile_banner-Eu8vPd6E.js">
+    <link rel="stylesheet" crossorigin href="./assets/main-CEtxQDiY.css">
+    <link rel="stylesheet" crossorigin href="./assets/styles-CTLfl5Gx.css">
   </head>
   <body>
     <!-- Toast Notifications -->
@@ -160,7 +701,96 @@
     <!-- New ProfileHub System -->
     <div id="profileHubContainer"></div>
     <!-- Main Content -->
-    <main style="margin-top: 40px">
+      <!-- 3D Title Header -->
+      <section class="title-header-section">
+        <div class="title-header-container">
+          <div id="title-container" class="title-main-container">
+            <div id="main-title" class="title-3d">
+              <span class="title-line-1">inque social</span>
+              <span class="title-line-2">[creatives] platform</span>
+            </div>
+
+            <div class="title-controls">
+              <div id="font-selector" class="font-control">
+                <label class="control-label">Font Style:</label>
+                <select id="font-dropdown" class="font-dropdown">
+                  <option value="default">Default</option>
+                </select>
+              </div>
+
+              <div class="title-actions">
+                <button
+                  id="title-animate-btn"
+                  class="action-btn"
+                  title="Animate Title"
+                >
+                  ⚡
+                </button>
+                <button
+                  id="title-reset-btn"
+                  class="action-btn"
+                  title="Reset Effects"
+                >
+                  🔄
+                </button>
+                <button
+                  id="title-fullscreen-btn"
+                  class="action-btn"
+                  title="Fullscreen View"
+                >
+                  🔍
+                </button>
+              </div>
+            </div>
+
+            <!-- Social Links Section -->
+            <div class="social-links-container">
+              <div class="social-links-header">
+                <span class="social-label">Connect & Support</span>
+              </div>
+              <div class="social-links-grid">
+                <a href="#" class="social-link github" title="GitHub Profile">
+                  <div class="social-icon">🐙</div>
+                  <span class="social-text">GitHub</span>
+                </a>
+                <a
+                  href="#"
+                  class="social-link linkedin"
+                  title="LinkedIn Profile"
+                >
+                  <div class="social-icon">💼</div>
+                  <span class="social-text">LinkedIn</span>
+                </a>
+                <a
+                  href="#"
+                  class="social-link patreon"
+                  title="Support on Patreon"
+                >
+                  <div class="social-icon">🎨</div>
+                  <span class="social-text">Patreon</span>
+                </a>
+                <a
+                  href="#"
+                  class="social-link twitter"
+                  title="Follow on Twitter"
+                >
+                  <div class="social-icon">🐦</div>
+                  <span class="social-text">Twitter</span>
+                </a>
+                <a href="#" class="social-link discord" title="Join Discord">
+                  <div class="social-icon">💬</div>
+                  <span class="social-text">Discord</span>
+                </a>
+                <a href="#" class="social-link youtube" title="YouTube Channel">
+                  <div class="social-icon">📺</div>
+                  <span class="social-text">YouTube</span>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- Hero Section -->
       <section
         id="home-section"
@@ -176,32 +806,97 @@
       >
         <div style="max-width: 1400px; margin: 0 auto">
           <!-- Welcome Section (for both authenticated and non-authenticated users) -->
-          <div style="text-align: center; padding: 60px 20px">
-            <h1
-              id="home-greeting"
+          <div
+            class="hero-section"
+            style="text-align: center; padding: 80px 20px; position: relative"
+          >
+            <!-- Background blur effects -->
+            <div
+              class="title-bg-effects"
               style="
-                font-size: 4rem;
-                font-family: &quot;Orbitron&quot;, monospace;
-                color: var(--primary-neon);
-                margin: 0 0 20px 0;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 600px;
+                height: 200px;
+                background: radial-gradient(
+                  ellipse,
+                  rgba(0, 240, 255, 0.1) 0%,
+                  transparent 70%
+                );
+                filter: blur(40px);
+                z-index: 1;
               "
-              class="neo-text-glow"
-            >
-              welcome home.
-            </h1>
-            <p
-              id="home-subtitle"
+            ></div>
+            <div
+              class="title-bg-effects-2"
               style="
-                font-size: 1.5rem;
-                color: var(--text-secondary);
-                margin: 0 0 40px 0;
-                max-width: 800px;
-                margin: 0 auto 40px auto;
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 400px;
+                height: 150px;
+                background: radial-gradient(
+                  ellipse,
+                  rgba(255, 107, 157, 0.08) 0%,
+                  transparent 70%
+                );
+                filter: blur(30px);
+                z-index: 1;
               "
-            >
-              which one will it be today? Enter Name Here - it's a placeholder
-              for now.username if logged in
-            </p>
+            ></div>
+
+            <!-- Clean, readable title -->
+            <div style="position: relative; z-index: 2">
+              <h1
+                id="home-greeting"
+                style="
+                  font-size: 5rem;
+                  font-family: &quot;Orbitron&quot;, monospace;
+                  font-weight: 700;
+                  color: var(--primary-neon);
+                  margin: 0 0 30px 0;
+                  text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
+                  letter-spacing: 1px;
+                "
+              >
+                hi there.
+              </h1>
+
+              <!-- Subtle decorative line -->
+              <div
+                style="
+                  width: 150px;
+                  height: 2px;
+                  background: linear-gradient(
+                    90deg,
+                    transparent,
+                    var(--primary-neon),
+                    transparent
+                  );
+                  margin: 0 auto 40px auto;
+                  opacity: 0.6;
+                "
+              ></div>
+
+              <p
+                id="home-subtitle"
+                style="
+                  font-size: 1.6rem;
+                  color: var(--text-secondary);
+                  margin: 0 auto 50px auto;
+                  max-width: 800px;
+                  line-height: 1.5;
+                  font-weight: 300;
+                  opacity: 0.9;
+                "
+              >
+                which one will it be today? Enter Name Here - it's a placeholder
+                for now.username if logged in
+              </p>
+            </div>
           </div>
 
           <!-- Non-Authenticated User Section -->
@@ -1406,5 +2101,382 @@
     </div>
 
     <!-- Scripts -->
+
+    <!-- 3D Title Manager Script -->
+    <script>
+      // 3D Title and Font Management System
+      class TitleManager {
+        constructor() {
+          this.fonts = [];
+          this.currentFont = "default";
+          this.init();
+        }
+
+        async init() {
+          console.log("🎨 Initializing 3D Title Manager...");
+          await this.loadAvailableFonts();
+          this.setupFontSelector();
+          this.setupTitleEffects();
+          this.addDebugLog("3D Title system initialized successfully");
+        }
+
+        async loadAvailableFonts() {
+          const fontFiles = [
+            {
+              name: "Neon Lights",
+              file: "neon-lights-font.zip",
+              class: "font-neon",
+            },
+            {
+              name: "Chromatic",
+              file: "c-chromatic-font.zip",
+              class: "font-chromatic",
+            },
+            { name: "Button", file: "button-font.zip", class: "font-button" },
+            {
+              name: "Excluded",
+              file: "excluded-font.zip",
+              class: "font-excluded",
+            },
+          ];
+
+          for (const font of fontFiles) {
+            try {
+              await this.loadFont(font);
+              this.fonts.push(font);
+              console.log(`✅ Loaded font: ${font.name}`);
+            } catch (error) {
+              console.warn(`⚠️ Could not load font ${font.name}:`, error);
+            }
+          }
+
+          this.addDebugLog(
+            `Loaded ${this.fonts.length} custom fonts from FONTS folder`
+          );
+        }
+
+        async loadFont(fontInfo) {
+          return new Promise((resolve, reject) => {
+            // For now, we'll simulate font loading since we can't directly extract from zip files
+            // In a real implementation, you'd need to extract the font files first
+            const fontFace = new FontFace(
+              fontInfo.name.replace(/\s+/g, ""),
+              `url('./assets/FONTS/${fontInfo.file}')`
+            );
+
+            fontFace
+              .load()
+              .then(() => {
+                document.fonts.add(fontFace);
+                resolve(fontInfo);
+              })
+              .catch(() => {
+                // Fallback: add font class without actual font loading
+                resolve(fontInfo);
+              });
+          });
+        }
+
+        setupFontSelector() {
+          const dropdown = document.getElementById("font-dropdown");
+          if (!dropdown) return;
+
+          // Add default option
+          dropdown.innerHTML =
+            '<option value="default">Default (Orbitron)</option>';
+
+          // Add custom font options
+          this.fonts.forEach((font) => {
+            const option = document.createElement("option");
+            option.value = font.class;
+            option.textContent = font.name;
+            dropdown.appendChild(option);
+          });
+
+          // Add event listener
+          dropdown.addEventListener("change", (e) => {
+            this.changeFont(e.target.value);
+          });
+
+          this.addDebugLog(
+            "Font selector initialized with " +
+              (this.fonts.length + 1) +
+              " options"
+          );
+        }
+
+        changeFont(fontClass) {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          // Remove all font classes
+          titleContainer.className = "title-3d";
+
+          // Add new font class if not default
+          if (fontClass !== "default") {
+            titleContainer.classList.add(fontClass);
+          }
+
+          this.currentFont = fontClass;
+          this.addDebugLog(`Font changed to: ${fontClass}`);
+
+          // Add transition effect
+          titleContainer.style.transition = "all 0.5s ease-in-out";
+          setTimeout(() => {
+            titleContainer.style.transition = "";
+          }, 500);
+        }
+
+        setupTitleEffects() {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          // Add data attributes for 3D effect
+          const line1 = titleContainer.querySelector(".title-line-1");
+          const line2 = titleContainer.querySelector(".title-line-2");
+
+          if (line1) {
+            line1.setAttribute("data-text", line1.textContent);
+          }
+          if (line2) {
+            line2.setAttribute("data-text", line2.textContent);
+          }
+
+          // Add mouse interaction effects
+          titleContainer.addEventListener("mouseenter", () => {
+            this.addTitleEffect("hover");
+          });
+
+          titleContainer.addEventListener("mouseleave", () => {
+            this.removeTitleEffect("hover");
+          });
+
+          // Add click effect
+          titleContainer.addEventListener("click", () => {
+            this.addTitleEffect("click");
+            setTimeout(() => this.removeTitleEffect("click"), 600);
+          });
+
+          // Setup action buttons
+          this.setupActionButtons();
+
+          this.addDebugLog("Title effects and interactions configured");
+        }
+
+        setupActionButtons() {
+          // Animate button
+          const animateBtn = document.getElementById("title-animate-btn");
+          if (animateBtn) {
+            animateBtn.addEventListener("click", () => {
+              this.triggerSpecialAnimation();
+            });
+          }
+
+          // Reset button
+          const resetBtn = document.getElementById("title-reset-btn");
+          if (resetBtn) {
+            resetBtn.addEventListener("click", () => {
+              this.resetTitleEffects();
+            });
+          }
+
+          // Fullscreen button
+          const fullscreenBtn = document.getElementById("title-fullscreen-btn");
+          if (fullscreenBtn) {
+            fullscreenBtn.addEventListener("click", () => {
+              this.toggleFullscreen();
+            });
+          }
+
+          this.addDebugLog("Action buttons configured");
+        }
+
+        triggerSpecialAnimation() {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          // Add special animation class
+          titleContainer.style.animation = "none";
+          setTimeout(() => {
+            titleContainer.style.animation =
+              "titleFloat 0.5s ease-in-out, titleGlow 0.3s ease-in-out infinite alternate";
+            titleContainer.style.transform =
+              "scale(1.2) rotateX(360deg) rotateY(360deg)";
+
+            setTimeout(() => {
+              titleContainer.style.transform = "";
+              titleContainer.style.animation = "";
+            }, 2000);
+          }, 10);
+
+          this.addDebugLog("Special animation triggered");
+        }
+
+        resetTitleEffects() {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          // Reset all styles
+          titleContainer.style.transform = "";
+          titleContainer.style.filter = "";
+          titleContainer.style.animation = "";
+
+          // Reset font to default
+          this.changeFont("default");
+
+          this.addDebugLog("Title effects reset");
+        }
+
+        toggleFullscreen() {
+          const container = document.querySelector(".title-header-section");
+          if (!container) return;
+
+          if (!document.fullscreenElement) {
+            container
+              .requestFullscreen()
+              .then(() => {
+                container.style.fontSize = "1.5rem";
+                this.addDebugLog("Entered fullscreen mode");
+              })
+              .catch((err) => {
+                console.warn("Could not enter fullscreen:", err);
+              });
+          } else {
+            document.exitFullscreen().then(() => {
+              container.style.fontSize = "";
+              this.addDebugLog("Exited fullscreen mode");
+            });
+          }
+        }
+
+        addTitleEffect(type) {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          switch (type) {
+            case "hover":
+              titleContainer.style.transform =
+                "scale(1.05) rotateX(0deg) rotateY(0deg)";
+              titleContainer.style.filter = "brightness(1.2)";
+              break;
+            case "click":
+              titleContainer.style.transform = "scale(0.95)";
+              titleContainer.style.filter = "brightness(1.5)";
+              break;
+          }
+        }
+
+        removeTitleEffect(type) {
+          const titleContainer = document.getElementById("main-title");
+          if (!titleContainer) return;
+
+          titleContainer.style.transform = "";
+          titleContainer.style.filter = "";
+        }
+
+        addDebugLog(message) {
+          console.log(`🎨 [Title Manager] ${message}`);
+        }
+
+        // Public method to get current font info
+        getCurrentFont() {
+          return {
+            class: this.currentFont,
+            name:
+              this.currentFont === "default"
+                ? "Default (Orbitron)"
+                : this.fonts.find((f) => f.class === this.currentFont)?.name ||
+                  "Unknown",
+          };
+        }
+      }
+
+      // Initialize when DOM is loaded
+      document.addEventListener("DOMContentLoaded", () => {
+        window.titleManager = new TitleManager();
+      });
+
+      // Add some extra jaw-dropping effects
+      document.addEventListener("DOMContentLoaded", () => {
+        // Add particle effect background
+        createParticleBackground();
+
+        // Add typing effect for subtitle
+        setTimeout(() => {
+          typeWriterEffect();
+        }, 2000);
+      });
+
+      function createParticleBackground() {
+        const container = document.getElementById("title-container");
+        if (!container) return;
+
+        const particleContainer = document.createElement("div");
+        particleContainer.style.cssText = `
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          pointer-events: none;
+          z-index: 1;
+          overflow: hidden;
+        `;
+
+        // Create floating particles
+        for (let i = 0; i < 20; i++) {
+          const particle = document.createElement("div");
+          particle.style.cssText = `
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, #00f0ff, transparent);
+            border-radius: 50%;
+            animation: float ${3 + Math.random() * 4}s ease-in-out infinite;
+            animation-delay: ${Math.random() * 2}s;
+            left: ${Math.random() * 100}%;
+            top: ${Math.random() * 100}%;
+          `;
+          particleContainer.appendChild(particle);
+        }
+
+        container.style.position = "relative";
+        container.appendChild(particleContainer);
+
+        // Add floating animation
+        const style = document.createElement("style");
+        style.textContent = `
+          @keyframes float {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.3; }
+            25% { transform: translateY(-20px) translateX(10px); opacity: 0.8; }
+            50% { transform: translateY(-10px) translateX(-10px); opacity: 1; }
+            75% { transform: translateY(-30px) translateX(5px); opacity: 0.6; }
+          }
+        `;
+        document.head.appendChild(style);
+      }
+
+      function typeWriterEffect() {
+        const subtitle = document.getElementById("home-subtitle");
+        if (!subtitle) return;
+
+        const originalText = subtitle.textContent;
+        subtitle.textContent = "";
+        subtitle.style.borderRight = "2px solid #00f0ff";
+
+        let i = 0;
+        const typeInterval = setInterval(() => {
+          if (i < originalText.length) {
+            subtitle.textContent += originalText.charAt(i);
+            i++;
+          } else {
+            clearInterval(typeInterval);
+            setTimeout(() => {
+              subtitle.style.borderRight = "none";
+            }, 1000);
+          }
+        }, 50);
+      }
+    </script>
   </body>
 </html>

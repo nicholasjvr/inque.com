@@ -16,6 +16,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut,
+  updateProfile,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 // Debug logging
@@ -159,7 +160,7 @@ class MyProjectsManager {
       }
     });
 
-    DEBUG.log("My Projects Manager initialized");
+    DEBUG.log("My Projects Manager initialized - Features ready to initialize");
   }
 
   async handleUserLogin(user) {
@@ -173,12 +174,15 @@ class MyProjectsManager {
       this.updateUIForLoggedInUser();
 
       // Load widgets
+      DEBUG.log("Initializing widget loading feature");
       await this.loadUserWidgets();
 
       // Set up timeline listener
+      DEBUG.log("Initializing timeline listener feature");
       this.setupTimelineListener();
 
       // Update stats
+      DEBUG.log("Initializing profile stats feature");
       this.updateProfileStats();
     } catch (error) {
       DEBUG.error("Error handling user login", error);
@@ -294,26 +298,63 @@ class MyProjectsManager {
 
       DEBUG.log("Loading user widgets", { userId: this.currentUser.uid });
 
-      const widgetsQuery = query(
-        collection(db, "widgets"),
-        where("userId", "==", this.currentUser.uid),
-        orderBy("createdAt", "desc"),
-        limit(20)
-      );
+      // Try the optimized query first, fallback to simple query if index missing
+      let widgetsQuery;
+      try {
+        widgetsQuery = query(
+          collection(db, "widgets"),
+          where("userId", "==", this.currentUser.uid),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        );
+        const querySnapshot = await getDocs(widgetsQuery);
+        this.widgets = [];
 
-      const querySnapshot = await getDocs(widgetsQuery);
-      this.widgets = [];
+        querySnapshot.forEach((doc) => {
+          const widget = { id: doc.id, ...doc.data() };
+          this.widgets.push(widget);
+        });
+      } catch (indexError) {
+        DEBUG.warn("Index not available, using fallback query", indexError);
+        // Fallback query without orderBy
+        widgetsQuery = query(
+          collection(db, "widgets"),
+          where("userId", "==", this.currentUser.uid),
+          limit(20)
+        );
 
-      querySnapshot.forEach((doc) => {
-        const widget = { id: doc.id, ...doc.data() };
-        this.widgets.push(widget);
-      });
+        const querySnapshot = await getDocs(widgetsQuery);
+        this.widgets = [];
+
+        querySnapshot.forEach((doc) => {
+          const widget = { id: doc.id, ...doc.data() };
+          this.widgets.push(widget);
+        });
+
+        // Sort manually by creation date
+        this.widgets.sort((a, b) => {
+          const aTime = a.createdAt?.toDate?.() || new Date(0);
+          const bTime = b.createdAt?.toDate?.() || new Date(0);
+          return bTime - aTime; // Descending order
+        });
+      }
 
       DEBUG.log("User widgets loaded", { count: this.widgets.length });
       this.renderWidgets();
     } catch (error) {
       DEBUG.error("Failed to load user widgets", error);
-      this.showToast("Failed to load widgets", "error");
+
+      if (error.code === "failed-precondition") {
+        this.showToast(
+          "Database index is being created. Please refresh in a moment.",
+          "warning"
+        );
+      } else {
+        this.showToast(
+          "Failed to load widgets. Please check your connection.",
+          "error"
+        );
+      }
     }
   }
 
@@ -369,24 +410,32 @@ class MyProjectsManager {
       this.timelineUnsubscribe();
     }
 
-    const timelineQuery = query(
-      collection(db, "notifications"),
-      where("userId", "==", this.currentUser.uid),
-      orderBy("timestamp", "desc"),
-      limit(10)
-    );
+    try {
+      const timelineQuery = query(
+        collection(db, "notifications"),
+        where("userId", "==", this.currentUser.uid),
+        orderBy("timestamp", "desc"),
+        limit(10)
+      );
 
-    this.timelineUnsubscribe = onSnapshot(
-      timelineQuery,
-      (snapshot) => {
-        this.renderTimeline(
-          snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
-        );
-      },
-      (error) => {
-        DEBUG.error("Timeline listener error", error);
-      }
-    );
+      this.timelineUnsubscribe = onSnapshot(
+        timelineQuery,
+        (snapshot) => {
+          this.renderTimeline(
+            snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+          );
+        },
+        (error) => {
+          DEBUG.error("Timeline listener error", error);
+          // Show fallback timeline on error
+          this.renderTimeline([]);
+        }
+      );
+    } catch (error) {
+      DEBUG.error("Failed to setup timeline listener", error);
+      // Show fallback timeline
+      this.renderTimeline([]);
+    }
   }
 
   renderTimeline(notifications) {
@@ -728,11 +777,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   try {
     const myProjectsManager = new MyProjectsManager();
+    window.myProjectsManager = myProjectsManager; // Make globally accessible
     DEBUG.log("My Projects page ready");
   } catch (error) {
     DEBUG.error("Failed to initialize My Projects", error);
   }
 });
+
+// Global function for onclick handlers
+window.openChatbot = function () {
+  if (window.myProjectsManager) {
+    window.myProjectsManager.openChatbot();
+  } else {
+    console.warn("[MY PROJECTS] MyProjectsManager not found");
+  }
+};
 
 // Export for potential use by other modules
 export default MyProjectsManager;

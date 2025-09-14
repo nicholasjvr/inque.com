@@ -330,7 +330,31 @@ async function loadQuipIntoIframe(project, iframeEl) {
     }
 
     DEBUG.log("Timeline Manager: Loading quip HTML", { htmlFileName });
-    const res = await fetch(fileMap[htmlFileName]);
+
+    // Add error handling for fetch
+    let res;
+    try {
+      res = await fetch(fileMap[htmlFileName]);
+      if (!res.ok) {
+        throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+      }
+    } catch (fetchError) {
+      DEBUG.error("Timeline Manager: Failed to fetch quip HTML", {
+        url: fileMap[htmlFileName],
+        error: fetchError.message,
+      });
+
+      // Show error in iframe
+      iframeEl.srcdoc = `
+        <div style="padding: 20px; text-align: center; color: #ff4444; background: rgba(255,68,68,0.1); border-radius: 8px; font-family: Arial, sans-serif;">
+          <h3>⚠️ Preview Unavailable</h3>
+          <p>Unable to load widget preview</p>
+          <small>Error: ${fetchError.message}</small>
+        </div>
+      `;
+      return;
+    }
+
     const originalHtml = await res.text();
 
     const resolveMappedUrl = (path) => {
@@ -384,7 +408,15 @@ async function loadQuipIntoIframe(project, iframeEl) {
     DEBUG.log("Timeline Manager: Quip iframe set with enhanced blob URL");
   } catch (error) {
     DEBUG.error("Timeline Manager: Error preparing quip iframe", error);
-    throw error;
+
+    // Show error in iframe instead of throwing
+    iframeEl.srcdoc = `
+      <div style="padding: 20px; text-align: center; color: #ff4444; background: rgba(255,68,68,0.1); border-radius: 8px; font-family: Arial, sans-serif;">
+        <h3>⚠️ Preview Error</h3>
+        <p>Unable to load widget preview</p>
+        <small>Error: ${error.message}</small>
+      </div>
+    `;
   }
 }
 
