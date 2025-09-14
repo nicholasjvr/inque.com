@@ -240,6 +240,10 @@ function initializeAuthModal() {
   const forgotPasswordLink = document.getElementById("forgotPasswordLink");
   const forgotPasswordForm = document.getElementById("forgotPasswordForm");
 
+  // Add Google and GitHub login buttons
+  const googleLoginBtn = document.getElementById("googleLoginBtn");
+  const githubLoginBtn = document.getElementById("githubLoginBtn");
+
   if (!authModal || !authCloseBtn || !loginForm || !signUpForm) {
     DEBUG.warn("Some auth modal elements not found", {
       authModal: !!authModal,
@@ -248,6 +252,61 @@ function initializeAuthModal() {
       signUpForm: !!signUpForm,
     });
     return;
+  }
+
+  // Initialize Google and GitHub login buttons
+  if (googleLoginBtn) {
+    DEBUG.log("Google login button found, setting up event listener");
+    googleLoginBtn.addEventListener("click", async () => {
+      try {
+        DEBUG.log("Google login button clicked");
+        // Import Firebase auth functions dynamically
+        const { GoogleAuthProvider, signInWithPopup } = await import(
+          "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"
+        );
+        const { auth } = await import("./core/firebase-core.js");
+
+        const provider = new GoogleAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        DEBUG.log("Google login successful", { user: result.user.displayName });
+
+        // Close auth modal
+        authModal.style.display = "none";
+        document.body.style.overflow = "";
+      } catch (error) {
+        DEBUG.error("Google login failed", error);
+        alert(`Google login failed: ${error.message}`);
+      }
+    });
+  } else {
+    DEBUG.warn("Google login button not found in DOM");
+  }
+
+  if (githubLoginBtn) {
+    DEBUG.log("GitHub login button found, setting up event listener");
+    githubLoginBtn.addEventListener("click", async () => {
+      try {
+        DEBUG.log("GitHub login button clicked");
+        // Import Firebase auth functions dynamically
+        const { GithubAuthProvider, signInWithPopup } = await import(
+          "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js"
+        );
+        const { auth } = await import("./core/firebase-core.js");
+
+        const provider = new GithubAuthProvider();
+        const result = await signInWithPopup(auth, provider);
+        DEBUG.log("GitHub login successful", { user: result.user.displayName });
+
+        // Close auth modal
+        authModal.style.display = "none";
+        document.body.style.overflow = "";
+      } catch (error) {
+        DEBUG.error("GitHub login failed", error);
+        alert(`GitHub login failed: ${error.message}`);
+      }
+    });
+  } else {
+    DEBUG.warn("GitHub login button not found in DOM");
   }
 
   // Toggle forms
@@ -4041,3 +4100,36 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 DEBUG.log("Enhanced inque social app initialization complete");
+
+// Add this at the end of the file
+document.addEventListener("DOMContentLoaded", () => {
+  DEBUG.log("DOM Content Loaded - Starting enhanced initialization");
+
+  // Add debug logging for feature initialization
+  setTimeout(() => {
+    DEBUG.log("Checking feature initialization status");
+
+    // Check auth system
+    if (window.socialAuth) {
+      DEBUG.log("Social auth system initialized");
+    } else {
+      DEBUG.warn("Social auth system not initialized");
+    }
+
+    // Check Firebase
+    if (window.db && window.auth) {
+      DEBUG.log("Firebase services available");
+    } else {
+      DEBUG.warn("Firebase services not available");
+    }
+
+    // Check DOM elements
+    const authModal = document.getElementById("authModal");
+    const googleBtn = document.getElementById("googleLoginBtn");
+
+    DEBUG.log("Critical DOM elements status", {
+      authModal: !!authModal,
+      googleLoginBtn: !!googleBtn,
+    });
+  }, 2000);
+});

@@ -847,10 +847,6 @@ class ProfileHubManager {
     this.repositionOpenModals(newPosition);
   }
 
-  // updateModalPositions method removed to prevent breakpoints
-
-  // getModalPositionConfigs method removed to prevent breakpoints
-
   /**
    * Update a specific modal's position
    */
@@ -1493,6 +1489,9 @@ async function loadProfileHubHTML() {
   try {
     console.log("[PROFILE HUB] Loading ProfileHub HTML content...");
 
+    // Add a small delay to ensure DOM is ready
+    await new Promise((resolve) => setTimeout(resolve, 100));
+
     const response = await fetch("pages/page_modals/profile_banner.html");
     if (!response.ok) {
       throw new Error(`Failed to load ProfileHub HTML: ${response.status}`);
@@ -1504,15 +1503,31 @@ async function loadProfileHubHTML() {
     if (container) {
       container.innerHTML = htmlContent;
       console.log("[PROFILE HUB] ProfileHub HTML content loaded successfully");
+
+      // Initialize ProfileHub after loading
+      initializeProfileHub();
     } else {
       console.warn("[PROFILE HUB] ProfileHub container not found");
+      // Try to create the container
+      createProfileHubContainer();
     }
   } catch (error) {
     console.error("[PROFILE HUB] Error loading ProfileHub HTML:", error);
-
     // Fallback: create basic ProfileHub structure
     createFallbackProfileHub();
   }
+}
+
+// Add this function to create the container if it doesn't exist
+function createProfileHubContainer() {
+  const container = document.createElement("div");
+  container.id = "profileHubContainer";
+  container.style.position = "fixed";
+  container.style.top = "20px";
+  container.style.right = "20px";
+  container.style.zIndex = "1000";
+  document.body.appendChild(container);
+  console.log("[PROFILE HUB] Created ProfileHub container");
 }
 
 // Fallback ProfileHub creation if HTML loading fails

@@ -1,4 +1,4 @@
-// scripts/widget-display.js
+// Enhanced Widget Display System with Quip Management and WebGL Support
 import { db, auth, storage } from "../../core/firebase-core.js";
 import {
   doc,
@@ -12,6 +12,7 @@ import {
   arrayRemove,
   setDoc,
   deleteDoc,
+  serverTimestamp,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   ref,
@@ -19,6 +20,7 @@ import {
   getDownloadURL,
   uploadBytes,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
+import profileDashboardManager from "./profile-dashboard-manager.js";
 
 /**
  * Widget Display System
@@ -31,6 +33,8 @@ export class WidgetDisplay {
     this.currentUser = null;
     this.userWidgets = []; // Array of widget IDs
     this.widgetData = {}; // Cache for widget metadata
+    this.userQuips = []; // Array of quip IDs
+    this.quipData = {}; // Cache for quip metadata
     this.debugMode = true;
   }
 
@@ -45,7 +49,7 @@ export class WidgetDisplay {
   }
 
   /**
-   * Initialize the widget display system
+   * Initialize the widget display system with quip support
    */
   async init() {
     this.currentUser = auth.currentUser;
@@ -54,9 +58,11 @@ export class WidgetDisplay {
       return;
     }
 
-    this.log("Initializing widget display system");
+    this.log("Initializing enhanced widget display system with quip support");
     await this.loadUserWidgets();
+    await this.loadUserQuips();
     this.setupWidgetSlots();
+    this.setupQuipSlots();
     this.setupProfileMenuIntegration();
   }
 
@@ -101,6 +107,46 @@ export class WidgetDisplay {
   }
 
   /**
+   * Load user's quip data from Firestore
+   */
+  async loadUserQuips() {
+    try {
+      const quipsRef = collection(db, "quips");
+      const q = query(quipsRef, where("userId", "==", this.currentUser.uid));
+      const querySnapshot = await getDocs(q);
+
+      this.userQuips = querySnapshot.docs.map((doc) => doc.id);
+      this.log("Loaded user quips", {
+        quipCount: this.userQuips.length,
+      });
+
+      // Load quip metadata
+      await this.loadQuipMetadata();
+    } catch (error) {
+      this.error("Error loading user quips", error);
+    }
+  }
+
+  /**
+   * Load metadata for all user quips
+   */
+  async loadQuipMetadata() {
+    try {
+      for (const quipId of this.userQuips) {
+        const quipDoc = await getDoc(doc(db, "quips", quipId));
+        if (quipDoc.exists()) {
+          this.quipData[quipId] = quipDoc.data();
+        }
+      }
+      this.log("Loaded quip metadata", {
+        quipCount: Object.keys(this.quipData).length,
+      });
+    } catch (error) {
+      this.error("Error loading quip metadata", error);
+    }
+  }
+
+  /**
    * Helper function to find HTML file in widget files array
    */
   findHtmlFile(files) {
@@ -127,6 +173,41 @@ export class WidgetDisplay {
       const slotNumber = container.dataset.widgetSlot;
       this.renderWidgetSlot(container, slotNumber);
     });
+  }
+
+  /**
+   * Setup quip slots for enhanced WebGL rendering
+   */
+  setupQuipSlots() {
+    const quipContainers = document.querySelectorAll(
+      ".quip-slot, .quip-preview, .timeline-event-card"
+    );
+    quipContainers.forEach((container, index) => {
+      this.renderQuipSlot(container, index + 1);
+    });
+  }
+
+  /**
+   * Render a specific quip slot with WebGL support
+   */
+  async renderQuipSlot(container, slotNumber) {
+    // Find quip for this slot
+    const quipForSlot = Object.values(this.quipData).find(
+      (quip) => quip.slot === parseInt(slotNumber)
+    );
+
+    if (
+      quipForSlot &&
+      quipForSlot.files &&
+      this.findHtmlFile(quipForSlot.files)
+    ) {
+      // Quip exists - show WebGL-enhanced iframe
+      const htmlFile = this.findHtmlFile(quipForSlot.files);
+      this.showQuipIframe(container, htmlFile.downloadURL, quipForSlot);
+    } else {
+      // No quip - show empty state
+      this.showEmptyQuipSlot(container, slotNumber);
+    }
   }
 
   /**
@@ -211,6 +292,95 @@ export class WidgetDisplay {
     `;
 
     this.setupWidgetActionHandlers(container);
+  }
+
+  /**
+   * Show quip in WebGL-enhanced iframe
+   */
+  showQuipIframe(container, htmlUrl, quipData) {
+    container.innerHTML = `
+      <div class="quip-container">
+        <div class="quip-header">
+          <h3 style="color: #00f0ff; font-family: JetBrains Mono;">${quipData.title || "Untitled Quip"}</h3>
+          <div class="quip-badges">
+            <span class="quip-type-badge" style="background: rgba(0,240,255,0.2); color: #00f0ff; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">QUIP</span>
+            ${quipData.webglEnabled ? '<span class="webgl-badge" style="background: rgba(255,0,255,0.2); color: #ff00ff; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">WebGL</span>' : ""}
+          </div>
+          <div class="quip-actions">
+            <button class="btn btn-primary interact-quip-btn" data-quip-id="${quipData.id}">
+              <span>🎮</span>
+              Interact
+            </button>
+            <button class="btn btn-secondary edit-quip-btn" data-quip-id="${quipData.id}">
+              <span>✏️</span>
+              Edit
+            </button>
+            <button class="btn btn-secondary preview-quip-btn" data-quip-id="${quipData.id}">
+              <span>👁️</span>
+              Full View
+            </button>
+            <button class="btn btn-danger delete-quip-btn" data-quip-id="${quipData.id}">
+              <span>🗑️</span>
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="quip-frame-container">
+          <iframe 
+            src="${htmlUrl}" 
+            class="quip-iframe webgl-enabled"
+            frameborder="0"
+            loading="lazy"
+            sandbox="allow-scripts allow-same-origin allow-forms allow-webgl allow-pointer-lock"
+            style="width: 100%; height: 300px; border-radius: 12px; border: 2px solid #00f0ff; background: #0a0a0a;"
+            title="Quip Preview - ${quipData.title || "Untitled Quip"}"
+          ></iframe>
+        </div>
+        <div class="quip-info">
+          <p style="color: #a0a0a0; margin: 8px 0;">${quipData.description || "No description available"}</p>
+          <div class="quip-meta">
+            <span class="quip-interactions" style="color: #00f0ff;">Interactions: ${quipData.interactionCount || 0}</span>
+            <span class="quip-category" style="color: #ff00ff;">Category: ${quipData.category || "general"}</span>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Apply custom dashboard styling if available
+    const iframe = container.querySelector(".quip-iframe");
+    if (
+      profileDashboardManager &&
+      typeof profileDashboardManager.applyDashboardSettings === "function"
+    ) {
+      profileDashboardManager.applyDashboardSettings(iframe, {
+        borderColor: "#00f0ff",
+        borderWidth: "2px",
+        borderRadius: "12px",
+        shadow:
+          "0 0 20px rgba(0, 240, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+      });
+    }
+
+    this.setupQuipActionHandlers(container);
+  }
+
+  /**
+   * Show empty quip slot
+   */
+  showEmptyQuipSlot(container, slotNumber) {
+    container.innerHTML = `
+      <div class="empty-quip-slot" style="text-align: center; padding: 40px; border: 2px dashed #333; border-radius: 12px; background: rgba(0,240,255,0.05);">
+        <div style="font-size: 3rem; margin-bottom: 16px; color: #00f0ff;">🎮</div>
+        <h3 style="color: #00f0ff; margin-bottom: 8px; font-family: JetBrains Mono;">Empty Quip Slot ${slotNumber}</h3>
+        <p style="color: #a0a0a0; margin-bottom: 16px;">Create an interactive WebGL quip to fill this slot</p>
+        <button class="btn btn-primary create-quip-btn" data-slot="${slotNumber}" style="background: rgba(0,240,255,0.1); border: 1px solid #00f0ff; color: #00f0ff; padding: 8px 16px; border-radius: 6px;">
+          <span>➕</span>
+          Create Quip
+        </button>
+      </div>
+    `;
+
+    this.setupEmptyQuipHandlers(container);
   }
 
   /**
@@ -364,6 +534,60 @@ export class WidgetDisplay {
         const widgetId =
           e.target.closest(".delete-widget-btn").dataset.widgetId;
         this.deleteWidget(widgetId);
+      });
+    }
+  }
+
+  /**
+   * Setup quip action handlers
+   */
+  setupQuipActionHandlers(container) {
+    // Interact with quip
+    const interactBtn = container.querySelector(".interact-quip-btn");
+    if (interactBtn) {
+      interactBtn.addEventListener("click", (e) => {
+        const quipId = e.target.closest(".interact-quip-btn").dataset.quipId;
+        this.interactWithQuip(quipId);
+      });
+    }
+
+    // Edit quip
+    const editBtn = container.querySelector(".edit-quip-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", (e) => {
+        const quipId = e.target.closest(".edit-quip-btn").dataset.quipId;
+        this.editQuip(quipId);
+      });
+    }
+
+    // Preview quip
+    const previewBtn = container.querySelector(".preview-quip-btn");
+    if (previewBtn) {
+      previewBtn.addEventListener("click", (e) => {
+        const quipId = e.target.closest(".preview-quip-btn").dataset.quipId;
+        this.previewQuip(quipId);
+      });
+    }
+
+    // Delete quip
+    const deleteBtn = container.querySelector(".delete-quip-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        const quipId = e.target.closest(".delete-quip-btn").dataset.quipId;
+        this.deleteQuip(quipId);
+      });
+    }
+  }
+
+  /**
+   * Setup empty quip slot handlers
+   */
+  setupEmptyQuipHandlers(container) {
+    const createBtn = container.querySelector(".create-quip-btn");
+    if (createBtn) {
+      createBtn.addEventListener("click", (e) => {
+        const slotNumber = e.target.closest(".create-quip-btn").dataset.slot;
+        this.createNewQuip(slotNumber);
       });
     }
   }
@@ -612,6 +836,160 @@ export class WidgetDisplay {
         }
       });
     }
+  }
+
+  /**
+   * Interact with quip (focus iframe and track interaction)
+   */
+  async interactWithQuip(quipId) {
+    const quipData = this.quipData[quipId];
+    if (!quipData) {
+      this.showToast("Quip not found", "error");
+      return;
+    }
+
+    // Focus the quip iframe
+    const iframe = document.querySelector(
+      `[data-quip-id="${quipId}"] .quip-iframe`
+    );
+    if (iframe) {
+      iframe.focus();
+      iframe.style.borderColor = "#ffff00";
+      setTimeout(() => {
+        iframe.style.borderColor = "#00f0ff";
+      }, 2000);
+    }
+
+    // Track interaction
+    try {
+      await updateDoc(doc(db, "quips", quipId), {
+        interactionCount: (quipData.interactionCount || 0) + 1,
+        lastInteracted: serverTimestamp(),
+      });
+      this.log("Quip interaction tracked", { quipId });
+    } catch (error) {
+      this.error("Failed to track quip interaction", error);
+    }
+  }
+
+  /**
+   * Edit quip
+   */
+  editQuip(quipId) {
+    const quipData = this.quipData[quipId];
+    if (!quipData) {
+      this.showToast("Quip not found", "error");
+      return;
+    }
+
+    // Navigate to widget studio with quip data
+    const editUrl = `pages/widget_studio.html?edit=${quipId}`;
+    window.location.href = editUrl;
+  }
+
+  /**
+   * Preview quip in modal
+   */
+  previewQuip(quipId) {
+    const quipData = this.quipData[quipId];
+    if (!quipData) {
+      this.showToast("Quip not found", "error");
+      return;
+    }
+
+    const htmlFile = this.findHtmlFile(quipData.files);
+    if (!htmlFile || !htmlFile.downloadURL) {
+      this.showToast("Quip HTML file not found", "error");
+      return;
+    }
+
+    // Create modal if it doesn't exist
+    let modal = document.getElementById("quipPreviewModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "quipPreviewModal";
+      modal.className = "modal";
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+          <div class="modal-header">
+            <h3>Quip Preview</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <iframe 
+              src="${htmlFile.downloadURL}" 
+              style="width: 100%; height: 70vh; border: none; border-radius: 8px;"
+              sandbox="allow-scripts allow-same-origin allow-forms allow-webgl allow-pointer-lock"
+            ></iframe>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    // Update modal content
+    const iframe = modal.querySelector("iframe");
+    iframe.src = htmlFile.downloadURL;
+    modal.querySelector("h3").textContent =
+      `Quip Preview - ${quipData.title || "Untitled Quip"}`;
+
+    // Show modal
+    modal.style.display = "flex";
+
+    // Close modal handlers
+    modal.querySelector(".modal-close").onclick = () => {
+      modal.style.display = "none";
+    };
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  }
+
+  /**
+   * Delete quip
+   */
+  async deleteQuip(quipId) {
+    const quipData = this.quipData[quipId];
+    if (!quipData) {
+      this.showToast("Quip not found", "error");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Are you sure you want to delete "${quipData.title || "Untitled Quip"}"?`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      await deleteDoc(doc(db, "quips", quipId));
+
+      // Remove from local data
+      delete this.quipData[quipId];
+      this.userQuips = this.userQuips.filter((id) => id !== quipId);
+
+      this.showToast("Quip deleted successfully", "success");
+      this.log("Quip deleted", { quipId });
+
+      // Refresh the display
+      this.setupQuipSlots();
+    } catch (error) {
+      this.error("Failed to delete quip", error);
+      this.showToast("Failed to delete quip", "error");
+    }
+  }
+
+  /**
+   * Create new quip
+   */
+  createNewQuip(slotNumber) {
+    // Navigate to widget studio with slot information
+    const createUrl = `pages/widget_studio.html?slot=${slotNumber}&type=quip`;
+    window.location.href = createUrl;
   }
 
   /**

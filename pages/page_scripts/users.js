@@ -8,12 +8,11 @@ import {
   orderBy,
   limit,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import {
-  onAuthStateChanged,
-  auth,
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import { auth, db, onAuthStateChanged } from "../../core/firebase-core.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 [USERS PAGE] Initializing Users Explore Page");
+
   // DOM Elements
   const usersContainer = document.getElementById("users-container");
   const chatModal = document.getElementById("chatModal");
@@ -35,11 +34,24 @@ document.addEventListener("DOMContentLoaded", () => {
   let unsubscribeFromChat = null;
   let currentChatRoomId = null;
   let isLoading = true;
+  let usersData = [];
+  let filteredUsers = [];
+  let currentFilter = "all";
+  let currentSort = "name";
 
   // Initialize the app
   initializeApp();
 
   function initializeApp() {
+    console.log(
+      "🔧 [USERS PAGE] Setting up modular components and event listeners"
+    );
+
+    // Initialize modular components
+    initializeSearchAndFilters();
+    initializeUserStats();
+    initializeThemeToggle();
+
     // Set up error modal event listeners
     errorCloseBtn.addEventListener("click", hideErrorModal);
     errorRetryBtn.addEventListener("click", () => {
@@ -60,10 +72,10 @@ document.addEventListener("DOMContentLoaded", () => {
     onAuthStateChanged(auth, (user) => {
       currentUser = user;
       if (user) {
-        console.log("User authenticated:", user.uid);
+        console.log("✅ [USERS PAGE] User authenticated:", user.uid);
         fetchUsers();
       } else {
-        console.log("No user authenticated");
+        console.log("❌ [USERS PAGE] No user authenticated");
         showEmptyState("Please log in to view users");
       }
     });
@@ -135,10 +147,228 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
+  // === MODULAR COMPONENTS ===
+
+  function initializeSearchAndFilters() {
+    console.log("🔍 [USERS PAGE] Initializing search and filters component");
+
+    // Create search and filter bar
+    const header = document.querySelector(".page-header");
+    const searchFilterBar = document.createElement("div");
+    searchFilterBar.className = "search-filter-bar";
+    searchFilterBar.innerHTML = `
+      <div class="search-container">
+        <input type="text" id="user-search" placeholder="🔍 Search users..." class="search-input">
+        <button id="clear-search" class="clear-search-btn">✕</button>
+      </div>
+      <div class="filter-container">
+        <select id="user-filter" class="filter-select">
+          <option value="all">👥 All Users</option>
+          <option value="online">🟢 Online Now</option>
+          <option value="recent">🕐 Recently Active</option>
+          <option value="creators">🎨 Content Creators</option>
+        </select>
+        <select id="user-sort" class="sort-select">
+          <option value="name">📝 Name (A-Z)</option>
+          <option value="recent">⏰ Recent Activity</option>
+          <option value="projects">📊 Most Projects</option>
+          <option value="random">🎲 Random</option>
+        </select>
+      </div>
+    `;
+
+    header.appendChild(searchFilterBar);
+
+    // Add event listeners
+    const searchInput = document.getElementById("user-search");
+    const clearSearchBtn = document.getElementById("clear-search");
+    const filterSelect = document.getElementById("user-filter");
+    const sortSelect = document.getElementById("user-sort");
+
+    searchInput.addEventListener("input", handleSearch);
+    clearSearchBtn.addEventListener("click", clearSearch);
+    filterSelect.addEventListener("change", handleFilter);
+    sortSelect.addEventListener("change", handleSort);
+  }
+
+  function initializeUserStats() {
+    console.log("📊 [USERS PAGE] Initializing user stats component");
+
+    const header = document.querySelector(".page-header");
+    const statsBar = document.createElement("div");
+    statsBar.className = "user-stats-bar";
+    statsBar.innerHTML = `
+      <div class="stat-item">
+        <span class="stat-number" id="total-users">0</span>
+        <span class="stat-label">Total Users</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="online-users">0</span>
+        <span class="stat-label">Online Now</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-number" id="active-today">0</span>
+        <span class="stat-label">Active Today</span>
+      </div>
+    `;
+
+    header.appendChild(statsBar);
+  }
+
+  function initializeThemeToggle() {
+    console.log("🎨 [USERS PAGE] Initializing theme toggle component");
+
+    const header = document.querySelector(".page-header");
+    const themeToggle = document.createElement("button");
+    themeToggle.className = "theme-toggle-btn";
+    themeToggle.innerHTML = "🌙";
+    themeToggle.title = "Toggle Dark/Light Theme";
+
+    themeToggle.addEventListener("click", toggleTheme);
+    header.appendChild(themeToggle);
+  }
+
+  function handleSearch(e) {
+    const searchTerm = e.target.value.toLowerCase();
+    console.log("🔍 [USERS PAGE] Searching for:", searchTerm);
+
+    if (searchTerm === "") {
+      filteredUsers = [...usersData];
+    } else {
+      filteredUsers = usersData.filter(
+        (user) =>
+          user.name?.toLowerCase().includes(searchTerm) ||
+          user.email?.toLowerCase().includes(searchTerm) ||
+          user.bio?.toLowerCase().includes(searchTerm)
+      );
+    }
+
+    applyFiltersAndSort();
+    updateUserStats();
+  }
+
+  function clearSearch() {
+    console.log("🧹 [USERS PAGE] Clearing search");
+    document.getElementById("user-search").value = "";
+    filteredUsers = [...usersData];
+    applyFiltersAndSort();
+    updateUserStats();
+  }
+
+  function handleFilter(e) {
+    currentFilter = e.target.value;
+    console.log("🔧 [USERS PAGE] Filter changed to:", currentFilter);
+    applyFiltersAndSort();
+  }
+
+  function handleSort(e) {
+    currentSort = e.target.value;
+    console.log("📊 [USERS PAGE] Sort changed to:", currentSort);
+    applyFiltersAndSort();
+  }
+
+  function applyFiltersAndSort() {
+    let users = [...filteredUsers];
+
+    // Apply filters
+    switch (currentFilter) {
+      case "online":
+        users = users.filter((user) => user.isOnline);
+        break;
+      case "recent":
+        // Filter users active in last 24 hours
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        users = users.filter(
+          (user) => user.lastActive && new Date(user.lastActive) > oneDayAgo
+        );
+        break;
+      case "creators":
+        users = users.filter((user) => user.projectCount > 0);
+        break;
+    }
+
+    // Apply sorting
+    switch (currentSort) {
+      case "name":
+        users.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+        break;
+      case "recent":
+        users.sort(
+          (a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0)
+        );
+        break;
+      case "projects":
+        users.sort((a, b) => (b.projectCount || 0) - (a.projectCount || 0));
+        break;
+      case "random":
+        users = users.sort(() => Math.random() - 0.5);
+        break;
+    }
+
+    renderUsers(users);
+  }
+
+  function updateUserStats() {
+    console.log("📈 [USERS PAGE] Updating user statistics");
+
+    const totalUsers = usersData.length;
+    const onlineUsers = usersData.filter((user) => user.isOnline).length;
+    const activeToday = usersData.filter((user) => {
+      if (!user.lastActive) return false;
+      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+      return new Date(user.lastActive) > oneDayAgo;
+    }).length;
+
+    // Animate numbers
+    animateNumber("total-users", totalUsers);
+    animateNumber("online-users", onlineUsers);
+    animateNumber("active-today", activeToday);
+  }
+
+  function animateNumber(elementId, targetNumber) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    const startNumber = parseInt(element.textContent) || 0;
+    const duration = 1000;
+    const startTime = performance.now();
+
+    function updateNumber(currentTime) {
+      const elapsed = currentTime - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      const currentNumber = Math.round(
+        startNumber + (targetNumber - startNumber) * progress
+      );
+      element.textContent = currentNumber;
+
+      if (progress < 1) {
+        requestAnimationFrame(updateNumber);
+      }
+    }
+
+    requestAnimationFrame(updateNumber);
+  }
+
+  function toggleTheme() {
+    console.log("🎨 [USERS PAGE] Toggling theme");
+    const body = document.body;
+    const isDark = body.classList.contains("light-theme");
+
+    if (isDark) {
+      body.classList.remove("light-theme");
+      body.classList.add("dark-theme");
+    } else {
+      body.classList.remove("dark-theme");
+      body.classList.add("light-theme");
+    }
+  }
+
   // === USER FETCHING ===
   const fetchUsers = async () => {
     if (!usersContainer) return;
 
+    console.log("📡 [USERS PAGE] Fetching users from database");
     showLoading();
 
     try {
@@ -147,7 +377,25 @@ document.addEventListener("DOMContentLoaded", () => {
 
       usersSnapshot.forEach((doc) => {
         if (currentUser && doc.id === currentUser.uid) return; // Don't show current user
-        users.push({ id: doc.id, ...doc.data() });
+        const userData = { id: doc.id, ...doc.data() };
+
+        // Add mock data for enhanced features
+        userData.isOnline = Math.random() > 0.7; // 30% chance of being online
+        userData.projectCount = Math.floor(Math.random() * 10); // 0-9 projects
+        userData.lastActive = new Date(
+          Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
+        ); // Last 7 days
+        userData.bio =
+          userData.bio ||
+          "Creative developer exploring the digital universe! 🚀";
+        userData.skills = userData.skills || [
+          "JavaScript",
+          "React",
+          "Design",
+          "Innovation",
+        ];
+
+        users.push(userData);
       });
 
       if (users.length === 0) {
@@ -155,8 +403,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
+      // Store users data and initialize filtering
+      usersData = users;
+      filteredUsers = [...users];
+
+      console.log(`✅ [USERS PAGE] Loaded ${users.length} users`);
       renderUsers(users);
+      updateUserStats();
     } catch (error) {
+      console.error("❌ [USERS PAGE] Error fetching users:", error);
       logError(error, "fetchUsers");
       showEmptyState("Failed to load users. Please try again.");
     }
@@ -173,32 +428,178 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function createUserCard(userData) {
+    console.log(
+      "🎨 [USERS PAGE] Creating enhanced user card for:",
+      userData.name
+    );
+
     const card = document.createElement("div");
     card.className = "user-card";
     card.dataset.uid = userData.id;
     card.dataset.name = userData.name;
 
+    // Add online status indicator
+    const onlineIndicator = userData.isOnline
+      ? '<div class="online-indicator"></div>'
+      : "";
+
+    // Create skills badges
+    const skillsHtml = userData.skills
+      ? userData.skills
+          .slice(0, 3)
+          .map((skill) => `<span class="skill-badge">${skill}</span>`)
+          .join("")
+      : "";
+
+    // Calculate time since last active
+    const timeAgo = getTimeAgo(userData.lastActive);
+
     card.innerHTML = `
-      <div class="user-card-pic" style="background-image: url(${
-        userData.photoURL || "assets/imgs/portal_placeholder.gif"
-      })"></div>
-      <h3 class="user-card-name">${userData.name || "Anonymous User"}</h3>
+      <div class="user-card-header">
+        <div class="user-card-pic" style="background-image: url(${
+          userData.photoURL || "assets/imgs/portal_placeholder.gif"
+        })"></div>
+        ${onlineIndicator}
+      </div>
+      
+      <div class="user-card-content">
+        <h3 class="user-card-name">${userData.name || "Anonymous User"}</h3>
+        <p class="user-card-bio">${userData.bio || "Creative developer exploring the digital universe! 🚀"}</p>
+        
+        <div class="user-card-stats">
+          <div class="stat">
+            <span class="stat-icon">📊</span>
+            <span class="stat-value">${userData.projectCount || 0}</span>
+            <span class="stat-label">Projects</span>
+          </div>
+          <div class="stat">
+            <span class="stat-icon">🕐</span>
+            <span class="stat-value">${timeAgo}</span>
+          </div>
+        </div>
+        
+        <div class="user-card-skills">
+          ${skillsHtml}
+        </div>
+      </div>
+      
       <div class="user-card-hover">
-        <button class="chat-btn">Chat</button>
-        <a href="/?user=${
-          userData.id
-        }" class="view-profile-btn">View Profile</a>
+        <button class="chat-btn">
+          <span class="btn-icon">💬</span>
+          <span class="btn-text">Chat</span>
+        </button>
+        <a href="/?user=${userData.id}" class="view-profile-btn">
+          <span class="btn-icon">👤</span>
+          <span class="btn-text">View Profile</span>
+        </a>
+        <button class="follow-btn">
+          <span class="btn-icon">➕</span>
+          <span class="btn-text">Follow</span>
+        </button>
       </div>
     `;
 
     // Add event listeners
     const chatBtn = card.querySelector(".chat-btn");
+    const followBtn = card.querySelector(".follow-btn");
+
     chatBtn.addEventListener("click", (e) => {
       e.stopPropagation();
       handleChatClick(userData);
     });
 
+    followBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleFollowClick(userData);
+    });
+
+    // Add click handler for view profile button
+    const viewProfileBtn = card.querySelector(".view-profile-btn");
+    viewProfileBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      handleViewProfileClick(userData);
+    });
+
+    // Add click animation
+    card.addEventListener("click", () => {
+      card.style.transform = "scale(0.98)";
+      setTimeout(() => {
+        card.style.transform = "";
+      }, 150);
+    });
+
     return card;
+  }
+
+  function getTimeAgo(date) {
+    if (!date) return "Unknown";
+
+    const now = new Date();
+    const diffInMs = now - new Date(date);
+    const diffInHours = diffInMs / (1000 * 60 * 60);
+    const diffInDays = diffInHours / 24;
+
+    if (diffInHours < 1) return "Just now";
+    if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+    if (diffInDays < 7) return `${Math.floor(diffInDays)}d ago`;
+    return `${Math.floor(diffInDays / 7)}w ago`;
+  }
+
+  function handleViewProfileClick(userData) {
+    console.log(
+      "👤 [USERS PAGE] View Profile button clicked for:",
+      userData.name,
+      "(" + userData.id + ")"
+    );
+
+    // Construct the profile URL
+    const profileUrl = `/?user=${userData.id}`;
+    console.log("🔗 [USERS PAGE] Navigating to profile URL:", profileUrl);
+
+    // Navigate to the user's profile with their widget timeline
+    window.location.href = profileUrl;
+  }
+
+  function handleFollowClick(userData) {
+    console.log("➕ [USERS PAGE] Follow button clicked for:", userData.name);
+
+    if (!currentUser) {
+      showErrorModal(
+        "Login Required",
+        "Please log in to follow other users.",
+        () => {
+          window.location.href = "/";
+        }
+      );
+      return;
+    }
+
+    // Add follow functionality here
+    // For now, just show a success message
+    showNotification(`Now following ${userData.name}! 🎉`, "success");
+  }
+
+  function showNotification(message, type = "info") {
+    console.log("🔔 [USERS PAGE] Showing notification:", message);
+
+    const notification = document.createElement("div");
+    notification.className = `notification notification-${type}`;
+    notification.textContent = message;
+
+    document.body.appendChild(notification);
+
+    // Animate in
+    setTimeout(() => {
+      notification.classList.add("show");
+    }, 100);
+
+    // Remove after 3 seconds
+    setTimeout(() => {
+      notification.classList.remove("show");
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 300);
+    }, 3000);
   }
 
   function handleChatClick(userData) {

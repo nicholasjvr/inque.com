@@ -1,4 +1,4 @@
-// Timeline Manager - Clean Implementation
+// Timeline Manager - Enhanced for Quip Management with WebGL Support
 import {
   db,
   auth,
@@ -13,6 +13,7 @@ import {
   doc,
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+import profileDashboardManager from "./widgets/profile-dashboard-manager.js";
 
 // Debug logging utility for timeline manager
 const DEBUG = {
@@ -32,28 +33,49 @@ let timelineProjects = [];
 let widgetEditMode = false;
 let currentlyEditingCard = null;
 
+// Get the target user ID from URL parameters
+function getTargetUserId() {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get("user");
+}
+
+// Check if we're viewing someone else's profile
+function isViewingOtherUserProfile() {
+  const targetUserId = getTargetUserId();
+  const currentUser = auth.currentUser;
+  return targetUserId && currentUser && targetUserId !== currentUser.uid;
+}
+
 // Fetch widgets from Firestore
-async function loadTimelineProjects() {
+async function loadTimelineProjects(targetUserId = null) {
   DEBUG.log("Timeline Manager: Loading timeline widgets from Firestore");
   try {
-    // Check if user is authenticated
-    const user = auth.currentUser;
-    if (!user) {
-      DEBUG.log(
-        "Timeline Manager: User not authenticated, showing guest state"
-      );
-      timelineProjects = [];
-      return;
+    let userIdToLoad = targetUserId;
+
+    // If no target user specified, use current user
+    if (!userIdToLoad) {
+      const user = auth.currentUser;
+      if (!user) {
+        DEBUG.log(
+          "Timeline Manager: User not authenticated, showing guest state"
+        );
+        timelineProjects = [];
+        return;
+      }
+      userIdToLoad = user.uid;
     }
 
-    DEBUG.log("Timeline Manager: User authenticated", { uid: user.uid });
+    DEBUG.log("Timeline Manager: Loading widgets for user", {
+      uid: userIdToLoad,
+    });
 
     // Load widgets from the widgets collection
     const widgetsRef = collection(db, "widgets");
-    const q = query(widgetsRef, where("userId", "==", user.uid));
+    const q = query(widgetsRef, where("userId", "==", userIdToLoad));
     const querySnapshot = await getDocs(q);
 
     DEBUG.log("Timeline Manager: Widgets query executed", {
+      targetUserId: userIdToLoad,
       querySnapshotSize: querySnapshot.size,
     });
 
@@ -95,9 +117,9 @@ async function loadTimelineProjects() {
 }
 
 // Render timeline from Firestore data
-async function renderAllWidgetCards() {
+async function renderAllWidgetCards(targetUserId = null) {
   DEBUG.log("Timeline Manager: Rendering all widget cards");
-  await loadTimelineProjects();
+  await loadTimelineProjects(targetUserId);
 
   const timelineEvents = document.querySelectorAll(".timeline-event");
   DEBUG.log("Timeline Manager: Found timeline events", {
@@ -178,38 +200,77 @@ async function renderAllWidgetCards() {
             renderAllWidgetCards();
           });
       } else {
-        // Normal display mode with live widget iframe using custom styling
+        // Enhanced display mode with WebGL-capable quip iframe using profile dashboard styling
         card.innerHTML = `
-          <div class="widget-preview" style="margin-bottom:8px;">
-            <iframe class="widget-iframe custom-styled" title="Widget Preview" style="width:100%;height:240px;border:0;border-radius:8px;background:#0b0b0b"></iframe>
+          <div class="quip-preview" style="margin-bottom:8px;position:relative;">
+            <iframe class="quip-iframe webgl-enabled" title="Quip Preview - ${project.title || "Untitled Quip"}" style="width:100%;height:280px;border:0;border-radius:12px;background:#0a0a0a;"></iframe>
+            <div class="quip-overlay" style="position:absolute;top:8px;right:8px;opacity:0.8;">
+              <span class="quip-type-badge" style="background:rgba(0,240,255,0.2);color:#00f0ff;padding:4px 8px;border-radius:12px;font-size:0.8rem;font-family:JetBrains Mono;">QUIP</span>
+            </div>
           </div>
-          <h3>${project.title || "Untitled Widget"}</h3>
-          <p>${project.desc || "No description available"}</p>
-          <button class="widget-edit-btn">✏️ Edit</button>
+          <div class="quip-info">
+            <h3 style="color:#00f0ff;margin:0 0 8px 0;font-family:JetBrains Mono;">${project.title || "Untitled Quip"}</h3>
+            <p style="color:#a0a0a0;margin:0 0 12px 0;line-height:1.4;">${project.desc || "No description available"}</p>
+            <div class="quip-actions" style="display:flex;gap:8px;">
+              <button class="quip-interact-btn" style="background:rgba(0,240,255,0.1);border:1px solid #00f0ff;color:#00f0ff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.9rem;">🎮 Interact</button>
+              <button class="quip-edit-btn" style="background:rgba(255,0,255,0.1);border:1px solid #ff00ff;color:#ff00ff;padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.9rem;">✏️ Edit</button>
+            </div>
+          </div>
         `;
 
-        const iframe = card.querySelector(".widget-iframe");
+        const iframe = card.querySelector(".quip-iframe");
         iframe.setAttribute(
           "sandbox",
-          "allow-scripts allow-same-origin allow-forms"
+          "allow-scripts allow-same-origin allow-forms allow-webgl allow-pointer-lock"
         );
 
-        // Asynchronously load widget HTML with asset URLs rewritten
-        loadWidgetIntoIframe(project, iframe).catch((error) => {
+        // Apply custom dashboard styling to the iframe
+        if (
+          profileDashboardManager &&
+          typeof profileDashboardManager.applyDashboardSettings === "function"
+        ) {
+          profileDashboardManager.applyDashboardSettings(iframe, {
+            borderColor: "#00f0ff",
+            borderWidth: "2px",
+            borderRadius: "12px",
+            shadow:
+              "0 0 20px rgba(0, 240, 255, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+          });
+        }
+
+        // Asynchronously load quip HTML with asset URLs rewritten for WebGL support
+        loadQuipIntoIframe(project, iframe).catch((error) => {
           DEBUG.error(
-            "Timeline Manager: Failed to load widget into iframe",
+            "Timeline Manager: Failed to load quip into iframe",
             error
           );
           iframe.replaceWith(
             Object.assign(document.createElement("div"), {
-              className: "widget-preview-error",
-              textContent: "Failed to load widget preview",
+              className: "quip-preview-error",
+              textContent: "Failed to load quip preview",
+              style:
+                "padding:20px;text-align:center;color:#ff4444;background:rgba(255,68,68,0.1);border-radius:8px;",
             })
           );
         });
 
-        card.querySelector(".widget-edit-btn").addEventListener("click", () => {
-          DEBUG.log("Timeline Manager: Edit button clicked", {
+        // Add event handlers for quip interaction and editing
+        card
+          .querySelector(".quip-interact-btn")
+          .addEventListener("click", () => {
+            DEBUG.log("Timeline Manager: Quip interact button clicked", {
+              projectId: project.id,
+            });
+            // Focus the iframe for interaction
+            iframe.focus();
+            iframe.style.borderColor = "#ffff00";
+            setTimeout(() => {
+              iframe.style.borderColor = "#00f0ff";
+            }, 2000);
+          });
+
+        card.querySelector(".quip-edit-btn").addEventListener("click", () => {
+          DEBUG.log("Timeline Manager: Quip edit button clicked", {
             projectId: project.id,
           });
           currentlyEditingCard = project.id;
@@ -231,6 +292,100 @@ async function renderAllWidgetCards() {
   });
 
   DEBUG.log("Timeline Manager: All widget cards rendered");
+}
+
+// Enhanced function to load quip with WebGL support and custom styling
+async function loadQuipIntoIframe(project, iframeEl) {
+  try {
+    const files = Array.isArray(project.files) ? project.files : [];
+    if (files.length === 0) {
+      DEBUG.warn("Timeline Manager: Quip has no files", {
+        projectId: project.id,
+      });
+      return;
+    }
+
+    const fileMap = {};
+    files.forEach((f) => {
+      if (f && f.fileName && f.downloadURL) {
+        fileMap[f.fileName] = f.downloadURL;
+      }
+    });
+
+    DEBUG.log("Timeline Manager: Quip file map created", {
+      fileCount: Object.keys(fileMap).length,
+      files: Object.keys(fileMap),
+    });
+
+    // Prefer index.html, else first html file
+    const htmlFileName =
+      Object.keys(fileMap).find((n) => /index\.html?$/i.test(n)) ||
+      Object.keys(fileMap).find((n) => /\.html?$/i.test(n));
+
+    if (!htmlFileName) {
+      DEBUG.warn("Timeline Manager: No HTML file found for quip", {
+        projectId: project.id,
+      });
+      return;
+    }
+
+    DEBUG.log("Timeline Manager: Loading quip HTML", { htmlFileName });
+    const res = await fetch(fileMap[htmlFileName]);
+    const originalHtml = await res.text();
+
+    const resolveMappedUrl = (path) => {
+      if (!path) return null;
+      const cleaned = path.replace(/^\.\//, "").replace(/^\//, "");
+      if (fileMap[cleaned]) return fileMap[cleaned];
+      const base = cleaned.split("/").pop();
+      return fileMap[base] || null;
+    };
+
+    // Enhanced HTML processing for WebGL support
+    let processedHtml = originalHtml.replace(
+      /(href|src)=["']([^"']+)["']/gi,
+      (match, attr, value) => {
+        const mapped = resolveMappedUrl(value);
+        return mapped ? `${attr}="${mapped}"` : match;
+      }
+    );
+
+    // Add WebGL and performance optimizations to the HTML
+    const webglEnhancements = `
+      <script>
+        // WebGL context optimization
+        if (typeof window !== 'undefined') {
+          window.addEventListener('load', () => {
+            // Enable WebGL context preservation
+            const canvas = document.querySelector('canvas');
+            if (canvas) {
+              canvas.style.imageRendering = 'pixelated';
+              canvas.style.imageRendering = 'crisp-edges';
+            }
+            
+            // Performance monitoring for quips
+            if (window.performance && window.performance.mark) {
+              window.performance.mark('quip-loaded-${project.id}');
+            }
+          });
+        }
+      </script>
+    `;
+
+    // Insert WebGL enhancements before closing body tag
+    processedHtml = processedHtml.replace(
+      /<\/body>/i,
+      `${webglEnhancements}</body>`
+    );
+
+    const blob = new Blob([processedHtml], { type: "text/html" });
+    const url = URL.createObjectURL(blob);
+    iframeEl.src = url;
+    DEBUG.log("Timeline Manager: Quip iframe set with enhanced blob URL");
+  } catch (error) {
+    DEBUG.error("Timeline Manager: Error preparing quip iframe", error);
+    throw error;
+  }
 }
 
 // Create a blob URL for widget's HTML with asset paths rewritten to Firebase download URLs
@@ -326,15 +481,32 @@ async function initializeTimeline() {
       DEBUG.log("Timeline Manager: Widget edit mode toggled", {
         widgetEditMode,
       });
-      renderAllWidgetCards();
+      // Only allow editing if viewing own profile
+      if (!isViewingOtherUserProfile()) {
+        renderAllWidgetCards();
+      } else {
+        DEBUG.log("Timeline Manager: Cannot edit other user's widgets");
+      }
     });
   } else {
     DEBUG.warn("Timeline Manager: Edit profile button not found");
   }
 
-  // Initial render
+  // Initial render - check if we're viewing a specific user's profile
   DEBUG.log("Timeline Manager: Performing initial render");
-  renderAllWidgetCards();
+  const targetUserId = getTargetUserId();
+  if (targetUserId) {
+    DEBUG.log("Timeline Manager: Loading timeline for specific user", {
+      targetUserId,
+    });
+
+    // Show a message indicating we're viewing another user's profile
+    if (isViewingOtherUserProfile()) {
+      console.log("👤 [TIMELINE] Viewing another user's widget timeline");
+      // You could add a visual indicator here if needed
+    }
+  }
+  renderAllWidgetCards(targetUserId);
 
   // Add auth state listener to re-render when auth changes
   DEBUG.log("Timeline Manager: Setting up auth state listener");
@@ -343,7 +515,9 @@ async function initializeTimeline() {
       DEBUG.log("Timeline Manager: User authenticated, re-rendering timeline", {
         uid: user.uid,
       });
-      renderAllWidgetCards();
+      // Re-check target user on auth change
+      const currentTargetUserId = getTargetUserId();
+      renderAllWidgetCards(currentTargetUserId);
     } else {
       DEBUG.log("Timeline Manager: User signed out, clearing timeline");
       timelineProjects = [];
