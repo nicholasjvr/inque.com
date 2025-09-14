@@ -16,8 +16,8 @@
       rel="stylesheet"
     />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-    <script type="module" crossorigin src="/assets/index-CLYW6X3l.js"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-Dad4nZ3v.css">
+    <script type="module" crossorigin src="/assets/index-C_qbhpHm.js"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-6oBa7aBO.css">
   </head>
   <body>
     <!-- Toast Notifications -->
@@ -1158,6 +1158,61 @@
               >
             </div>
           </form>
+
+          <!-- Icon-Only Social Login -->
+          <div style="margin-top: 20px; text-align: center">
+            <div style="margin-bottom: 12px">
+              <span style="color: var(--text-secondary); font-size: 13px"
+                >Or</span
+              >
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center">
+              <button
+                id="googleLoginBtn"
+                type="button"
+                style="
+                  width: 40px;
+                  height: 40px;
+                  background: #fff;
+                  border: 2px solid var(--border-color);
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                "
+                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
+                title="Login with Google"
+              >
+                🔍
+              </button>
+              <button
+                id="githubLoginBtn"
+                type="button"
+                style="
+                  width: 40px;
+                  height: 40px;
+                  background: #333;
+                  border: 2px solid var(--border-color);
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                "
+                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
+                title="Login with GitHub"
+              >
+                🐙
+              </button>
+            </div>
+          </div>
 
           <!-- Sign Up Form -->
           <form id="signUpForm" class="auth-form" style="display: none">

@@ -734,6 +734,14 @@ function handleCreateWorkflow(event) {
   console.log(`[WORKFLOW MANAGER] Created custom workflow: ${workflow.id}`);
 }
 
+// Add this function around line 610, after the openCreateWorkflowModal function
+function openScheduleWorkflowModal() {
+  const modal = document.getElementById("scheduleWorkflowModal");
+  if (modal) {
+    modal.style.display = "block";
+  }
+}
+
 // Global functions for onclick handlers
 window.executeWorkflow = executeWorkflow;
 window.scheduleWorkflow = (workflowId) => {

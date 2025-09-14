@@ -1161,6 +1161,61 @@
             </div>
           </form>
 
+          <!-- Icon-Only Social Login -->
+          <div style="margin-top: 20px; text-align: center">
+            <div style="margin-bottom: 12px">
+              <span style="color: var(--text-secondary); font-size: 13px"
+                >Or</span
+              >
+            </div>
+            <div style="display: flex; gap: 12px; justify-content: center">
+              <button
+                id="googleLoginBtn"
+                type="button"
+                style="
+                  width: 40px;
+                  height: 40px;
+                  background: #fff;
+                  border: 2px solid var(--border-color);
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                "
+                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
+                title="Login with Google"
+              >
+                🔍
+              </button>
+              <button
+                id="githubLoginBtn"
+                type="button"
+                style="
+                  width: 40px;
+                  height: 40px;
+                  background: #333;
+                  border: 2px solid var(--border-color);
+                  border-radius: 50%;
+                  cursor: pointer;
+                  transition: all 0.2s ease;
+                  display: flex;
+                  align-items: center;
+                  justify-content: center;
+                  font-size: 18px;
+                "
+                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
+                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
+                title="Login with GitHub"
+              >
+                🐙
+              </button>
+            </div>
+          </div>
+
           <!-- Sign Up Form -->
           <form id="signUpForm" class="auth-form" style="display: none">
             <div style="margin-bottom: 16px">
@@ -1354,7 +1409,7 @@
 
     <!-- Scripts -->
     <script type="module" src="main.js"></script>
-    <script type="module" src="scripts/ui/floating-orb.js"></script>
+    <script type="module" src="pages/page_scripts/floating-orb.js"></script>
     <script type="module" src="scripts/timeline-manager.js"></script>
     <script type="module" src="scripts/widgets/widget-display.js"></script>
     <script type="module" src="scripts/widgets/widget-upload.js"></script>

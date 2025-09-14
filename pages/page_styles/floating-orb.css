@@ -1,486 +1,311 @@
-/* ============================================
-   🌟 3D FLOATING ORB NOTIFICATION SYSTEM ��
-   ============================================ */
+/* ========== Floating Orb: Minimal, 3D, Top-Left ========== */
 
-:root {
-    --orb-primary: rgba(0, 240, 255, 0.9);
-    --orb-secondary: rgba(138, 43, 226, 0.8);
-    --orb-glow: rgba(0, 240, 255, 0.4);
-    --orb-shadow: rgba(0, 240, 255, 0.3);
-    --orb-size: 80px;
-    --orb-notification-size: 45px;
-    /* Positioning variables to easily relocate the orb */
-    --orb-left: 30px;
-    --orb-top: 110px;
-    /* keeps clear of top nav */
-}
-
-/* Main Orb Container */
-.floating-orb-container {
-    position: fixed;
-    left: var(--orb-left);
-    top: var(--orb-top);
-    z-index: 9999;
-    pointer-events: none;
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    perspective: 1000px;
-    /* Enhanced 3D perspective */
-}
-
-.floating-orb-container.has-notifications {
-    transform: scale(1.1);
-}
-
-/* Enhanced 3D Orb Sphere */
-.floating-orb {
+/* WebGL layer sits behind the CSS orb */
+.orb-3d-layer {
+    position: absolute;
+    top: 50%;
+    left: 50%;
     width: var(--orb-size);
     height: var(--orb-size);
-    border-radius: 50%;
-    background:
-        radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.8) 0%, transparent 50%),
-        radial-gradient(circle at 80% 80%, rgba(0, 240, 255, 0.6) 0%, transparent 50%),
-        radial-gradient(circle at 40% 40%, var(--orb-primary) 0%, var(--orb-secondary) 70%, rgba(0, 0, 0, 0.4) 100%);
-    position: relative;
-    cursor: pointer;
-    pointer-events: all;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 0;
+    /* behind the orb */
+}
+
+.floating-orb {
+    z-index: 1;
+    /* keep the orb clickable */
+}
+
+:root {
+    /* Zone (top-left container area to center the orb within) */
+    --zone-left: 12px;
+    --zone-top: 12px;
+    --zone-width: 240px;
+    --zone-height: 240px;
+
+    /* Orb sizing */
+    --orb-size: 96px;
+    /* main orb diameter */
+    --orbit-size: 180px;
+    /* ring around the orb */
+    --popup-offset: 16px;
+
+    /* Colors */
+    --orb-core: #0b2a2f;
+    /* deep core */
+    --orb-primary: #00e5ff;
+    /* cyan glow */
+    --orb-secondary: #b400ff;
+    /* magenta rim */
+    --orb-glow: rgba(0, 229, 255, .45);
+    /* outer glow */
+
+    /* UI */
+    --popup-bg: rgba(12, 12, 16, .9);
+    --popup-border: rgba(255, 255, 255, .15);
+    --popup-radius: 14px;
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, .45);
+    --z-orb: 10020;
+}
+
+/* Scale down on small screens */
+@media (max-width: 600px) {
+    :root {
+        --zone-width: 200px;
+        --zone-height: 200px;
+        --orb-size: 72px;
+        --orbit-size: 140px;
+        --popup-offset: 12px;
+    }
+}
+
+/* Wrapper sets the 3D stage */
+.floating-orb-wrapper {
+    position: fixed;
+    top: var(--zone-top);
+    left: var(--zone-left);
+    width: var(--zone-width);
+    height: var(--zone-height);
+    z-index: var(--z-orb);
+    pointer-events: none;
+    /* let inner parts manage interactions */
+    perspective: 700px;
+    /* 3D perspective */
     transform-style: preserve-3d;
-    animation:
-        floatRotate 8s ease-in-out infinite,
-        orbGlow 3s ease-in-out infinite alternate;
-    box-shadow:
-        0 0 40px var(--orb-glow),
-        0 0 80px rgba(0, 240, 255, 0.2),
-        inset -15px -15px 30px rgba(0, 0, 0, 0.4),
-        inset 15px 15px 30px var(--orb-glow);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Enhanced highlight effect */
-.floating-orb::before {
-    content: '';
+/* ========== The Orb ========== */
+.floating-orb {
     position: absolute;
-    top: 10%;
-    left: 15%;
-    width: 30px;
-    height: 30px;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.3) 70%, transparent 100%);
+    top: 50%;
+    left: 50%;
+    width: var(--orb-size);
+    height: var(--orb-size);
+    transform: translate(-50%, -50%);
     border-radius: 50%;
-    filter: blur(6px);
-    animation: shimmer 4s ease-in-out infinite alternate;
-    transform: translateZ(10px);
+    pointer-events: auto;
+    cursor: pointer;
+    /* layered radial gradients to fake depth */
+    background:
+        radial-gradient(35% 35% at 30% 30%, rgba(255, 255, 255, .25), transparent 60%),
+        radial-gradient(60% 60% at 70% 70%, rgba(255, 255, 255, .12), transparent 70%),
+        radial-gradient(80% 80% at 50% 55%, rgba(0, 229, 255, .25), transparent 72%),
+        radial-gradient(100% 100% at 50% 50%, #0f1a1c, var(--orb-core) 55%, #071012 100%);
+    box-shadow:
+        0 0 22px var(--orb-glow),
+        0 0 44px rgba(180, 0, 255, .24);
+    transition: box-shadow .25s ease, filter .25s ease;
+    will-change: transform, filter;
 }
 
-/* Enhanced outer glow */
-.floating-orb::after {
-    content: '';
+/* soft specular highlight */
+.floating-orb::before {
+    content: "";
     position: absolute;
-    top: -10px;
-    left: -10px;
-    right: -10px;
-    bottom: -10px;
+    inset: 0;
     border-radius: 50%;
     background:
-        radial-gradient(circle at 50% 50%, transparent 60%, var(--orb-glow) 100%),
-        conic-gradient(from 0deg, transparent, var(--orb-glow), transparent, var(--orb-glow), transparent);
-    z-index: -1;
-    animation:
-        pulse 2s ease-in-out infinite,
-        rotateGlow 10s linear infinite;
-    opacity: 0.7;
+        radial-gradient(45% 35% at 28% 28%, rgba(255, 255, 255, .45), rgba(255, 255, 255, 0) 60%),
+        radial-gradient(30% 25% at 70% 72%, rgba(255, 255, 255, .18), rgba(255, 255, 255, 0) 70%);
+    mix-blend-mode: screen;
+    pointer-events: none;
+    transform: translateZ(1px);
 }
 
-/* Enhanced hover effects */
+/* rim glow that subtly shifts */
+.floating-orb::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: 50%;
+    box-shadow: inset 0 0 30px rgba(0, 229, 255, .25),
+        0 0 26px rgba(180, 0, 255, .22);
+    pointer-events: none;
+    transform: translateZ(2px);
+}
+
 .floating-orb:hover {
-    transform: scale(1.15) rotateY(180deg) rotateX(10deg);
+    filter: brightness(1.05);
     box-shadow:
-        0 0 60px var(--orb-glow),
-        0 0 120px rgba(0, 240, 255, 0.4),
-        0 0 200px rgba(0, 240, 255, 0.2),
-        inset -15px -15px 30px rgba(0, 0, 0, 0.4),
-        inset 15px 15px 30px var(--orb-glow);
-    animation-play-state: paused;
+        0 0 26px var(--orb-glow),
+        0 0 52px rgba(180, 0, 255, .28);
 }
 
-/* Enhanced notification orbit ring */
+/* Chatbot-integrated states */
+.floating-orb-wrapper[data-chatbot="active"] .floating-orb {
+    box-shadow:
+        0 0 32px rgba(0, 240, 255, .55),
+        0 0 72px rgba(180, 0, 255, .32);
+    filter: brightness(1.07) saturate(1.05);
+}
+
+.floating-orb.typing::after {
+    box-shadow:
+        inset 0 0 34px rgba(0, 229, 255, .35),
+        0 0 30px rgba(180, 0, 255, .28),
+        0 0 18px rgba(0, 229, 255, .35);
+}
+
+/* brief pulse when messages arrive */
+@keyframes message-ping {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+
+    50% {
+        transform: translate(-50%, -50%) scale(1.06);
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+.floating-orb.message-ping {
+    animation: message-ping .38s ease;
+}
+
+/* idle breathing when there’s no user motion */
+@keyframes orb-breathe {
+
+    0%,
+    100% {
+        filter: brightness(1.0);
+    }
+
+    50% {
+        filter: brightness(1.08);
+    }
+}
+
+.floating-orb.idle {
+    animation: orb-breathe 6s ease-in-out infinite;
+}
+
+/* ========== Orbit Ring (subtle) ========== */
 .notification-orbit {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: 160px;
-    height: 160px;
-    transform: translate(-50%, -50%);
+    width: var(--orbit-size);
+    height: var(--orbit-size);
+    transform: translate(-50%, -50%) translateZ(-1px);
     border-radius: 50%;
-    border: 2px dashed var(--orb-glow);
-    opacity: 0;
-    transition: opacity 0.5s ease;
-    animation:
-        orbitRotate 20s linear infinite,
-        orbitGlow 4s ease-in-out infinite alternate;
-    box-shadow:
-        0 0 20px rgba(0, 240, 255, 0.3),
-        inset 0 0 20px rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, .18);
+    box-shadow: 0 0 12px rgba(0, 240, 255, .12) inset;
+    opacity: .5;
+    pointer-events: none;
 }
 
-.floating-orb-container.has-notifications .notification-orbit {
-    opacity: 0.8;
-}
-
-/* Individual Notification Cards - Enhanced */
-.notification-card {
+/* Optional: tiny moving spark for life */
+.notification-orbit .spark {
     position: absolute;
-    width: var(--orb-notification-size);
-    height: var(--orb-notification-size);
-    background:
-        linear-gradient(135deg, var(--orb-primary), var(--orb-secondary)),
-        radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), transparent);
+    width: 6px;
+    height: 6px;
     border-radius: 50%;
-    cursor: pointer;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    border: 2px solid rgba(255, 255, 255, 0.4);
-    box-shadow:
-        0 6px 20px rgba(0, 0, 0, 0.4),
-        0 0 30px var(--orb-glow),
-        inset 0 0 10px rgba(255, 255, 255, 0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-size: 18px;
-    font-weight: bold;
-    text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    transform-style: preserve-3d;
+    background: radial-gradient(circle, #fff, rgba(255, 255, 255, .2) 70%, transparent 71%);
+    top: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    animation: orbit 9s linear infinite;
+    box-shadow: 0 0 12px rgba(255, 255, 255, .55);
 }
 
-.notification-card:hover {
-    transform: scale(1.4) translateZ(20px);
-    box-shadow:
-        0 8px 25px rgba(0, 0, 0, 0.5),
-        0 0 40px var(--orb-glow),
-        0 0 60px var(--orb-shadow),
-        inset 0 0 15px rgba(255, 255, 255, 0.3);
-    z-index: 10;
-}
-
-/* Enhanced animations */
-@keyframes floatRotate {
-
-    0%,
-    100% {
-        transform: translateY(0) rotateY(0deg) rotateX(0deg) rotateZ(0deg);
-    }
-
-    25% {
-        transform: translateY(-15px) rotateY(90deg) rotateX(5deg) rotateZ(5deg);
-    }
-
-    50% {
-        transform: translateY(0) rotateY(180deg) rotateX(0deg) rotateZ(0deg);
-    }
-
-    75% {
-        transform: translateY(15px) rotateY(270deg) rotateX(-5deg) rotateZ(-5deg);
-    }
-}
-
-@keyframes orbGlow {
-    0% {
-        filter: brightness(1) saturate(1);
-        box-shadow:
-            0 0 40px var(--orb-glow),
-            0 0 80px rgba(0, 240, 255, 0.2),
-            inset -15px -15px 30px rgba(0, 0, 0, 0.4),
-            inset 15px 15px 30px var(--orb-glow);
-    }
-
-    100% {
-        filter: brightness(1.2) saturate(1.3);
-        box-shadow:
-            0 0 60px var(--orb-glow),
-            0 0 120px rgba(0, 240, 255, 0.4),
-            inset -15px -15px 30px rgba(0, 0, 0, 0.4),
-            inset 15px 15px 30px var(--orb-glow);
-    }
-}
-
-@keyframes rotateGlow {
+@keyframes orbit {
     from {
-        transform: rotate(0deg);
+        transform: rotate(0deg) translate(calc(var(--orbit-size)/2)) rotate(0deg);
     }
 
     to {
-        transform: rotate(360deg);
+        transform: rotate(360deg) translate(calc(var(--orbit-size)/2)) rotate(-360deg);
     }
 }
 
-@keyframes orbitGlow {
-    0% {
-        border-color: var(--orb-glow);
-        box-shadow:
-            0 0 20px rgba(0, 240, 255, 0.3),
-            inset 0 0 20px rgba(0, 240, 255, 0.1);
-    }
-
-    100% {
-        border-color: rgba(0, 240, 255, 0.8);
-        box-shadow:
-            0 0 30px rgba(0, 240, 255, 0.5),
-            inset 0 0 30px rgba(0, 240, 255, 0.2);
-    }
-}
-
-@keyframes orbitRotate {
-    from {
-        transform: translate(-50%, -50%) rotate(0deg);
-    }
-
-    to {
-        transform: translate(-50%, -50%) rotate(360deg);
-    }
-}
-
-@keyframes pulse {
-
-    0%,
-    100% {
-        opacity: 0.6;
-        transform: scale(1);
-    }
-
-    50% {
-        opacity: 1;
-        transform: scale(1.05);
-    }
-}
-
-@keyframes shimmer {
-    0% {
-        opacity: 0.8;
-        transform: scale(1) translateZ(10px);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1.3) translateZ(15px);
-    }
-}
-
-/* Individual notification orbit animations - Enhanced */
-@keyframes notificationFloat1 {
-    from {
-        transform: translateX(-50%) rotate(0deg) translateY(-80px) rotate(0deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateX(-50%) rotate(360deg) translateY(-80px) rotate(-360deg) translateZ(10px);
-    }
-}
-
-@keyframes notificationFloat2 {
-    from {
-        transform: translateY(-50%) rotate(60deg) translateY(-80px) rotate(-60deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateY(-50%) rotate(420deg) translateY(-80px) rotate(-420deg) translateZ(10px);
-    }
-}
-
-@keyframes notificationFloat3 {
-    from {
-        transform: translateY(50%) rotate(120deg) translateY(-80px) rotate(-120deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateY(50%) rotate(480deg) translateY(-80px) rotate(-480deg) translateZ(10px);
-    }
-}
-
-@keyframes notificationFloat4 {
-    from {
-        transform: translateX(-50%) rotate(180deg) translateY(-80px) rotate(-180deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateX(-50%) rotate(540deg) translateY(-80px) rotate(-540deg) translateZ(10px);
-    }
-}
-
-@keyframes notificationFloat5 {
-    from {
-        transform: translateY(50%) rotate(240deg) translateY(-80px) rotate(-240deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateY(50%) rotate(600deg) translateY(-80px) rotate(-600deg) translateZ(10px);
-    }
-}
-
-@keyframes notificationFloat6 {
-    from {
-        transform: translateY(-50%) rotate(300deg) translateY(-80px) rotate(-300deg) translateZ(0px);
-    }
-
-    to {
-        transform: translateY(-50%) rotate(660deg) translateY(-80px) rotate(-660deg) translateZ(10px);
-    }
-}
-
-/* Enhanced notification popup */
+/* ========== Popup Panel ========== */
 .notification-popup {
     position: absolute;
-    top: 50%;
-    left: calc(100% + 20px);
-    transform: translateY(-50%);
-    min-width: 300px;
-    max-width: 400px;
-    background:
-        linear-gradient(135deg, rgba(16, 21, 32, 0.98), rgba(10, 10, 10, 0.95));
-    border: 2px solid var(--orb-glow);
-    border-radius: 16px;
-    padding: 24px;
-    box-shadow:
-        0 15px 40px rgba(0, 0, 0, 0.6),
-        0 0 30px var(--orb-glow),
-        inset 0 0 20px rgba(0, 240, 255, 0.1);
-    backdrop-filter: blur(20px);
+    top: calc(50% + var(--popup-offset));
+    left: 50%;
+    min-width: 280px;
+    max-width: 360px;
+    background: var(--popup-bg);
+    border: 1px solid var(--popup-border);
+    border-radius: var(--popup-radius);
+    box-shadow: var(--shadow-lg);
+    backdrop-filter: blur(10px);
+    padding: 12px;
+    transform: translate(-50%, 6px);
     opacity: 0;
     pointer-events: none;
-    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 10001;
-    transform-style: preserve-3d;
+    transition: opacity .2s ease, transform .2s ease;
 }
 
 .notification-popup.show {
     opacity: 1;
-    pointer-events: all;
-    transform: translateY(-50%) translateX(15px) translateZ(20px);
+    transform: translate(-50%, 0);
+    pointer-events: auto;
 }
 
-.notification-popup h4 {
-    color: var(--orb-primary);
-    margin: 0 0 12px 0;
-    font-size: 18px;
+/* notification items */
+.notification-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    margin: 6px 0;
+    border-radius: 10px;
+    background:
+        linear-gradient(135deg, rgba(0, 229, 255, .12), rgba(180, 0, 255, .08));
+    border: 1px solid rgba(255, 255, 255, .1);
+}
+
+.notification-card .title {
+    color: #e8fafe;
     font-weight: 600;
-    text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-}
-
-.notification-popup p {
-    color: rgba(255, 255, 255, 0.9);
-    margin: 0 0 18px 0;
     font-size: 14px;
-    line-height: 1.5;
+    line-height: 1.25;
 }
 
-.notification-popup .timestamp {
-    color: rgba(255, 255, 255, 0.6);
+.notification-card .meta {
+    color: #9bb2b7;
     font-size: 12px;
-    text-align: right;
-    font-style: italic;
 }
 
-/* Optional WebGL layer container (when using Three.js) */
-.orb-3d-layer {
-    position: absolute;
-    top: calc(var(--orb-size) * -0.4);
-    left: calc(var(--orb-size) * -0.4);
-    width: calc(var(--orb-size) * 2.0);
-    height: calc(var(--orb-size) * 2.0);
-    z-index: -2;
-    pointer-events: none;
-    filter: drop-shadow(0 0 16px var(--orb-glow));
+/* close button */
+.popup-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
 }
 
-/* Responsive Design - Enhanced */
-@media (max-width: 768px) {
-    .floating-orb-container {
-        --orb-left: 20px;
-        --orb-top: 96px;
-        --orb-size: 70px;
-        --orb-notification-size: 40px;
-    }
-
-    .notification-orbit {
-        width: 140px;
-        height: 140px;
-    }
-
-    .notification-popup {
-        left: calc(100% + 15px);
-        min-width: 250px;
-        max-width: 300px;
-        padding: 18px;
-    }
+.popup-title {
+    color: #b7f7ff;
+    font-weight: 700;
+    letter-spacing: .04em;
+    font-family: "Orbitron", monospace;
 }
 
-@media (max-width: 480px) {
-    .floating-orb-container {
-        --orb-left: 15px;
-        --orb-top: 88px;
-        --orb-size: 60px;
-        --orb-notification-size: 35px;
-    }
-
-    .notification-orbit {
-        width: 120px;
-        height: 120px;
-    }
-
-    .notification-popup {
-        position: fixed;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        width: 90vw;
-        max-width: none;
-    }
-
-    .notification-popup.show {
-        transform: translate(-50%, -50%) translateZ(20px);
-    }
+.popup-close {
+    background: transparent;
+    border: 0;
+    color: #9ddff0;
+    font-size: 16px;
+    cursor: pointer;
 }
 
-/* Debug Mode - Enhanced */
-.floating-orb-container[data-debug="true"] .notification-orbit {
-    opacity: 1 !important;
-    border-color: red;
-    border-style: solid;
-    animation:
-        orbitRotate 20s linear infinite,
-        orbitGlow 4s ease-in-out infinite alternate,
-        debugPulse 1s ease-in-out infinite;
+.popup-close:hover {
+    color: #d0f7ff;
 }
 
-.floating-orb-container[data-debug="true"]::after {
-    content: 'ORB DEBUG';
-    position: absolute;
-    top: -35px;
-    left: 0;
-    color: #ff4444;
-    font-size: 12px;
-    font-weight: bold;
-    text-shadow: 0 0 10px #ff4444;
-    animation: debugTextGlow 2s ease-in-out infinite alternate;
-}
+/* Reduce motion option */
+@media (prefers-reduced-motion: reduce) {
 
-@keyframes debugPulse {
-
-    0%,
-    100% {
-        border-color: red;
-    }
-
-    50% {
-        border-color: #ff6666;
-    }
-}
-
-@keyframes debugTextGlow {
-    0% {
-        text-shadow: 0 0 10px #ff4444;
-    }
-
-    100% {
-        text-shadow: 0 0 20px #ff4444, 0 0 30px #ff4444;
+    .floating-orb,
+    .floating-orb.idle,
+    .notification-orbit .spark {
+        animation: none !important;
     }
 }

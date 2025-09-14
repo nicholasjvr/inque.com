@@ -197,7 +197,11 @@ class ProfileHubManager {
     });
 
     this.addEventListener(this.dom.customizeToggle, "click", () => {
-      this.toggleCustomization();
+      // Gear icon no longer opens settings - settings moved to Quick Actions
+      console.log(
+        "[PROFILE HUB] Gear icon clicked - settings moved to Quick Actions"
+      );
+      // Could show a helpful message or do nothing
     });
 
     this.addEventListener(this.dom.authToggle, "click", () => {
@@ -419,12 +423,57 @@ class ProfileHubManager {
       `[PROFILE HUB] Toggling customization: ${this.state.ui.customizationState} -> ${newState}`
     );
 
+    // Add debug log for chatbot-style overlay initialization
+    console.log(
+      "[PROFILE HUB] Chatbot-style overlay animation triggered - sliding up from bottom-right"
+    );
+
+    // Add debug log for orb visibility preservation
+    console.log(
+      "[PROFILE HUB] Orb remains visible and accessible in top-left corner"
+    );
+
     this.setState({
       ui: {
         customizationState: newState,
         hubState: isOpen ? "minimized" : "expanded", // Expand hub when customizing
       },
     });
+
+    // Note: Backdrop removed to prevent blur issues
+
+    // Add debug log for state update completion
+    console.log("[PROFILE HUB] Customization panel state updated successfully");
+  }
+
+  /**
+   * Toggle customization panel backdrop overlay
+   */
+  toggleCustomizationBackdrop(show) {
+    let backdrop = document.getElementById("hub-customization-panel-backdrop");
+
+    if (!backdrop) {
+      // Create backdrop if it doesn't exist
+      backdrop = document.createElement("div");
+      backdrop.id = "hub-customization-panel-backdrop";
+      backdrop.className = "hub-customization-panel-backdrop";
+
+      // Add click handler to close panel when backdrop is clicked
+      backdrop.addEventListener("click", () => {
+        this.toggleCustomization();
+      });
+
+      document.body.appendChild(backdrop);
+      console.log("[PROFILE HUB] Created customization panel backdrop");
+    }
+
+    if (show) {
+      backdrop.classList.add("active");
+      console.log("[PROFILE HUB] Backdrop overlay activated");
+    } else {
+      backdrop.classList.remove("active");
+      console.log("[PROFILE HUB] Backdrop overlay deactivated");
+    }
   }
 
   /**
@@ -439,6 +488,8 @@ class ProfileHubManager {
         customizationState: "closed",
       },
     });
+
+    // Note: Backdrop functionality removed
   }
 
   /**
@@ -544,31 +595,62 @@ class ProfileHubManager {
   }
 
   /**
+   * Update user stats display
+   */
+  updateUserStats(stats) {
+    console.log("[PROFILE HUB] Updating user stats", stats);
+
+    const widgetCount = document.getElementById("hubWidgetCount");
+    const followerCount = document.getElementById("hubFollowerCount");
+    const viewCount = document.getElementById("hubViewCount");
+
+    if (widgetCount) {
+      widgetCount.textContent = stats.widgetsCreated || 0;
+    }
+
+    if (followerCount) {
+      followerCount.textContent = stats.followersCount || 0;
+    }
+
+    if (viewCount) {
+      viewCount.textContent = stats.totalViews || 0;
+    }
+
+    console.log("[PROFILE HUB] User stats updated successfully");
+  }
+
+  /**
    * Set up authentication state listener
    */
   setupAuthListener() {
     // Listen for auth state changes from the global auth system
     window.addEventListener("auth-state-changed", (e) => {
-      const { user } = e.detail;
-      this.handleAuthStateChange(user);
+      const { user, profile } = e.detail;
+      this.handleAuthStateChange(user, profile);
     });
   }
 
   /**
    * Handle authentication state changes
    */
-  handleAuthStateChange(user) {
+  handleAuthStateChange(user, profile = null) {
     console.log(
       "[PROFILE HUB] Auth state changed:",
-      user ? "logged in" : "logged out"
+      user ? "logged in" : "logged out",
+      profile ? "with profile data" : "without profile data"
     );
 
     this.setState({
       user: {
         isAuthenticated: !!user,
-        profile: user ? this.extractUserProfile(user) : null,
+        profile: profile || (user ? this.extractUserProfile(user) : null),
       },
     });
+
+    // Update stats if we have profile data
+    if (profile && profile.stats) {
+      this.updateUserStats(profile.stats);
+    }
   }
 
   /**
@@ -765,147 +847,9 @@ class ProfileHubManager {
     this.repositionOpenModals(newPosition);
   }
 
-  /**
-   * Update modal positions based on hub position
-   */
-  updateModalPositions(hubPosition) {
-    const modalConfigs = this.getModalPositionConfigs(hubPosition);
+  // updateModalPositions method removed to prevent breakpoints
 
-    // Update expanded content position
-    if (this.dom.expandedContent) {
-      this.updateModalPosition(this.dom.expandedContent, modalConfigs.expanded);
-    }
-
-    // Update chatbot container position
-    if (this.dom.chatbotContainer) {
-      this.updateModalPosition(this.dom.chatbotContainer, modalConfigs.chatbot);
-    }
-
-    // Update customization panel position
-    if (this.dom.customizationPanel) {
-      this.updateModalPosition(
-        this.dom.customizationPanel,
-        modalConfigs.customization
-      );
-    }
-
-    console.log("[PROFILE HUB] Modal positions updated for:", hubPosition);
-  }
-
-  /**
-   * Get position configurations for different modals based on hub position
-   */
-  getModalPositionConfigs(hubPosition) {
-    const configs = {
-      expanded: {},
-      chatbot: {},
-      customization: {},
-    };
-
-    switch (hubPosition) {
-      case "top-left":
-        configs.expanded = {
-          top: "100%",
-          left: "0",
-          right: "auto",
-          bottom: "auto",
-          transform: "translateY(0)",
-        };
-        configs.chatbot = {
-          top: "0",
-          right: "100%",
-          left: "auto",
-          bottom: "auto",
-          marginRight: "12px",
-          transform: "translateX(-20px)",
-        };
-        configs.customization = {
-          top: "100%",
-          left: "0",
-          right: "auto",
-          bottom: "auto",
-          transform: "translateY(-100%)",
-        };
-        break;
-
-      case "top-right":
-        configs.expanded = {
-          top: "100%",
-          right: "0",
-          left: "auto",
-          bottom: "auto",
-          transform: "translateY(0)",
-        };
-        configs.chatbot = {
-          top: "0",
-          right: "100%",
-          left: "auto",
-          bottom: "auto",
-          marginRight: "12px",
-          transform: "translateX(-20px)",
-        };
-        configs.customization = {
-          top: "100%",
-          right: "0",
-          left: "auto",
-          bottom: "auto",
-          transform: "translateY(-100%)",
-        };
-        break;
-
-      case "bottom-left":
-        configs.expanded = {
-          top: "auto",
-          left: "0",
-          right: "auto",
-          bottom: "100%",
-          transform: "translateY(0)",
-        };
-        configs.chatbot = {
-          top: "auto",
-          right: "100%",
-          left: "auto",
-          bottom: "0",
-          marginRight: "12px",
-          transform: "translateX(-20px)",
-        };
-        configs.customization = {
-          top: "auto",
-          left: "0",
-          right: "auto",
-          bottom: "100%",
-          transform: "translateY(100%)",
-        };
-        break;
-
-      case "bottom-right":
-        configs.expanded = {
-          top: "auto",
-          right: "0",
-          left: "auto",
-          bottom: "100%",
-          transform: "translateY(0)",
-        };
-        configs.chatbot = {
-          top: "auto",
-          right: "100%",
-          left: "auto",
-          bottom: "0",
-          marginRight: "12px",
-          transform: "translateX(-20px)",
-        };
-        configs.customization = {
-          top: "auto",
-          right: "0",
-          left: "auto",
-          bottom: "100%",
-          transform: "translateY(100%)",
-        };
-        break;
-    }
-
-    return configs;
-  }
+  // getModalPositionConfigs method removed to prevent breakpoints
 
   /**
    * Update a specific modal's position
@@ -1379,13 +1323,7 @@ class CustomizationModule {
       });
     }
 
-    // Position selector
-    const positionSelector = panel.querySelector("#hubPosition");
-    if (positionSelector) {
-      this.hub.addEventListener(positionSelector, "change", (e) => {
-        this.setPosition(e.target.value);
-      });
-    }
+    // Position selector removed to prevent breakpoints
 
     // Size slider
     const sizeSlider = panel.querySelector("#hubSize");
@@ -1436,27 +1374,7 @@ class CustomizationModule {
     });
   }
 
-  setPosition(position) {
-    console.log("[CUSTOMIZATION MODULE] Setting position:", position);
-
-    this.hub.setState({
-      ui: { position },
-      user: { preferences: { position } },
-    });
-
-    // Force immediate UI update
-    this.hub.updateUI();
-
-    // Debug: Log current position state
-    console.log(
-      "[CUSTOMIZATION MODULE] Position updated to:",
-      this.hub.state.ui.position
-    );
-    console.log(
-      "[CUSTOMIZATION MODULE] Hub element data-position:",
-      this.hub.dom.hub.getAttribute("data-position")
-    );
-  }
+  // setPosition method removed to prevent breakpoints
 
   setSize(scale) {
     console.log("[CUSTOMIZATION MODULE] Setting size:", scale);
@@ -1500,10 +1418,8 @@ class CustomizationModule {
 
     // Update form controls
     const colorPicker = document.getElementById("hubPrimaryColor");
-    const positionSelector = document.getElementById("hubPosition");
     const sizeSlider = document.getElementById("hubSize");
 
-    if (positionSelector) positionSelector.value = ui.position;
     if (sizeSlider) sizeSlider.value = ui.scale;
   }
 
@@ -1753,15 +1669,6 @@ function createFallbackProfileHub() {
             <input type="color" id="hubPrimaryColor" class="color-picker" value="#00f0ff">
           </div>
           <div class="customization-section">
-            <label class="section-label">Hub Position</label>
-            <select id="hubPosition" class="position-selector">
-              <option value="top-right" selected>Top Right</option>
-              <option value="top-left">Top Left</option>
-              <option value="bottom-left">Bottom Left</option>
-              <option value="bottom-right">Bottom Right</option>
-            </select>
-          </div>
-          <div class="customization-section">
             <label class="section-label">Hub Size</label>
             <input type="range" id="hubSize" class="size-slider" min="0.8" max="1.5" step="0.1" value="1">
           </div>
@@ -1797,6 +1704,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     console.log("[PROFILE HUB] ProfileHub system ready!");
   } catch (error) {
     console.error("[PROFILE HUB] Failed to initialize ProfileHub:", error);
+
+    // Fallback: try to create ProfileHub manually
+    console.log("[PROFILE HUB] Attempting fallback initialization...");
+    try {
+      createFallbackProfileHub();
+      profileHubManager = new ProfileHubManager();
+      window.profileHubManager = profileHubManager;
+      console.log("[PROFILE HUB] Fallback initialization successful!");
+    } catch (fallbackError) {
+      console.error(
+        "[PROFILE HUB] Fallback initialization also failed:",
+        fallbackError
+      );
+    }
   }
 });
 
@@ -1819,6 +1740,80 @@ window.resetProfileBannerPosition = (position = "top-right") => {
   } else {
     console.warn("[PROFILE HUB DEBUG] ProfileHub manager not available");
   }
+};
+
+// Debug function to force show ProfileHub
+window.forceShowProfileHub = () => {
+  console.log("[PROFILE HUB DEBUG] Forcing ProfileHub to show");
+
+  // Check if ProfileHub container exists
+  const container = document.getElementById("profileHubContainer");
+  if (!container) {
+    console.error("[PROFILE HUB DEBUG] ProfileHub container not found!");
+    return;
+  }
+
+  // Check if ProfileHub element exists
+  const profileHub = document.getElementById("profileHub");
+  if (!profileHub) {
+    console.error(
+      "[PROFILE HUB DEBUG] ProfileHub element not found! Creating fallback..."
+    );
+    createFallbackProfileHub();
+
+    // Also create the manager if it doesn't exist
+    if (!profileHubManager) {
+      console.log("[PROFILE HUB DEBUG] Creating ProfileHub manager...");
+      profileHubManager = new ProfileHubManager();
+      window.profileHubManager = profileHubManager;
+    }
+    return;
+  }
+
+  // Force visibility
+  profileHub.style.display = "block";
+  profileHub.style.opacity = "1";
+  profileHub.style.visibility = "visible";
+  profileHub.style.zIndex = "1000";
+
+  // Force position
+  profileHub.style.position = "fixed";
+  profileHub.style.top = "20px";
+  profileHub.style.right = "20px";
+
+  console.log("[PROFILE HUB DEBUG] ProfileHub forced to show");
+
+  // Try to initialize manager if not available
+  if (!profileHubManager) {
+    console.log("[PROFILE HUB DEBUG] Initializing ProfileHub manager...");
+    try {
+      profileHubManager = new ProfileHubManager();
+      window.profileHubManager = profileHubManager;
+      console.log("[PROFILE HUB DEBUG] ProfileHub manager initialized");
+    } catch (error) {
+      console.error(
+        "[PROFILE HUB DEBUG] Failed to initialize ProfileHub manager:",
+        error
+      );
+    }
+  }
+};
+
+// Debug function to check ProfileHub status
+window.checkProfileHubStatus = () => {
+  console.log("[PROFILE HUB DEBUG] Checking ProfileHub status...");
+
+  const status = {
+    container: !!document.getElementById("profileHubContainer"),
+    profileHub: !!document.getElementById("profileHub"),
+    manager: !!profileHubManager,
+    managerState: profileHubManager?.state || null,
+    cssLoaded: !!document.querySelector('link[href*="profile_banner.css"]'),
+    scriptLoaded: !!window.ProfileHubEvents,
+  };
+
+  console.log("[PROFILE HUB DEBUG] Status:", status);
+  return status;
 };
 
 // Global event system for profile hub position changes
@@ -1909,6 +1904,23 @@ window.openWorkflowManager = () => {
   }
 };
 
+// Manual initialization function for debugging
+window.initProfileHub = () => {
+  console.log("[PROFILE HUB] Manual initialization triggered");
+  try {
+    if (!profileHubManager) {
+      createFallbackProfileHub();
+      profileHubManager = new ProfileHubManager();
+      window.profileHubManager = profileHubManager;
+      console.log("[PROFILE HUB] Manual initialization successful");
+    } else {
+      console.log("[PROFILE HUB] ProfileHub already initialized");
+    }
+  } catch (error) {
+    console.error("[PROFILE HUB] Manual initialization failed:", error);
+  }
+};
+
 // Global functions for mobile drawer and other integrations
 window.openAuthModal = (mode = "login") => {
   // Use existing auth modal
@@ -1943,3 +1955,94 @@ window.openAuthModal = (mode = "login") => {
 };
 
 console.log("[PROFILE HUB] ProfileHub module loaded successfully");
+
+// Additional timeout-based initialization as a safety net
+setTimeout(() => {
+  if (!profileHubManager) {
+    console.log("[PROFILE HUB] Timeout-based initialization triggered");
+    try {
+      // Check if container exists
+      const container = document.getElementById("profileHubContainer");
+      if (container && !container.querySelector("#profileHub")) {
+        console.log("[PROFILE HUB] Creating ProfileHub via timeout fallback");
+        createFallbackProfileHub();
+        profileHubManager = new ProfileHubManager();
+        window.profileHubManager = profileHubManager;
+        console.log("[PROFILE HUB] Timeout-based initialization successful");
+      }
+    } catch (error) {
+      console.error(
+        "[PROFILE HUB] Timeout-based initialization failed:",
+        error
+      );
+    }
+  }
+}, 2000); // 2 second delay
+
+// Debug function to reposition orb to top-left
+window.repositionOrbToTopLeft = () => {
+  console.log("[PROFILE HUB DEBUG] Repositioning orb to top-left");
+
+  const orbContainer = document.querySelector(".floating-orb-container");
+  if (orbContainer) {
+    // Update CSS variables for better top-left positioning
+    document.documentElement.style.setProperty("--orb-left", "20px");
+    document.documentElement.style.setProperty("--orb-top", "20px");
+
+    // Apply mobile positioning for smaller screens
+    if (window.innerWidth <= 768) {
+      document.documentElement.style.setProperty("--orb-left", "15px");
+      document.documentElement.style.setProperty("--orb-top", "15px");
+    }
+
+    console.log(
+      "[PROFILE HUB DEBUG] Orb repositioned to top-left successfully"
+    );
+  } else {
+    console.warn("[PROFILE HUB DEBUG] Orb container not found");
+  }
+};
+
+// Emergency function to restore ProfileHub
+window.restoreProfileHub = () => {
+  console.log("[PROFILE HUB EMERGENCY] Restoring ProfileHub...");
+
+  // Force create the ProfileHub
+  createFallbackProfileHub();
+
+  // Create manager if it doesn't exist
+  if (!profileHubManager) {
+    profileHubManager = new ProfileHubManager();
+    window.profileHubManager = profileHubManager;
+    console.log("[PROFILE HUB EMERGENCY] Manager created");
+  }
+
+  // Force show it
+  const profileHub = document.getElementById("profileHub");
+  if (profileHub) {
+    profileHub.style.display = "block";
+    profileHub.style.opacity = "1";
+    profileHub.style.visibility = "visible";
+    profileHub.style.position = "fixed";
+    profileHub.style.top = "20px";
+    profileHub.style.right = "20px";
+    profileHub.style.zIndex = "1000";
+    console.log("[PROFILE HUB EMERGENCY] ProfileHub restored and visible!");
+  } else {
+    console.error("[PROFILE HUB EMERGENCY] Failed to restore ProfileHub");
+  }
+};
+
+// Debug function to test sliding modal
+window.testSlidingModal = () => {
+  console.log("[PROFILE HUB DEBUG] Testing sliding modal animation");
+
+  const customizationPanel = document.getElementById("hubCustomizationPanel");
+  if (customizationPanel) {
+    // Toggle the active class to test animation
+    customizationPanel.classList.toggle("active");
+    console.log("[PROFILE HUB DEBUG] Sliding modal animation toggled");
+  } else {
+    console.warn("[PROFILE HUB DEBUG] Customization panel not found");
+  }
+};

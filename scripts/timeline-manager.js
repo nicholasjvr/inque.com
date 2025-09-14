@@ -359,6 +359,91 @@ document.addEventListener("DOMContentLoaded", async function () {
   await initializeTimeline();
 });
 
+// Render a single widget card for a specific timeline event
+function renderWidgetCard(eventElement, project, slotIndex) {
+  DEBUG.log("Timeline Manager: Rendering widget card", {
+    slotIndex,
+    projectId: project?.id,
+    hasProject: !!project,
+  });
+
+  if (!eventElement) {
+    DEBUG.warn("Timeline Manager: No event element provided for widget card");
+    return;
+  }
+
+  // Remove any existing card
+  const existingCard = eventElement.querySelector(".timeline-event-card");
+  if (existingCard) {
+    existingCard.remove();
+  }
+
+  const card = document.createElement("div");
+  card.className = "timeline-event-card";
+
+  if (project && project.files && project.files.length > 0) {
+    // Widget exists - show preview
+    const htmlFile = findHtmlFile(project.files);
+    if (htmlFile) {
+      card.innerHTML = `
+        <div class="widget-preview">
+          <iframe 
+            src="${htmlFile.downloadURL}" 
+            frameborder="0"
+            loading="lazy"
+            style="width: 100%; height: 200px; border-radius: 8px;"
+          ></iframe>
+        </div>
+        <div class="widget-info">
+          <h4>${project.title || "Untitled Widget"}</h4>
+          <p>${project.description || "No description available"}</p>
+          <div class="widget-meta">
+            <span class="widget-author">by ${project.author || "Unknown"}</span>
+            <span class="widget-date">${new Date(project.createdAt?.toDate?.() || project.createdAt).toLocaleDateString()}</span>
+          </div>
+        </div>
+      `;
+    } else {
+      // No HTML file found
+      card.innerHTML = `
+        <div class="widget-placeholder">
+          <div class="placeholder-icon">📦</div>
+          <h4>${project.title || "Widget"}</h4>
+          <p>No preview available</p>
+        </div>
+      `;
+    }
+  } else {
+    // No widget - show empty state
+    card.innerHTML = `
+      <div class="empty-slot">
+        <div class="empty-icon">➕</div>
+        <h4>Empty Slot ${slotIndex + 1}</h4>
+        <p>Upload a widget to fill this slot</p>
+      </div>
+    `;
+  }
+
+  eventElement.appendChild(card);
+  DEBUG.log("Timeline Manager: Widget card rendered successfully", {
+    slotIndex,
+  });
+}
+
+// Helper function to find HTML file in widget files array
+function findHtmlFile(files) {
+  if (!Array.isArray(files) || files.length === 0) return null;
+
+  // First try to find index.html
+  const indexFile = files.find(
+    (f) => f.fileName && /index\.html?$/i.test(f.fileName)
+  );
+  if (indexFile) return indexFile;
+
+  // Fallback to any HTML file
+  return files.find((f) => f.fileName && /\.html?$/i.test(f.fileName));
+}
+
 // Expose timeline manager to window for testing
 window.timelineManager = {
   renderAllWidgetCards: renderAllWidgetCards,

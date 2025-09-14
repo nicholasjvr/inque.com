@@ -130,7 +130,7 @@ try {
 // Import floating orb system
 DEBUG.log("Importing floating orb system");
 try {
-  import("./scripts/ui/floating-orb.js")
+  import("./pages/page_scripts/floating-orb.js")
     .then(() => {
       DEBUG.log("Floating orb system imported successfully");
     })
@@ -139,6 +139,20 @@ try {
     });
 } catch (error) {
   DEBUG.error("Error importing floating orb system", error);
+}
+
+// Import ProfileHub system
+DEBUG.log("Importing ProfileHub system");
+try {
+  import("./scripts/ui/profile_banner.js")
+    .then(() => {
+      DEBUG.log("ProfileHub system imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import ProfileHub system", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing ProfileHub system", error);
 }
 
 // Note: widget-display and timeline-manager are loaded via script tags in index.html
@@ -166,11 +180,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     // Initialize social interactions
     initializeSocialInteractions();
 
-    // Initialize social stats manager
-    await socialStatsManager.init();
+    // Initialize social stats manager (with error handling)
+    try {
+      await socialStatsManager.init();
+    } catch (error) {
+      DEBUG.error(
+        "Social stats manager initialization failed, continuing without it",
+        error
+      );
+    }
 
     // Initialize enhanced UI features
     initializeEnhancedUI();
+
+    // Initialize enhanced scroll and fullscreen features (with error handling)
+    try {
+      initializeEnhancedScrollAndFullscreen();
+    } catch (error) {
+      DEBUG.error(
+        "Enhanced scroll and fullscreen initialization failed, continuing without it",
+        error
+      );
+    }
 
     // Initialize auth state tracking
     initializeAuthStateTracking();
@@ -944,11 +975,12 @@ function initializeAuthStateTracking() {
 
   // Listen for auth state changes from the auth system
   window.addEventListener("auth-state-changed", (event) => {
-    const { user, isNewLogin } = event.detail;
+    const { user, profile, isNewLogin } = event.detail;
 
     DEBUG.log("Auth state change event received", {
       userId: user?.uid,
       isNewLogin,
+      hasProfile: !!profile,
       currentState: window.authState.isInitialized,
     });
 
@@ -956,17 +988,33 @@ function initializeAuthStateTracking() {
       // First time login in this session
       window.authState.isInitialized = true;
       window.authState.currentUser = user;
+      window.authState.userProfile = profile;
       window.authState.lastLoginTime = Date.now();
 
       if (isNewLogin) {
         // Only show welcome message for actual new logins, not page refreshes
         window.authState.hasShownWelcome = true;
         DEBUG.log("New login detected, will show welcome message");
+
+        // Show success toast for new registrations
+        if (window.socialAuth && window.socialAuth.showToast) {
+          const userName =
+            profile?.displayName ||
+            profile?.name ||
+            user.displayName ||
+            user.email?.split("@")[0];
+          window.socialAuth.showToast(
+            `Welcome to inque, ${userName}! 🎉 Your account is ready.`,
+            "success",
+            5000
+          );
+        }
       }
     } else if (!user) {
       // User logged out
       window.authState.isInitialized = false;
       window.authState.currentUser = null;
+      window.authState.userProfile = null;
       window.authState.lastLoginTime = null;
       window.authState.hasShownWelcome = false;
       DEBUG.log("User logged out, reset auth state");
@@ -1632,7 +1680,7 @@ let socialStatsManager = {
 
   async waitForSocialFeatures() {
     let attempts = 0;
-    const maxAttempts = 50;
+    const maxAttempts = 30; // Reduced from 50 to fail faster
 
     while (attempts < maxAttempts) {
       if (window.socialFeatures) {
@@ -1641,7 +1689,7 @@ let socialStatsManager = {
         return;
       }
 
-      if (this.debugMode) {
+      if (this.debugMode && attempts % 10 === 0) {
         console.log(
           `[SOCIAL STATS] Waiting for social features... attempt ${attempts + 1}/${maxAttempts}`
         );
@@ -1651,7 +1699,11 @@ let socialStatsManager = {
       attempts++;
     }
 
-    throw new Error("Social features not available after maximum attempts");
+    // Don't throw error, just log warning and continue without social features
+    DEBUG.warn(
+      "Social features not available after maximum attempts - continuing without social stats"
+    );
+    this.socialFeatures = null;
   },
 
   setupAuthListener() {
@@ -1690,8 +1742,12 @@ let socialStatsManager = {
     try {
       DEBUG.log("Loading social data for user", userId);
 
-      // Load user's social data
-      await this.socialFeatures.loadUserSocialData(userId);
+      // Only load social data if social features are available
+      if (this.socialFeatures) {
+        await this.socialFeatures.loadUserSocialData(userId);
+      } else {
+        DEBUG.warn("Social features not available, skipping social data load");
+      }
 
       // Get additional user stats
       const userStats = await this.getUserStats(userId);
@@ -2346,6 +2402,184 @@ window.fullscreenState = {
   originalScrollPosition: 0,
   isInitialized: false,
 };
+
+// Create fullscreen toggle button
+function createFullscreenToggleButton() {
+  DEBUG.log("Creating fullscreen toggle button");
+
+  try {
+    // Check if button already exists
+    let fullscreenBtn = document.getElementById("fullscreenToggleBtn");
+
+    if (!fullscreenBtn) {
+      // Create the button
+      fullscreenBtn = document.createElement("button");
+      fullscreenBtn.id = "fullscreenToggleBtn";
+      fullscreenBtn.className = "fullscreen-toggle-btn";
+      fullscreenBtn.innerHTML = "⛶";
+      fullscreenBtn.title = "Toggle Fullscreen (F11)";
+      fullscreenBtn.style.cssText = `
+        position: fixed;
+        top: auto;
+        bottom: 20px;
+        left: 20px;
+        right: auto;
+        width: 40px;
+        height: 40px;
+        background: rgba(0, 240, 255, 0.1);
+        border: 2px solid rgba(0, 240, 255, 0.3);
+        border-radius: 8px;
+        color: #00f0ff;
+        font-size: 16px;
+        cursor: pointer;
+        z-index: 1000;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+
+      // Add hover effects
+      fullscreenBtn.addEventListener("mouseenter", () => {
+        fullscreenBtn.style.background = "rgba(0, 240, 255, 0.2)";
+        fullscreenBtn.style.borderColor = "rgba(0, 240, 255, 0.5)";
+        fullscreenBtn.style.transform = "scale(1.1)";
+      });
+
+      fullscreenBtn.addEventListener("mouseleave", () => {
+        fullscreenBtn.style.background = "rgba(0, 240, 255, 0.1)";
+        fullscreenBtn.style.borderColor = "rgba(0, 240, 255, 0.3)";
+        fullscreenBtn.style.transform = "scale(1)";
+      });
+
+      // Add click handler
+      fullscreenBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        DEBUG.log("Fullscreen toggle button clicked");
+        toggleFullscreenMode();
+      });
+
+      // Add to page
+      document.body.appendChild(fullscreenBtn);
+      DEBUG.log(
+        "Fullscreen toggle button created successfully and positioned at bottom-left"
+      );
+    } else {
+      DEBUG.log("Fullscreen toggle button already exists");
+    }
+  } catch (error) {
+    DEBUG.error("Failed to create fullscreen toggle button", error);
+  }
+}
+
+// Setup scroll event listeners
+function setupScrollEventListeners() {
+  DEBUG.log("Setting up scroll event listeners");
+
+  try {
+    let lastScrollTop = 0;
+    let scrollTimeout;
+
+    // Throttled scroll handler
+    const handleScroll = () => {
+      clearTimeout(scrollTimeout);
+      scrollTimeout = setTimeout(() => {
+        const currentScrollTop =
+          window.pageYOffset || document.documentElement.scrollTop;
+
+        // Update fullscreen button visibility based on scroll
+        const fullscreenBtn = document.getElementById("fullscreenToggleBtn");
+        if (fullscreenBtn) {
+          if (currentScrollTop > 100) {
+            fullscreenBtn.style.opacity = "0.8";
+          } else {
+            fullscreenBtn.style.opacity = "1";
+          }
+        }
+
+        // Update scroll direction for potential future features
+        window.scrollDirection =
+          currentScrollTop > lastScrollTop ? "down" : "up";
+        lastScrollTop = currentScrollTop;
+      }, 16); // ~60fps
+    };
+
+    // Add scroll listener
+    window.addEventListener("scroll", handleScroll, { passive: true });
+
+    DEBUG.log("Scroll event listeners setup complete");
+  } catch (error) {
+    DEBUG.error("Failed to setup scroll event listeners", error);
+  }
+}
+
+// Toggle fullscreen mode
+function toggleFullscreenMode() {
+  DEBUG.log("Toggling fullscreen mode");
+
+  try {
+    if (!document.fullscreenElement) {
+      // Enter fullscreen
+      if (document.documentElement.requestFullscreen) {
+        document.documentElement.requestFullscreen();
+      } else if (document.documentElement.webkitRequestFullscreen) {
+        document.documentElement.webkitRequestFullscreen();
+      } else if (document.documentElement.msRequestFullscreen) {
+        document.documentElement.msRequestFullscreen();
+      }
+
+      window.fullscreenState.isFullscreen = true;
+      window.fullscreenState.originalScrollPosition = window.pageYOffset;
+
+      // Update button icon
+      const fullscreenBtn = document.getElementById("fullscreenToggleBtn");
+      if (fullscreenBtn) {
+        fullscreenBtn.innerHTML = "⛷";
+        fullscreenBtn.title = "Exit Fullscreen (F11 or Esc)";
+      }
+
+      DEBUG.log("Entered fullscreen mode");
+    } else {
+      // Exit fullscreen
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) {
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) {
+        document.msExitFullscreen();
+      }
+
+      window.fullscreenState.isFullscreen = false;
+
+      // Update button icon
+      const fullscreenBtn = document.getElementById("fullscreenToggleBtn");
+      if (fullscreenBtn) {
+        fullscreenBtn.innerHTML = "⛶";
+        fullscreenBtn.title = "Toggle Fullscreen (F11)";
+      }
+
+      DEBUG.log("Exited fullscreen mode");
+    }
+  } catch (error) {
+    DEBUG.error("Failed to toggle fullscreen mode", error);
+  }
+}
+
+// Listen for fullscreen changes
+document.addEventListener("fullscreenchange", () => {
+  const isFullscreen = !!document.fullscreenElement;
+  window.fullscreenState.isFullscreen = isFullscreen;
+
+  const fullscreenBtn = document.getElementById("fullscreenToggleBtn");
+  if (fullscreenBtn) {
+    fullscreenBtn.innerHTML = isFullscreen ? "⛷" : "⛶";
+    fullscreenBtn.title = isFullscreen
+      ? "Exit Fullscreen (F11 or Esc)"
+      : "Toggle Fullscreen (F11)";
+  }
+
+  DEBUG.log("Fullscreen state changed", { isFullscreen });
+});
 
 // Initialize enhanced scroll and fullscreen features
 function initializeEnhancedScrollAndFullscreen() {

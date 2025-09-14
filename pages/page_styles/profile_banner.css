@@ -746,16 +746,20 @@
 }
 
 /* ===== CUSTOMIZATION PANEL ===== */
-/* ALWAYS POSITIONED ON LEFT SIDE - Never conflicts with profile hub */
+/* POSITIONED NEXT TO PROFILE HUB - slides in from the left */
 .hub-customization-panel {
     position: fixed !important;
     top: 20px !important;
-    left: 20px !important;
-    right: auto !important;
+    left: auto !important;
+    right: 320px !important;
+    /* Position to the left of the profile hub */
     bottom: auto !important;
-    transform: translateY(-100%);
-    width: 320px;
+    transform: translateX(20px);
+    /* Start slightly to the right */
+    /* Slide in from right side next to hub */
+    width: 300px;
     max-width: 90vw;
+    max-height: 80vh;
     background: var(--hub-bg-primary);
     border: 2px solid var(--hub-border-color);
     border-radius: 16px;
@@ -766,6 +770,28 @@
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 1002;
+    overflow-y: auto;
+}
+
+/* Backdrop overlay for customization panel */
+.hub-customization-panel-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.1);
+    backdrop-filter: blur(1px);
+    -webkit-backdrop-filter: blur(1px);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 1001;
+}
+
+.hub-customization-panel-backdrop.active {
+    opacity: 1;
+    pointer-events: auto;
 }
 
 /* Hide mobile menu toggle when customization panel is active */
@@ -779,19 +805,19 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     display: none !important;
 }
 
-/* Position-specific customization panel styles - Now using fixed top-left positioning */
-
+/* Active state - slides in from right side next to hub */
 .hub-customization-panel.active {
-    transform: translateY(0) !important;
+    transform: translateX(0) !important;
+    /* Slide in from right side next to hub */
     opacity: 1 !important;
     pointer-events: auto !important;
     position: fixed !important;
     top: 20px !important;
-    left: 20px !important;
-    right: auto !important;
+    left: auto !important;
+    right: 320px !important;
     bottom: auto !important;
-    /* Ensure animation always comes from left side */
-    transform-origin: top left !important;
+    /* Enhanced sliding animation */
+    transform-origin: right center !important;
 }
 
 .customization-content h3 {
@@ -1023,12 +1049,13 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     .hub-customization-panel {
         width: 280px;
         max-width: 85vw;
-        top: 10px !important;
-        left: 10px !important;
-        right: auto !important;
+        top: 20px !important;
+        left: auto !important;
+        right: 10px !important;
         bottom: auto !important;
         padding: 15px;
-        transform: translateY(-100%);
+        transform: translateX(20px);
+        /* Updated to slide in from right side */
         position: fixed !important;
     }
 
@@ -1049,9 +1076,9 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     .hub-customization-panel {
         width: 300px;
         max-width: 85vw;
-        top: 15px !important;
-        left: 15px !important;
-        right: auto !important;
+        top: 20px !important;
+        left: auto !important;
+        right: 15px !important;
         bottom: auto !important;
         padding: 18px;
         position: fixed !important;
@@ -1073,11 +1100,11 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 
     /* Extra small mobile customization panel adjustments */
     .hub-customization-panel {
-        width: 250px;
+        width: 260px;
         max-width: 80vw;
-        top: 5px !important;
-        left: 5px !important;
-        right: auto !important;
+        top: 20px !important;
+        left: auto !important;
+        right: 5px !important;
         bottom: auto !important;
         padding: 12px;
         position: fixed !important;

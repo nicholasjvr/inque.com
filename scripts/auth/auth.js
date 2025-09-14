@@ -86,7 +86,7 @@ class SocialAuthManager {
       showLogin: document.getElementById("showLogin"),
       authModalTitle: document.getElementById("authModalTitle"),
       googleLoginBtn: document.getElementById("googleLoginBtn"),
-      githubLoginBtn: document.getElementById("githubSignUpBtn"),
+      githubLoginBtn: document.getElementById("githubLoginBtn"),
 
       // Profile Elements
       profilePicContainer: document.querySelector(".profile-pic-container"),
@@ -148,10 +148,20 @@ class SocialAuthManager {
     this.setupEventListeners();
 
     this.log("Social Auth Manager initialized");
+
+    // Add debug function to check auth state
+    window.debugAuthState = () => {
+      console.log("[AUTH DEBUG] Current auth state:", {
+        currentUser: this.currentUser?.uid,
+        userProfile: this.userProfile,
+        isLoading: this.isLoading,
+        hasShownWelcome: this.hasShownWelcomeThisSession,
+      });
+    };
   }
 
   // Dispatch custom auth state change event
-  dispatchAuthStateEvent(user) {
+  dispatchAuthStateEvent(user, profile = null) {
     const isNewLogin = user && !this.hasShownWelcomeThisSession;
 
     if (user) {
@@ -161,6 +171,7 @@ class SocialAuthManager {
     const event = new CustomEvent("auth-state-changed", {
       detail: {
         user,
+        profile: profile || this.userProfile,
         isNewLogin,
         timestamp: Date.now(),
       },
@@ -170,6 +181,7 @@ class SocialAuthManager {
     this.log("Auth state change event dispatched", {
       userId: user?.uid,
       isNewLogin,
+      hasProfile: !!profile,
     });
   }
 
@@ -685,8 +697,65 @@ class SocialAuthManager {
       const userDoc = await getDoc(doc(db, "users", user.uid));
       if (userDoc.exists()) {
         this.userProfile = userDoc.data();
+        this.log("User profile loaded", this.userProfile);
+
+        // Update UI for logged in user
         this.updateUIForLoggedInUser();
+
+        // Set up notification listener
         this.setupNotificationListener(user.uid);
+
+        // Dispatch enhanced auth state event with profile data
+        this.dispatchAuthStateEvent(user, this.userProfile);
+      } else {
+        this.log("User profile not found, creating default profile");
+        // Create a default profile if it doesn't exist
+        const defaultUserProfile = {
+          uid: user.uid,
+          email: user.email,
+          displayName: user.displayName || user.email?.split("@")[0],
+          name: user.displayName || user.email?.split("@")[0],
+          bio: "Welcome to inque! 🚀",
+          photoURL: user.photoURL || this.getDefaultAvatar(),
+          username: this.generateUsername(user.email),
+          level: 1,
+          experience: 0,
+          type: "NEWB",
+          role: "USER",
+          followers: [],
+          following: [],
+          widgets: [],
+          socialLinks: {},
+          preferences: {
+            theme: "auto",
+            notifications: true,
+            privacy: "public",
+            language: "en",
+          },
+          stats: {
+            widgetsCreated: 0,
+            followersCount: 0,
+            followingCount: 0,
+            totalViews: 0,
+            totalLikes: 0,
+          },
+          createdAt: serverTimestamp(),
+          lastActive: serverTimestamp(),
+          isVerified: false,
+          isPremium: false,
+        };
+
+        await setDoc(doc(db, "users", user.uid), defaultUserProfile);
+        this.userProfile = defaultUserProfile;
+
+        // Update UI
+        this.updateUIForLoggedInUser();
+
+        // Set up notification listener
+        this.setupNotificationListener(user.uid);
+
+        // Dispatch enhanced auth state event with profile data
+        this.dispatchAuthStateEvent(user, this.userProfile);
       }
     } catch (error) {
       this.error("Error handling user login", error);
@@ -1272,21 +1341,8 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  // GitHub signup button
-  const githubSignUpBtn = document.getElementById("githubSignUpBtn");
-  if (githubSignUpBtn) {
-    githubSignUpBtn.addEventListener("click", () => {
-      handleProviderLogin(new GithubAuthProvider());
-    });
-  }
-
-  // Google signup button
-  const googleSignUpBtn = document.getElementById("googleSignUpBtn");
-  if (googleSignUpBtn) {
-    googleSignUpBtn.addEventListener("click", () => {
-      handleProviderLogin(new GoogleAuthProvider());
-    });
-  }
+  // Note: Social login buttons now work for both login and signup
+  // The same buttons handle both cases automatically
 
   // Forgot Password
   const forgotPasswordForm = document.getElementById("forgotPasswordForm");
@@ -1441,11 +1497,23 @@ document.addEventListener("DOMContentLoaded", () => {
         }
 
         console.log("Signup completed successfully!");
+
+        // Close the auth modal
+        const authModal = document.getElementById("authModal");
+        if (authModal) {
+          authModal.style.display = "none";
+          document.body.style.overflow = "";
+        }
+
+        // Show success message
         socialAuth.showToast(
           "Account created successfully! Welcome to inque! 🎉",
           "success",
           5000
         );
+
+        // The auth state change will be handled by onAuthStateChanged
+        // which will trigger the ProfileHub and home section updates
       } catch (error) {
         console.error("Signup error:", error);
 
