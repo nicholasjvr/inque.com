@@ -1,0 +1,530 @@
+/* ===== MOBILE OPTIMIZATION STYLES ===== */
+/* Comprehensive mobile styling for inQ Platform */
+
+/* ===== MOBILE BREAKPOINTS ===== */
+:root {
+    --mobile-xs: 320px;
+    --mobile-sm: 480px;
+    --mobile-md: 768px;
+    --mobile-lg: 1024px;
+
+    /* Mobile-specific spacing */
+    --mobile-padding: 16px;
+    --mobile-margin: 12px;
+    --mobile-gap: 8px;
+
+    /* Touch-friendly sizing */
+    --mobile-touch-target: 44px;
+    --mobile-button-height: 48px;
+    --mobile-input-height: 48px;
+}
+
+/* ===== FLOATING ORB MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+
+    /* Mobile orb positioning - make it more accessible */
+    .floating-orb-wrapper {
+        /* Move orb to bottom-right for easier thumb access */
+        top: auto !important;
+        bottom: 20px !important;
+        left: auto !important;
+        right: 20px !important;
+
+        /* Increase touch target */
+        width: 120px;
+        height: 120px;
+        z-index: 10050;
+        /* Higher than mobile menu */
+    }
+
+    /* Larger orb for mobile */
+    :root {
+        --orb-size: 80px;
+        --orbit-size: 160px;
+        --popup-offset: 20px;
+    }
+
+    .floating-orb {
+        /* Enhanced touch feedback */
+        transition: all 0.2s ease;
+        cursor: pointer;
+        -webkit-tap-highlight-color: rgba(0, 240, 255, 0.3);
+    }
+
+    .floating-orb:active {
+        transform: translate(-50%, -50%) scale(0.95);
+        filter: brightness(1.1);
+    }
+
+    /* Mobile-optimized popup */
+    .notification-popup {
+        /* Position above orb on mobile */
+        top: calc(50% - var(--popup-offset));
+        bottom: auto;
+        left: 50%;
+        right: auto;
+        min-width: 300px;
+        max-width: calc(100vw - 40px);
+        transform: translate(-50%, -10px);
+
+        /* Better mobile styling */
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+    }
+
+    .notification-popup.show {
+        transform: translate(-50%, 0);
+    }
+
+    /* Mobile notification cards */
+    .notification-card {
+        padding: 12px 16px;
+        margin: 8px 0;
+        border-radius: 12px;
+        font-size: 14px;
+    }
+
+    .notification-card .title {
+        font-size: 15px;
+        font-weight: 600;
+    }
+
+    .notification-card .meta {
+        font-size: 13px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .floating-orb-wrapper {
+        bottom: 16px !important;
+        right: 16px !important;
+        width: 100px;
+        height: 100px;
+    }
+
+    :root {
+        --orb-size: 70px;
+        --orbit-size: 140px;
+    }
+
+    .notification-popup {
+        min-width: 280px;
+        max-width: calc(100vw - 32px);
+        padding: 14px;
+    }
+}
+
+/* ===== PROFILE HUB MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+
+    /* Mobile profile hub positioning */
+    .profile-hub {
+        /* Move to bottom-left to avoid conflicts with orb */
+        top: auto !important;
+        bottom: 20px !important;
+        left: 20px !important;
+        right: auto !important;
+        z-index: 10040;
+        /* Below orb but above other elements */
+    }
+
+    /* Mobile hub core */
+    .hub-core {
+        padding: 12px 16px;
+        border-radius: 20px;
+        min-height: 56px;
+        backdrop-filter: blur(15px);
+    }
+
+    /* Mobile user section */
+    .hub-user-section {
+        gap: 10px;
+    }
+
+    .hub-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 12px;
+    }
+
+    .hub-user-info {
+        min-width: 0;
+    }
+
+    .hub-username {
+        font-size: 14px;
+        font-weight: 600;
+    }
+
+    .hub-user-status {
+        font-size: 12px;
+    }
+
+    /* Mobile action buttons */
+    .hub-actions {
+        gap: 8px;
+    }
+
+    .hub-action-btn {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        font-size: 16px;
+    }
+
+    /* Mobile expanded content */
+    .hub-expanded-content {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        max-height: 70vh;
+        border-radius: 20px 20px 0 0;
+        padding: 20px;
+        overflow-y: auto;
+
+        /* Mobile-specific styling */
+        background: rgba(10, 10, 10, 0.98);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(0, 240, 255, 0.3);
+        border-bottom: none;
+    }
+
+    /* Mobile chatbot container */
+    .hub-chatbot-container {
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        top: auto;
+        height: 60vh;
+        border-radius: 20px 20px 0 0;
+        transform: translateY(100%);
+    }
+
+    .hub-chatbot-container.show {
+        transform: translateY(0);
+    }
+
+    /* Mobile chatbot header */
+    .chatbot-header {
+        padding: 16px 20px;
+        border-radius: 20px 20px 0 0;
+    }
+
+    .chatbot-title {
+        font-size: 18px;
+    }
+
+    /* Mobile chatbot messages */
+    .chatbot-messages {
+        padding: 16px;
+        max-height: calc(60vh - 120px);
+    }
+
+    .chatbot-message {
+        padding: 12px 16px;
+        margin: 8px 0;
+        border-radius: 16px;
+        font-size: 14px;
+        line-height: 1.4;
+    }
+
+    /* Mobile chatbot input */
+    .chatbot-input-container {
+        padding: 16px 20px;
+        border-radius: 0 0 20px 20px;
+    }
+
+    .chatbot-input {
+        height: 48px;
+        font-size: 16px;
+        border-radius: 12px;
+        padding: 0 16px;
+    }
+
+    .chatbot-send-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 18px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .profile-hub {
+        bottom: 16px !important;
+        left: 16px !important;
+    }
+
+    .hub-core {
+        padding: 10px 14px;
+        min-height: 52px;
+    }
+
+    .hub-avatar {
+        width: 36px;
+        height: 36px;
+    }
+
+    .hub-username {
+        font-size: 13px;
+    }
+
+    .hub-user-status {
+        font-size: 11px;
+    }
+
+    .hub-action-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 14px;
+    }
+
+    .hub-expanded-content {
+        padding: 16px;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .hub-chatbot-container {
+        height: 65vh;
+        border-radius: 16px 16px 0 0;
+    }
+}
+
+/* ===== MOBILE MENU OPTIMIZATION ===== */
+@media (max-width: 768px) {
+
+    /* Mobile menu toggle button */
+    #mobileMenuToggle {
+        display: block !important;
+        top: 16px;
+        left: 16px;
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 20px;
+        z-index: 10060;
+        /* Above everything */
+    }
+
+    /* Mobile drawer */
+    .mobile-drawer {
+        z-index: 10030;
+    }
+
+    .mobile-drawer-content {
+        width: 320px;
+        padding: 20px;
+    }
+
+    .mobile-drawer-header {
+        margin-bottom: 20px;
+    }
+
+    .mobile-drawer-header h3 {
+        font-size: 20px;
+    }
+
+    .mobile-drawer-close {
+        width: 40px;
+        height: 40px;
+        font-size: 24px;
+    }
+
+    /* Mobile navigation */
+    .mobile-drawer-nav {
+        margin-bottom: 24px;
+    }
+
+    .mobile-nav-item {
+        padding: 16px 20px;
+        margin: 8px 0;
+        border-radius: 12px;
+        font-size: 16px;
+        min-height: 48px;
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .mobile-nav-icon {
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+    }
+
+    .mobile-nav-text {
+        font-weight: 600;
+        letter-spacing: 0.5px;
+    }
+
+    /* Mobile user section */
+    .mobile-drawer-user {
+        padding: 16px;
+        margin: 16px 0;
+        border-radius: 12px;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid rgba(0, 240, 255, 0.2);
+    }
+
+    .mobile-user-avatar {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        font-size: 20px;
+    }
+
+    .mobile-user-info {
+        margin-left: 12px;
+    }
+
+    .mobile-user-info div:first-child {
+        font-size: 16px;
+        font-weight: 600;
+    }
+
+    .mobile-user-info div:last-child {
+        font-size: 14px;
+    }
+
+    /* Mobile action buttons */
+    .mobile-drawer-actions {
+        gap: 12px;
+    }
+
+    .mobile-action-btn {
+        padding: 16px 20px;
+        border-radius: 12px;
+        font-size: 16px;
+        min-height: 48px;
+    }
+
+    .mobile-action-btn span:first-child {
+        font-size: 18px;
+        width: 28px;
+    }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+    .mobile-drawer-content {
+        width: 100%;
+        padding: 16px;
+    }
+
+    .mobile-nav-item {
+        padding: 14px 16px;
+        font-size: 15px;
+    }
+
+    .mobile-action-btn {
+        padding: 14px 16px;
+        font-size: 15px;
+    }
+}
+
+/* ===== MAIN CONTENT MOBILE OPTIMIZATION ===== */
+@media (max-width: 768px) {
+
+    /* Main content adjustments */
+    main {
+        padding: 16px;
+        padding-top: 80px;
+        /* Account for mobile menu */
+        padding-bottom: 120px;
+        /* Account for mobile UI elements */
+    }
+
+    /* Hero section mobile */
+    #home-section {
+        padding: 40px 16px;
+        margin: 0;
+        border-radius: 16px;
+    }
+
+    #home-greeting {
+        font-size: 2.5rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    #home-subtitle {
+        font-size: 1.1rem !important;
+        margin-bottom: 32px !important;
+    }
+
+    /* CTA section mobile */
+    .cta-container {
+        padding: 24px 20px !important;
+        margin: 0 !important;
+        border-radius: 16px !important;
+    }
+
+    .cta-container h2 {
+        font-size: 2rem !important;
+        margin-bottom: 16px !important;
+    }
+
+    .cta-container p {
+        font-size: 1rem !important;
+        margin-bottom: 24px !important;
+    }
+
+    /* CTA features grid */
+    .cta-features {
+        grid-template-columns: 1fr !important;
+        gap: 16px !important;
+        margin: 24px 0 !important;
+    }
+
+    .cta-feature {
+        text-align: center;
+        padding: 16px;
+        border-radius: 12px;
+        background: rgba(0, 240, 255, 0.05);
+        border: 1px solid rgba(0, 240, 255, 0.1);
+    }
+
+    .cta-feature div:first-child {
+        font-size: 2rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .cta-feature h3 {
+        font-size: 1.1rem !important;
+        margin-bottom: 8px !important;
+    }
+
+    .cta-feature p {
+        font-size: 0.9rem !important;
+        margin: 0 !important;
+    }
+
+    /* CTA buttons */
+    .cta-buttons {
+        flex-direction: column !important;
+        gap: 12px !important;
+        margin-top: 24px !important;
+    }
+
+    .cta-buttons button {
+        width: 100% !important;
+        font-size: 1.1rem !important;
+        padding: 16px 24px !important;
+        border-radius: 12px !important;
+    }
+
+    /* User quick actions mobile */
+    #user-quick-actions {
+        padding: 0 16px 32px !important;
+    }
+
+    #user-quick-actions>div {
+        flex-direction: column !important;
+        gap: 12px !important;
+    }
+}

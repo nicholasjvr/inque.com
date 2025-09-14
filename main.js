@@ -4101,9 +4101,186 @@ document.addEventListener("DOMContentLoaded", () => {
 
 DEBUG.log("Enhanced inque social app initialization complete");
 
+// ===== MOBILE-SPECIFIC ENHANCEMENTS =====
+// Initialize mobile-specific functionality
+function initializeMobileEnhancements() {
+  DEBUG.log("Initializing mobile-specific enhancements");
+
+  // Detect mobile device
+  const isMobile =
+    /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+      navigator.userAgent
+    );
+  const isTouchDevice =
+    "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  DEBUG.log("Device detection", {
+    isMobile,
+    isTouchDevice,
+    userAgent: navigator.userAgent,
+  });
+
+  // Add mobile class to body for CSS targeting
+  if (isMobile || isTouchDevice) {
+    document.body.classList.add("mobile-device");
+    DEBUG.log("Mobile device class added to body");
+  }
+
+  // Enhanced touch feedback for mobile
+  if (isTouchDevice) {
+    const touchElements = document.querySelectorAll(
+      "button, .neo-button, .mobile-nav-item, .hub-action-btn, .floating-orb"
+    );
+
+    touchElements.forEach((element) => {
+      element.addEventListener("touchstart", function () {
+        this.style.transform = "scale(0.98)";
+        this.style.transition = "transform 0.1s ease";
+      });
+
+      element.addEventListener("touchend", function () {
+        this.style.transform = "";
+      });
+
+      element.addEventListener("touchcancel", function () {
+        this.style.transform = "";
+      });
+    });
+
+    DEBUG.log(
+      "Enhanced touch feedback applied to",
+      touchElements.length,
+      "elements"
+    );
+  }
+
+  // Mobile-specific orb positioning
+  const orbWrapper = document.querySelector(".floating-orb-wrapper");
+  if (orbWrapper && isMobile) {
+    // Add mobile-specific orb behavior
+    orbWrapper.addEventListener("touchstart", function (e) {
+      e.preventDefault();
+      this.style.transform = "scale(0.95)";
+    });
+
+    orbWrapper.addEventListener("touchend", function (e) {
+      e.preventDefault();
+      this.style.transform = "";
+      // Trigger orb click
+      const orb = this.querySelector(".floating-orb");
+      if (orb) {
+        orb.click();
+      }
+    });
+
+    DEBUG.log("Mobile orb touch handling initialized");
+  }
+
+  // Mobile profile hub enhancements
+  const profileHub = document.querySelector(".profile-hub");
+  if (profileHub && isMobile) {
+    // Add swipe gestures for profile hub
+    let startY = 0;
+    let startX = 0;
+
+    profileHub.addEventListener("touchstart", function (e) {
+      startY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+    });
+
+    profileHub.addEventListener("touchmove", function (e) {
+      const currentY = e.touches[0].clientY;
+      const currentX = e.touches[0].clientX;
+      const diffY = startY - currentY;
+      const diffX = startX - currentX;
+
+      // Swipe up to expand
+      if (diffY > 50 && Math.abs(diffX) < 50) {
+        const expandBtn = this.querySelector('[data-action="expand"]');
+        if (expandBtn) {
+          expandBtn.click();
+        }
+      }
+    });
+
+    DEBUG.log("Mobile profile hub swipe gestures initialized");
+  }
+
+  // Mobile menu enhancements
+  const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+  if (mobileMenuToggle && isMobile) {
+    // Add haptic feedback simulation
+    mobileMenuToggle.addEventListener("click", function () {
+      // Simulate haptic feedback with visual feedback
+      this.style.transform = "scale(0.95)";
+      setTimeout(() => {
+        this.style.transform = "";
+      }, 150);
+    });
+
+    DEBUG.log("Mobile menu haptic feedback initialized");
+  }
+
+  // Mobile viewport height fix for iOS
+  if (isMobile) {
+    const setVH = () => {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty("--vh", `${vh}px`);
+    };
+
+    setVH();
+    window.addEventListener("resize", setVH);
+    window.addEventListener("orientationchange", setVH);
+
+    DEBUG.log("Mobile viewport height fix applied");
+  }
+
+  // Mobile performance optimizations
+  if (isMobile) {
+    // Reduce animation complexity on mobile
+    const style = document.createElement("style");
+    style.textContent = `
+      @media (max-width: 768px) {
+        * {
+          animation-duration: 0.3s !important;
+          transition-duration: 0.2s !important;
+        }
+        
+        .floating-orb.idle {
+          animation-duration: 3s !important;
+        }
+        
+        .pulse-ring {
+          animation-duration: 2s !important;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+
+    DEBUG.log("Mobile performance optimizations applied");
+  }
+
+  // Mobile-specific error handling
+  window.addEventListener("error", function (e) {
+    if (isMobile) {
+      DEBUG.error("Mobile error detected", {
+        message: e.message,
+        filename: e.filename,
+        lineno: e.lineno,
+        colno: e.colno,
+      });
+    }
+  });
+
+  DEBUG.log("Mobile enhancements initialization complete");
+}
+
 // Add this at the end of the file
 document.addEventListener("DOMContentLoaded", () => {
   DEBUG.log("DOM Content Loaded - Starting enhanced initialization");
+
+  // Initialize mobile enhancements
+  initializeMobileEnhancements();
 
   // Add debug logging for feature initialization
   setTimeout(() => {
