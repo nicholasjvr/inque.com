@@ -3,6 +3,9 @@ class WidgetPreviewManager {
   constructor() {
     this.previewContainer = null;
     this.currentFiles = new Map();
+    this.fullscreenModal = null;
+    this.fullscreenBody = null;
+    this.currentFullscreenUrl = null;
     this.log("Widget Preview Manager initialized");
   }
 
@@ -18,6 +21,7 @@ class WidgetPreviewManager {
     try {
       this.log("Initializing widget preview system");
       this.setupPreviewContainer();
+      this.setupFullscreenModal();
       this.setupEventListeners();
       return true;
     } catch (error) {
@@ -48,6 +52,63 @@ class WidgetPreviewManager {
 
       // Add to the page
       document.body.appendChild(this.previewContainer);
+    }
+  }
+
+  setupFullscreenModal() {
+    // Create fullscreen modal if it doesn't exist
+    let modal = document.getElementById("widgetFullscreenModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "widgetFullscreenModal";
+      modal.className = "widget-fullscreen-modal";
+      modal.innerHTML = `
+        <div class="fullscreen-inner">
+          <div class="fullscreen-header">
+            <h3 id="fullscreenTitle">Preview</h3>
+            <div class="fullscreen-actions">
+              <button class="fullscreen-open-tab-btn" id="fullscreenOpenTabBtn" title="Open in new tab">↗</button>
+              <button class="fullscreen-close-btn" id="fullscreenCloseBtn">&times;</button>
+            </div>
+          </div>
+          <div class="fullscreen-body" id="fullscreenBody"></div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    this.fullscreenModal = modal;
+    this.fullscreenBody = modal.querySelector("#fullscreenBody");
+
+    // Close handlers
+    const closeBtn = modal.querySelector("#fullscreenCloseBtn");
+    if (closeBtn && !closeBtn._handlerBound) {
+      closeBtn.addEventListener("click", () => this.hideFullscreen());
+      closeBtn._handlerBound = true;
+    }
+
+    const openTabBtn = modal.querySelector("#fullscreenOpenTabBtn");
+    if (openTabBtn && !openTabBtn._handlerBound) {
+      openTabBtn.addEventListener("click", () => {
+        if (this.currentFullscreenUrl) {
+          window.open(this.currentFullscreenUrl, "_blank");
+        }
+      });
+      openTabBtn._handlerBound = true;
+    }
+
+    if (!modal._backdropHandlerBound) {
+      modal.addEventListener("click", (e) => {
+        if (e.target === modal) this.hideFullscreen();
+      });
+      modal._backdropHandlerBound = true;
+    }
+
+    if (!this._escHandlerBound) {
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") this.hideFullscreen();
+      });
+      this._escHandlerBound = true;
     }
   }
 
@@ -182,6 +243,19 @@ class WidgetPreviewManager {
       container.appendChild(fileInfo);
       container.appendChild(element);
 
+      // Controls
+      const controls = document.createElement("div");
+      controls.className = "preview-controls";
+      const fullscreenBtn = document.createElement("button");
+      fullscreenBtn.className = "preview-fullscreen-btn";
+      fullscreenBtn.textContent = "⛶ Fullscreen";
+      fullscreenBtn.addEventListener("click", () => {
+        const title = `Preview: ${file.name}`;
+        this.openFullscreenFromElement(element, title, element.src || url);
+      });
+      controls.appendChild(fullscreenBtn);
+      container.appendChild(controls);
+
       content.appendChild(container);
     } catch (error) {
       this.error("Error creating preview for file", {
@@ -254,11 +328,81 @@ class WidgetPreviewManager {
       container.appendChild(projectInfo);
       container.appendChild(iframe);
 
+      // Controls
+      const controls = document.createElement("div");
+      controls.className = "preview-controls";
+      const fullscreenBtn = document.createElement("button");
+      fullscreenBtn.className = "preview-fullscreen-btn";
+      fullscreenBtn.textContent = "⛶ Fullscreen";
+      fullscreenBtn.addEventListener("click", () => {
+        this.openFullscreenFromElement(iframe, "Project Preview", url);
+      });
+      controls.appendChild(fullscreenBtn);
+      container.appendChild(controls);
+
       content.appendChild(container);
     } catch (error) {
       this.error("Error creating project preview", error);
       this.showError("Failed to preview project: " + error.message);
     }
+  }
+
+  openFullscreenFromElement(element, title = "Preview", url = null) {
+    try {
+      this.log("Opening fullscreen", { title, url });
+      if (!this.fullscreenModal) this.setupFullscreenModal();
+
+      const titleEl = this.fullscreenModal.querySelector("#fullscreenTitle");
+      if (titleEl) titleEl.textContent = title;
+
+      this.fullscreenBody.innerHTML = "";
+      let displayEl = null;
+
+      const tag = (element.tagName || "").toLowerCase();
+      if (tag === "iframe") {
+        displayEl = document.createElement("iframe");
+        displayEl.src = url || element.src;
+        displayEl.className = "fullscreen-iframe";
+        displayEl.sandbox = element.sandbox || "allow-scripts allow-same-origin allow-forms";
+      } else if (tag === "img") {
+        displayEl = document.createElement("img");
+        displayEl.src = url || element.src;
+        displayEl.className = "fullscreen-image";
+        displayEl.alt = title;
+      } else if (tag === "video") {
+        displayEl = document.createElement("video");
+        displayEl.src = url || element.src;
+        displayEl.controls = true;
+        displayEl.autoplay = true;
+        displayEl.className = "fullscreen-video";
+      } else if (tag === "audio") {
+        displayEl = document.createElement("audio");
+        displayEl.src = url || element.src;
+        displayEl.controls = true;
+        displayEl.autoplay = true;
+        displayEl.className = "fullscreen-audio";
+      } else {
+        // Generic clone (e.g., code preview)
+        displayEl = element.cloneNode(true);
+        displayEl.classList.add("fullscreen-generic");
+      }
+
+      this.currentFullscreenUrl = url || element.src || null;
+      this.fullscreenBody.appendChild(displayEl);
+      this.fullscreenModal.style.display = "flex";
+      document.body.style.overflow = "hidden";
+    } catch (error) {
+      this.error("Failed to open fullscreen", error);
+    }
+  }
+
+  hideFullscreen() {
+    if (!this.fullscreenModal) return;
+    this.fullscreenModal.style.display = "none";
+    if (this.fullscreenBody) this.fullscreenBody.innerHTML = "";
+    document.body.style.overflow = "";
+    this.currentFullscreenUrl = null;
+    this.log("Fullscreen closed");
   }
 
   createCodePreview(text, fileName) {
@@ -333,6 +477,8 @@ export default widgetPreviewManager;
 // Initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
   widgetPreviewManager.init();
+  // Expose globally for optional external triggers
+  window.widgetPreviewManager = widgetPreviewManager;
 });
 
 // Export for use in other modules
