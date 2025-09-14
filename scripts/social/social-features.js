@@ -35,7 +35,7 @@ class SocialFeaturesManager {
     try {
       this.log("Setting up auth state listener");
       const { auth, onAuthStateChanged } = await import(
-        "../../../core/firebase-core.js"
+        "../../core/firebase-core.js"
       );
       this.log("Firebase imports successful", {
         auth: !!auth,
@@ -59,7 +59,7 @@ class SocialFeaturesManager {
   // Load user's social data
   async loadUserSocialData(userId) {
     try {
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, getDoc } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -96,7 +96,7 @@ class SocialFeaturesManager {
         throw new Error("You are already following this user");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, updateDoc, arrayUnion } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -138,7 +138,7 @@ class SocialFeaturesManager {
         throw new Error("You are not following this user");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, updateDoc, arrayRemove } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -171,7 +171,7 @@ class SocialFeaturesManager {
         throw new Error("User must be logged in to like widgets");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, updateDoc, arrayUnion, getDoc } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -219,7 +219,7 @@ class SocialFeaturesManager {
         throw new Error("User must be logged in to unlike widgets");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, updateDoc, arrayRemove, getDoc } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -259,7 +259,7 @@ class SocialFeaturesManager {
         throw new Error("User must be logged in to share widgets");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { doc, getDoc, updateDoc, increment } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -350,7 +350,7 @@ class SocialFeaturesManager {
   // Discover users
   async discoverUsers(limit = 10, excludeCurrentUser = true) {
     try {
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const {
         collection,
         query,
@@ -404,7 +404,7 @@ class SocialFeaturesManager {
         throw new Error("User must be logged in to view feed");
       }
 
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const {
         collection,
         query,
@@ -456,7 +456,7 @@ class SocialFeaturesManager {
   // Create follow notification
   async createFollowNotification(targetUserId, followerId) {
     try {
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { collection, addDoc, serverTimestamp } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -491,7 +491,7 @@ class SocialFeaturesManager {
   // Create like notification
   async createLikeNotification(widgetOwnerId, likerId, widgetId, widgetTitle) {
     try {
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { collection, addDoc, serverTimestamp } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );
@@ -536,7 +536,7 @@ class SocialFeaturesManager {
     platform
   ) {
     try {
-      const { db } = await import("../../../core/firebase-core.js");
+      const { db } = await import("../../core/firebase-core.js");
       const { collection, addDoc, serverTimestamp } = await import(
         "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
       );

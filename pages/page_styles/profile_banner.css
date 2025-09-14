@@ -23,19 +23,16 @@
     --hub-scale: 1;
 }
 
-/* Hub Positioning Variants */
+/* Hub Positioning Variants - RESTRICTED TO RIGHT SIDE ONLY */
+/* Left-side positions are disabled to prevent conflicts with customization panel */
 .profile-hub[data-position="top-left"] {
-    top: 20px !important;
-    left: 20px !important;
-    right: auto !important;
-    bottom: auto !important;
+    /* DISABLED - Use top-right instead to avoid conflicts */
+    display: none !important;
 }
 
 .profile-hub[data-position="bottom-left"] {
-    top: auto !important;
-    bottom: 20px !important;
-    left: 20px !important;
-    right: auto !important;
+    /* DISABLED - Use bottom-right instead to avoid conflicts */
+    display: none !important;
 }
 
 .profile-hub[data-position="bottom-right"] {
@@ -304,11 +301,11 @@
     transition: all 0.3s ease;
 }
 
-/* Position-specific expanded content styles */
+/* Position-specific expanded content styles - RIGHT SIDE ONLY */
+/* Left-side positions are disabled to prevent conflicts */
 .hub-expanded-content.position-top-left {
-    border-radius: 0 0 16px 16px;
-    border-top: none;
-    border-bottom: 2px solid var(--hub-border-color);
+    /* DISABLED - Conflicts with customization panel */
+    display: none !important;
 }
 
 .hub-expanded-content.position-top-right {
@@ -318,9 +315,8 @@
 }
 
 .hub-expanded-content.position-bottom-left {
-    border-radius: 16px 16px 0 0;
-    border-bottom: none;
-    border-top: 2px solid var(--hub-border-color);
+    /* DISABLED - Conflicts with customization panel */
+    display: none !important;
 }
 
 .hub-expanded-content.position-bottom-right {
@@ -541,14 +537,11 @@
     z-index: 1001;
 }
 
-/* Position-specific chatbot container styles */
+/* Position-specific chatbot container styles - RIGHT SIDE ONLY */
+/* Left-side positions are disabled to prevent conflicts */
 .hub-chatbot-container.position-top-left {
-    top: 0;
-    right: 100%;
-    left: auto;
-    bottom: auto;
-    margin-right: 12px;
-    transform: translateX(-20px);
+    /* DISABLED - Conflicts with customization panel */
+    display: none !important;
 }
 
 .hub-chatbot-container.position-top-right {
@@ -561,12 +554,8 @@
 }
 
 .hub-chatbot-container.position-bottom-left {
-    top: auto;
-    right: 100%;
-    left: auto;
-    bottom: 0;
-    margin-right: 12px;
-    transform: translateX(-20px);
+    /* DISABLED - Conflicts with customization panel */
+    display: none !important;
 }
 
 .hub-chatbot-container.position-bottom-right {
@@ -757,74 +746,52 @@
 }
 
 /* ===== CUSTOMIZATION PANEL ===== */
+/* ALWAYS POSITIONED ON LEFT SIDE - Never conflicts with profile hub */
 .hub-customization-panel {
-    position: absolute;
-    top: 100%;
-    left: 0;
-    right: 0;
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: auto !important;
+    bottom: auto !important;
+    transform: translateY(-100%);
+    width: 320px;
+    max-width: 90vw;
     background: var(--hub-bg-primary);
     border: 2px solid var(--hub-border-color);
-    border-top: none;
-    border-radius: 0 0 16px 16px;
+    border-radius: 16px;
     backdrop-filter: blur(20px);
     box-shadow: var(--hub-shadow);
     padding: 20px;
-    transform: translateY(-100%);
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 999;
+    z-index: 1002;
 }
 
-/* Position-specific customization panel styles */
-.hub-customization-panel.position-top-left {
-    top: 100%;
-    left: 0;
-    right: auto;
-    bottom: auto;
-    border-radius: 0 0 16px 16px;
-    border-top: none;
-    border-bottom: 2px solid var(--hub-border-color);
-    transform: translateY(-100%);
+/* Hide mobile menu toggle when customization panel is active */
+body:has(.hub-customization-panel.active) .mobile-menu-toggle {
+    display: none !important;
 }
 
-.hub-customization-panel.position-top-right {
-    top: 100%;
-    right: 0;
-    left: auto;
-    bottom: auto;
-    border-radius: 0 0 16px 16px;
-    border-top: none;
-    border-bottom: 2px solid var(--hub-border-color);
-    transform: translateY(-100%);
+/* Fallback for browsers without :has() support */
+.hub-customization-panel.active+* .mobile-menu-toggle,
+.hub-customization-panel.active~.mobile-menu-toggle {
+    display: none !important;
 }
 
-.hub-customization-panel.position-bottom-left {
-    top: auto;
-    left: 0;
-    right: auto;
-    bottom: 100%;
-    border-radius: 16px 16px 0 0;
-    border-bottom: none;
-    border-top: 2px solid var(--hub-border-color);
-    transform: translateY(100%);
-}
-
-.hub-customization-panel.position-bottom-right {
-    top: auto;
-    right: 0;
-    left: auto;
-    bottom: 100%;
-    border-radius: 16px 16px 0 0;
-    border-bottom: none;
-    border-top: 2px solid var(--hub-border-color);
-    transform: translateY(100%);
-}
+/* Position-specific customization panel styles - Now using fixed top-left positioning */
 
 .hub-customization-panel.active {
-    transform: translateY(0);
-    opacity: 1;
-    pointer-events: auto;
+    transform: translateY(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    top: 20px !important;
+    left: 20px !important;
+    right: auto !important;
+    bottom: auto !important;
+    /* Ensure animation always comes from left side */
+    transform-origin: top left !important;
 }
 
 .customization-content h3 {
@@ -1020,6 +987,7 @@
         display: block !important;
     }
 
+
     .hub-expanded-content {
         min-width: 260px;
         padding: 20px;
@@ -1050,6 +1018,44 @@
         padding: 10px 6px;
         min-height: 55px;
     }
+
+    /* Mobile customization panel adjustments */
+    .hub-customization-panel {
+        width: 280px;
+        max-width: 85vw;
+        top: 10px !important;
+        left: 10px !important;
+        right: auto !important;
+        bottom: auto !important;
+        padding: 15px;
+        transform: translateY(-100%);
+        position: fixed !important;
+    }
+
+    .customization-actions {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .save-btn,
+    .reset-btn {
+        padding: 12px 16px;
+        font-size: 0.9rem;
+    }
+}
+
+/* Specific adjustments for portrait mobile resolutions like 1080x1920 */
+@media (max-width: 1080px) and (orientation: portrait) {
+    .hub-customization-panel {
+        width: 300px;
+        max-width: 85vw;
+        top: 15px !important;
+        left: 15px !important;
+        right: auto !important;
+        bottom: auto !important;
+        padding: 18px;
+        position: fixed !important;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1063,6 +1069,37 @@
         left: 10px;
         font-size: 1.2rem;
         padding: 10px;
+    }
+
+    /* Extra small mobile customization panel adjustments */
+    .hub-customization-panel {
+        width: 250px;
+        max-width: 80vw;
+        top: 5px !important;
+        left: 5px !important;
+        right: auto !important;
+        bottom: auto !important;
+        padding: 12px;
+        position: fixed !important;
+    }
+
+    .customization-content h3 {
+        font-size: 0.9rem;
+        margin-bottom: 12px;
+    }
+
+    .section-label {
+        font-size: 0.75rem;
+        margin-bottom: 6px;
+    }
+
+    .theme-selector {
+        gap: 3px;
+    }
+
+    .theme-option {
+        padding: 6px 8px;
+        font-size: 0.7rem;
     }
 }
 

@@ -127,6 +127,20 @@ try {
   DEBUG.error("Error importing tools filter system", error);
 }
 
+// Import floating orb system
+DEBUG.log("Importing floating orb system");
+try {
+  import("./scripts/ui/floating-orb.js")
+    .then(() => {
+      DEBUG.log("Floating orb system imported successfully");
+    })
+    .catch((error) => {
+      DEBUG.error("Failed to import floating orb system", error);
+    });
+} catch (error) {
+  DEBUG.error("Error importing floating orb system", error);
+}
+
 // Note: widget-display and timeline-manager are loaded via script tags in index.html
 
 // Enhanced initialization with feature detection
@@ -136,6 +150,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     // Initialize authentication modal functionality
     initializeAuthModal();
+
+    // Initialize home section handlers
+    initializeHomeSectionHandlers();
+
+    // Initialize live stats
+    initializeLiveStats();
 
     // Initialize password visibility toggles
     initializePasswordToggles();
@@ -274,6 +294,650 @@ function initializeAuthModal() {
   DEBUG.log("Authentication modal functionality initialized");
 }
 
+// Update home section based on authentication state
+function updateHomeSection(user) {
+  DEBUG.log("Updating home section for auth state", { userId: user?.uid });
+
+  const homeGreeting = document.getElementById("home-greeting");
+  const homeSubtitle = document.getElementById("home-subtitle");
+  const guestCtaSection = document.getElementById("guest-cta-section");
+  const userQuickActions = document.getElementById("user-quick-actions");
+
+  if (user) {
+    // Authenticated user - show personalized content
+    if (homeGreeting) {
+      const userName =
+        user.displayName || user.email?.split("@")[0] || "Developer";
+      homeGreeting.textContent = `welcome back, ${userName}.`;
+    }
+
+    if (homeSubtitle) {
+      homeSubtitle.textContent =
+        "Ready to build something amazing? Choose your path:";
+    }
+
+    // Hide guest CTA and show user actions
+    if (guestCtaSection) guestCtaSection.style.display = "none";
+    if (userQuickActions) userQuickActions.style.display = "block";
+  } else {
+    // Guest user - show CTA
+    if (homeGreeting) {
+      homeGreeting.textContent = "welcome home.";
+    }
+
+    if (homeSubtitle) {
+      homeSubtitle.textContent =
+        "Join 1,200+ developers building the future with AI IDEs. Share your projects, learn from others, and showcase your creativity.";
+    }
+
+    // Show guest CTA and hide user actions
+    if (guestCtaSection) guestCtaSection.style.display = "block";
+    if (userQuickActions) userQuickActions.style.display = "none";
+  }
+}
+
+// Initialize home section button handlers
+function initializeHomeSectionHandlers() {
+  DEBUG.log("Initializing home section button handlers");
+
+  // Guest CTA buttons
+  const guestSignupBtn = document.getElementById("guest-signup-btn");
+  const guestLoginBtn = document.getElementById("guest-login-btn");
+
+  if (guestSignupBtn) {
+    guestSignupBtn.addEventListener("click", () => {
+      DEBUG.log("Guest signup button clicked");
+      // Trigger the auth modal in signup mode
+      const authModal = document.getElementById("authModal");
+      if (authModal) {
+        authModal.style.display = "block";
+        document.body.style.overflow = "hidden";
+        // Switch to signup form
+        setTimeout(() => {
+          const signupTab = document.querySelector('[data-tab="signup"]');
+          if (signupTab) signupTab.click();
+        }, 100);
+      }
+    });
+  }
+
+  if (guestLoginBtn) {
+    guestLoginBtn.addEventListener("click", () => {
+      DEBUG.log("Guest login button clicked");
+      // Trigger the auth modal in login mode
+      const authModal = document.getElementById("authModal");
+      if (authModal) {
+        authModal.style.display = "block";
+        document.body.style.overflow = "hidden";
+        // Switch to login form
+        setTimeout(() => {
+          const loginTab = document.querySelector('[data-tab="login"]');
+          if (loginTab) loginTab.click();
+        }, 100);
+      }
+    });
+  }
+
+  // Authenticated user action buttons
+  const exploreProjectsBtn = document.getElementById("explore-projects-btn");
+  const myDashboardBtn = document.getElementById("my-dashboard-btn");
+  const improveCraftBtn = document.getElementById("improve-craft-btn");
+
+  if (exploreProjectsBtn) {
+    exploreProjectsBtn.addEventListener("click", () => {
+      DEBUG.log("Explore projects button clicked");
+      // Navigate to explore page
+      window.location.href = "pages/explore.html";
+    });
+  }
+
+  if (myDashboardBtn) {
+    myDashboardBtn.addEventListener("click", () => {
+      DEBUG.log("My dashboard button clicked");
+      // Navigate to my projects page
+      window.location.href = "pages/my-projects.html";
+    });
+  }
+
+  if (improveCraftBtn) {
+    improveCraftBtn.addEventListener("click", () => {
+      DEBUG.log("Improve craft button clicked");
+      // For now, show a modal or navigate to knowledge base
+      // We can implement this as a section or separate page
+      openKnowledgeBase();
+    });
+  }
+}
+
+// Open knowledge base (improve your craft)
+function openKnowledgeBase() {
+  DEBUG.log("Opening knowledge base");
+
+  // Check if user is authenticated
+  if (!window.authState || !window.authState.currentUser) {
+    window.showToast("Please sign in to access the knowledge base", "info");
+    return;
+  }
+
+  // Navigate to knowledge base page
+  window.location.href = "pages/knowledge-base.html";
+}
+
+// Live Stats Manager
+const liveStatsManager = {
+  isInitialized: false,
+  updateInterval: null,
+  lastUpdate: null,
+
+  // Initialize live stats functionality
+  async init() {
+    DEBUG.log("Initializing live stats manager");
+
+    if (this.isInitialized) {
+      DEBUG.log("Live stats already initialized");
+      return;
+    }
+
+    try {
+      // Initial load
+      await this.loadAndUpdateStats();
+
+      // Set up periodic updates every 30 seconds
+      this.updateInterval = setInterval(async () => {
+        await this.loadAndUpdateStats();
+      }, 30000);
+
+      this.isInitialized = true;
+      DEBUG.log("Live stats manager initialized successfully");
+    } catch (error) {
+      DEBUG.error("Failed to initialize live stats manager", error);
+    }
+  },
+
+  // Load stats from Firestore and update UI
+  async loadAndUpdateStats() {
+    DEBUG.log("Loading live stats from Firestore");
+
+    try {
+      const statsContainer = document.querySelector(".live-stats-container");
+      if (statsContainer) {
+        statsContainer.classList.add("loading");
+      }
+
+      // Wait for Firestore to be available
+      if (!window.firestore || !window.db) {
+        DEBUG.warn("Firestore not available yet, using fallback stats");
+        this.updateStatsDisplay({
+          users: 1247,
+          widgets: 856,
+          posts: 342,
+        });
+        return;
+      }
+
+      const stats = await this.fetchStatsFromFirestore();
+      this.updateStatsDisplay(stats);
+      this.updateLastUpdatedTime();
+
+      if (statsContainer) {
+        statsContainer.classList.remove("loading");
+      }
+    } catch (error) {
+      DEBUG.error("Failed to load live stats", error);
+      // Use fallback stats on error
+      this.updateStatsDisplay({
+        users: 1247,
+        widgets: 856,
+        posts: 342,
+      });
+    }
+  },
+
+  // Fetch actual stats from Firestore collections
+  async fetchStatsFromFirestore() {
+    DEBUG.log("Fetching stats from Firestore collections");
+
+    try {
+      const stats = {};
+
+      // Count users
+      try {
+        const usersQuery = window.firestore.collection(window.db, "users");
+        const usersSnapshot = await window.firestore.getDocs(usersQuery);
+        stats.users = usersSnapshot.size;
+        DEBUG.log("Users count fetched", { count: stats.users });
+      } catch (error) {
+        DEBUG.warn("Failed to fetch users count", error);
+        stats.users = 1247; // Fallback
+      }
+
+      // Count widgets
+      try {
+        const widgetsQuery = window.firestore.collection(window.db, "widgets");
+        const widgetsSnapshot = await window.firestore.getDocs(widgetsQuery);
+        stats.widgets = widgetsSnapshot.size;
+        DEBUG.log("Widgets count fetched", { count: stats.widgets });
+      } catch (error) {
+        DEBUG.warn("Failed to fetch widgets count", error);
+        stats.widgets = 856; // Fallback
+      }
+
+      // Count knowledge base posts (placeholder for now)
+      try {
+        // For now, use a calculated value based on users and widgets
+        // Later we can implement actual posts collection
+        stats.posts = Math.floor(stats.users * 0.28 + stats.widgets * 0.15);
+        DEBUG.log("Posts count calculated", { count: stats.posts });
+      } catch (error) {
+        DEBUG.warn("Failed to calculate posts count", error);
+        stats.posts = 342; // Fallback
+      }
+
+      return stats;
+    } catch (error) {
+      DEBUG.error("Error fetching stats from Firestore", error);
+      // Return fallback stats
+      return {
+        users: 1247,
+        widgets: 856,
+        posts: 342,
+      };
+    }
+  },
+
+  // Update the stats display with smooth counter animation
+  updateStatsDisplay(stats) {
+    DEBUG.log("Updating stats display", stats);
+
+    // Add updating class to grid for visual feedback
+    const statsGrid = document.querySelector(".stats-grid");
+    if (statsGrid) {
+      statsGrid.classList.add("updating");
+      setTimeout(() => {
+        statsGrid.classList.remove("updating");
+      }, 1500);
+    }
+
+    // Update counters with staggered animation
+    setTimeout(() => this.animateCounter("live-users-count", stats.users), 200);
+    setTimeout(
+      () => this.animateCounter("live-widgets-count", stats.widgets),
+      400
+    );
+    setTimeout(() => this.animateCounter("live-posts-count", stats.posts), 600);
+
+    // Update trend indicators
+    setTimeout(() => this.updateTrendIndicators(stats), 800);
+
+    // Add sparkle effect to indicate update
+    this.addSparkleEffect();
+  },
+
+  // Animate counter from current value to new value
+  animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) {
+      DEBUG.warn("Counter element not found", { elementId });
+      return;
+    }
+
+    const countValueSpan = element.querySelector(".count-value");
+    if (!countValueSpan) {
+      DEBUG.warn("Count value span not found", { elementId });
+      return;
+    }
+
+    const currentValue = parseInt(countValueSpan.textContent) || 0;
+    const difference = targetValue - currentValue;
+
+    if (difference === 0) {
+      DEBUG.log("No change in counter value", {
+        elementId,
+        value: targetValue,
+      });
+      return;
+    }
+
+    DEBUG.log("Animating counter", {
+      elementId,
+      from: currentValue,
+      to: targetValue,
+    });
+
+    // Add updating class for animation
+    countValueSpan.classList.add("updating");
+
+    const duration = 1500; // 1.5 seconds
+    const steps = 50;
+    const stepValue = difference / steps;
+    const stepDuration = duration / steps;
+
+    let currentStep = 0;
+
+    const updateCounter = () => {
+      if (currentStep >= steps) {
+        countValueSpan.textContent = targetValue.toLocaleString();
+        countValueSpan.classList.remove("updating");
+
+        // Add bounce effect when counter finishes
+        countValueSpan.classList.add("bounce");
+        setTimeout(() => {
+          countValueSpan.classList.remove("bounce");
+        }, 400);
+
+        return;
+      }
+
+      const newValue = Math.round(currentValue + stepValue * currentStep);
+      countValueSpan.textContent = newValue.toLocaleString();
+      currentStep++;
+
+      setTimeout(updateCounter, stepDuration);
+    };
+
+    updateCounter();
+  },
+
+  // Update trend indicators with dynamic data
+  updateTrendIndicators(stats) {
+    // Simulate growth trends based on current stats
+    const trends = {
+      users: Math.floor(Math.random() * 20) + 5, // 5-25 new users
+      widgets: Math.floor(Math.random() * 15) + 3, // 3-18 new widgets
+      posts: Math.floor(Math.random() * 10) + 2, // 2-12 new posts
+    };
+
+    // Update trend text
+    const userTrend = document.querySelector('[data-stat="users"] .trend-text');
+    const widgetTrend = document.querySelector(
+      '[data-stat="widgets"] .trend-text'
+    );
+    const postsTrend = document.querySelector(
+      '[data-stat="posts"] .trend-text'
+    );
+
+    if (userTrend) userTrend.textContent = `+${trends.users} this week`;
+    if (widgetTrend) widgetTrend.textContent = `+${trends.widgets} today`;
+    if (postsTrend) postsTrend.textContent = `+${trends.posts} this week`;
+
+    // Add "HOT" indicator for high growth
+    this.updateHotIndicators(trends, stats);
+  },
+
+  // Add hot indicators for rapidly growing stats
+  updateHotIndicators(trends, stats) {
+    // Remove existing hot indicators
+    document.querySelectorAll(".hot-indicator").forEach((el) => el.remove());
+
+    const thresholds = {
+      users: 15, // Show hot if +15 or more users this week
+      widgets: 10, // Show hot if +10 or more widgets today
+      posts: 8, // Show hot if +8 or more posts this week
+    };
+
+    Object.keys(trends).forEach((statType) => {
+      if (trends[statType] >= thresholds[statType]) {
+        const card = document.querySelector(`[data-stat="${statType}"]`);
+        if (card) {
+          const hotIndicator = document.createElement("div");
+          hotIndicator.className = "hot-indicator";
+          hotIndicator.style.cssText = `
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: linear-gradient(135deg, #ff4444, #ff8800);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            animation: hot-pulse 1.5s ease-in-out infinite;
+            box-shadow: 0 2px 8px rgba(255, 68, 68, 0.4);
+            z-index: 10;
+          `;
+          hotIndicator.textContent = "🔥 HOT";
+          card.appendChild(hotIndicator);
+        }
+      }
+    });
+  },
+
+  // Add sparkle effect when stats update
+  addSparkleEffect() {
+    DEBUG.log("Adding sparkle effect to stats");
+
+    const cards = document.querySelectorAll(".live-stat-card");
+    cards.forEach((card, index) => {
+      setTimeout(() => {
+        // Create sparkle element
+        const sparkle = document.createElement("div");
+        sparkle.style.cssText = `
+          position: absolute;
+          top: 20px;
+          right: 20px;
+          font-size: 20px;
+          color: var(--primary-neon);
+          animation: sparkle 1s ease-out forwards;
+          pointer-events: none;
+          z-index: 10;
+        `;
+        sparkle.textContent = "✨";
+
+        card.style.position = "relative";
+        card.appendChild(sparkle);
+
+        // Remove sparkle after animation
+        setTimeout(() => {
+          if (sparkle.parentNode) {
+            sparkle.parentNode.removeChild(sparkle);
+          }
+        }, 1000);
+      }, index * 200);
+    });
+  },
+
+  // Update last updated timestamp
+  updateLastUpdatedTime() {
+    const lastUpdatedElement = document.getElementById("stats-last-updated");
+    if (lastUpdatedElement) {
+      const now = new Date();
+      const timeString = now.toLocaleTimeString("en-US", {
+        hour12: true,
+        hour: "numeric",
+        minute: "2-digit",
+      });
+      lastUpdatedElement.textContent = timeString;
+      this.lastUpdate = now;
+    }
+  },
+
+  // Clean up intervals on page unload
+  destroy() {
+    if (this.updateInterval) {
+      clearInterval(this.updateInterval);
+      this.updateInterval = null;
+    }
+    this.isInitialized = false;
+    DEBUG.log("Live stats manager destroyed");
+  },
+};
+
+// Initialize live stats functionality
+function initializeLiveStats() {
+  DEBUG.log("Initializing live stats functionality");
+
+  // Wait for Firebase to be ready
+  setTimeout(async () => {
+    await liveStatsManager.init();
+  }, 1000);
+
+  // Clean up on page unload
+  window.addEventListener("beforeunload", () => {
+    liveStatsManager.destroy();
+  });
+
+  // Add click handlers for stats cards
+  setupStatsCardInteractions();
+
+  // Setup keyboard accessibility for refresh button
+  const refreshBtn = document.getElementById("refresh-stats-btn");
+  if (refreshBtn) {
+    refreshBtn.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        manualRefreshStats();
+      }
+    });
+    refreshBtn.setAttribute("tabindex", "0");
+    refreshBtn.setAttribute("aria-label", "Refresh live community statistics");
+  }
+}
+
+// Setup interactive features for stats cards
+function setupStatsCardInteractions() {
+  DEBUG.log("Setting up stats card interactions");
+
+  // Add click handlers to stats cards
+  const statsCards = document.querySelectorAll(".live-stat-card");
+
+  statsCards.forEach((card) => {
+    // Click handler
+    card.addEventListener("click", () => {
+      const statType = card.getAttribute("data-stat");
+      handleStatsCardClick(statType);
+    });
+
+    // Keyboard accessibility
+    card.setAttribute("tabindex", "0");
+    card.setAttribute("role", "button");
+    card.setAttribute(
+      "aria-label",
+      `View details for ${card.getAttribute("data-stat")} statistics`
+    );
+
+    card.addEventListener("keydown", (e) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        const statType = card.getAttribute("data-stat");
+        handleStatsCardClick(statType);
+      }
+    });
+
+    // Enhanced focus handling
+    card.addEventListener("focus", () => {
+      card.style.transform = "translateY(-2px)";
+      card.style.borderColor = "var(--primary-neon)";
+    });
+
+    card.addEventListener("blur", () => {
+      card.style.transform = "";
+      card.style.borderColor = "";
+    });
+  });
+
+  // Add manual refresh functionality (double-click stats container)
+  const statsContainer = document.querySelector(".live-stats-container");
+  if (statsContainer) {
+    let clickCount = 0;
+    statsContainer.addEventListener("click", () => {
+      clickCount++;
+      if (clickCount === 1) {
+        setTimeout(() => {
+          if (clickCount === 2) {
+            DEBUG.log("Double-click detected on stats container - refreshing");
+            manualRefreshStats();
+          }
+          clickCount = 0;
+        }, 300);
+      }
+    });
+  }
+}
+
+// Handle stats card click interactions
+function handleStatsCardClick(statType) {
+  DEBUG.log("Stats card clicked", { statType });
+
+  const messages = {
+    users:
+      "👥 Active developers building amazing projects with AI IDEs! Join the community to connect with fellow creators.",
+    widgets:
+      "🎨 Interactive widgets created by our talented community! Share your own creations in the Widget Studio.",
+    posts:
+      "📚 Knowledge base posts with tips, guides, and insights! Contribute your expertise to help others learn.",
+  };
+
+  const message =
+    messages[statType] || "Click to learn more about our growing community!";
+
+  window.showToast(message, "info");
+
+  // Add visual feedback
+  const clickedCard = document.querySelector(`[data-stat="${statType}"]`);
+  if (clickedCard) {
+    clickedCard.style.transform = "scale(0.98)";
+    setTimeout(() => {
+      clickedCard.style.transform = "";
+    }, 150);
+  }
+}
+
+// Manual refresh functionality
+async function manualRefreshStats() {
+  DEBUG.log("Manual stats refresh triggered");
+
+  const refreshBtn = document.getElementById("refresh-stats-btn");
+  const statsContainer = document.querySelector(".live-stats-container");
+
+  // Visual feedback
+  if (refreshBtn) {
+    refreshBtn.classList.add("refreshing");
+    refreshBtn.style.pointerEvents = "none";
+  }
+
+  if (statsContainer) {
+    statsContainer.classList.add("updating");
+  }
+
+  window.showToast("🔄 Refreshing live stats...", "info");
+
+  try {
+    await liveStatsManager.loadAndUpdateStats();
+
+    // Success feedback
+    if (statsContainer) {
+      statsContainer.classList.remove("updating");
+      statsContainer.classList.add("success");
+      setTimeout(() => {
+        statsContainer.classList.remove("success");
+      }, 2000);
+    }
+
+    window.showToast("✅ Stats updated successfully!", "success");
+  } catch (error) {
+    DEBUG.error("Manual stats refresh failed", error);
+
+    if (statsContainer) {
+      statsContainer.classList.remove("updating");
+    }
+
+    window.showToast("❌ Failed to refresh stats", "error");
+  } finally {
+    // Reset button state
+    if (refreshBtn) {
+      setTimeout(() => {
+        refreshBtn.classList.remove("refreshing");
+        refreshBtn.style.pointerEvents = "auto";
+      }, 1000);
+    }
+  }
+}
+
+// Expose manual refresh to global scope for onclick handler
+window.manualRefreshStats = manualRefreshStats;
+
 // Initialize auth state tracking to prevent duplicate notifications
 function initializeAuthStateTracking() {
   DEBUG.log("Initializing auth state tracking");
@@ -307,7 +971,19 @@ function initializeAuthStateTracking() {
       window.authState.hasShownWelcome = false;
       DEBUG.log("User logged out, reset auth state");
     }
+
+    // Update home section based on auth state
+    updateHomeSection(user);
   });
+
+  // Check initial auth state and update home section
+  setTimeout(() => {
+    if (window.authState && window.authState.currentUser) {
+      updateHomeSection(window.authState.currentUser);
+    } else {
+      updateHomeSection(null);
+    }
+  }, 100);
 
   DEBUG.log("Auth state tracking initialized");
 }

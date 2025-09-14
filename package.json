@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
     "start": "node server.js",
     "agent:analyze": "node scripts/ai-agents/code-analyzer.js",
     "agent:security": "node scripts/ai-agents/security-scanner.js",
@@ -16,7 +18,10 @@
     "chatbot:test": "node -e \"import('./pages/page_modals/modal_scripts/chatbot.js').then(c => console.log('Chatbot loaded successfully'))\"",
     "deploy:staging": "firebase deploy --project=staging",
     "deploy:production": "firebase deploy --project=production",
-    "monitor:health": "node scripts/monitoring/health-check.js"
+    "monitor:health": "node scripts/monitoring/health-check.js",
+    "mode:dev": "node scripts/build-helper.js dev",
+    "mode:prod": "node scripts/build-helper.js prod",
+    "status": "node scripts/build-helper.js"
   },
   "repository": {
     "type": "git",
@@ -46,6 +51,7 @@
   },
   "devDependencies": {
     "eslint": "^8.0.0",
-    "prettier": "^3.0.0"
+    "prettier": "^3.0.0",
+    "vite": "^7.1.5"
   }
 }
