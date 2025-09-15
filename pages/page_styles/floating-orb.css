@@ -9,7 +9,7 @@
     height: var(--orb-size);
     transform: translate(-50%, -50%);
     pointer-events: none;
-    z-index: 0;
+    z-index: 1;
     /* behind the orb */
 }
 
@@ -19,18 +19,21 @@
 }
 
 :root {
-    /* Zone (top-left container area to center the orb within) */
-    --zone-left: 12px;
-    --zone-top: 12px;
-    --zone-width: 240px;
-    --zone-height: 240px;
+    /* Zone sizing for orb container */
+    --zone-width: 360px;
+    --zone-height: 360px;
 
     /* Orb sizing */
-    --orb-size: 96px;
+    --orb-size: 130px;
     /* main orb diameter */
-    --orbit-size: 180px;
+    --orbit-size: 280px;
     /* ring around the orb */
     --popup-offset: 16px;
+
+    /* Scroll properties */
+    --scroll-sensitivity: 0.5;
+    --scroll-line-width: 5px;
+    --lock-point-size: 12px;
 
     /* Colors */
     --orb-core: #0b2a2f;
@@ -48,24 +51,85 @@
     --popup-radius: 14px;
     --shadow-lg: 0 10px 30px rgba(0, 0, 0, .45);
     --z-orb: 10020;
+    /* Mobile spacing below title for orb placement */
+    --mobile-orb-offset: 72px;
 }
 
 /* Scale down on small screens */
 @media (max-width: 600px) {
     :root {
-        --zone-width: 200px;
-        --zone-height: 200px;
-        --orb-size: 72px;
-        --orbit-size: 140px;
+        --zone-width: 300px;
+        --zone-height: 300px;
+        --orb-size: 110px;
+        --orbit-size: 240px;
         --popup-offset: 12px;
+    }
+}
+
+/* Center orb between title and subtitle for all screen sizes */
+.floating-orb-wrapper.mobile-under-title {
+    position: absolute !important;
+    top: calc(100% + var(--mobile-orb-offset)) !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    margin: 0 !important;
+    width: var(--zone-width) !important;
+    height: var(--zone-height) !important;
+    right: auto !important;
+    bottom: auto !important;
+}
+
+/* Inline placement under the title (static in flow) */
+.floating-orb-wrapper.inline-under-title {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    transform: none !important;
+    margin: 24px auto 28px auto !important;
+    width: var(--zone-width) !important;
+    height: var(--zone-height) !important;
+    display: block !important;
+}
+
+/* Fine-tune positioning for smaller mobile screens */
+@media (max-width: 480px) {
+    .floating-orb-wrapper.mobile-under-title {
+        top: calc(100% + 8px);
+    }
+}
+
+/* Ensure orb doesn't interfere with mobile hamburger menu */
+@media (max-width: 768px) {
+    .floating-orb-wrapper {
+        /* Ensure orb is positioned away from hamburger menu area */
+        z-index: 999;
+    }
+
+    /* Adjust orb size for better mobile interaction */
+    .floating-orb {
+        /* Slightly larger touch target for mobile */
+        min-width: 60px;
+        min-height: 60px;
+    }
+
+    /* Ensure notification popup doesn't interfere with mobile drawer */
+    .notification-popup {
+        max-width: 280px;
+        /* Position popup to avoid mobile drawer */
+        transform: translate(-50%, -20px);
+        z-index: 1002;
+        /* Above orb but below mobile menu */
+    }
+
+    /* Hide orb notifications when mobile drawer is active */
+    .mobile-drawer.active~.floating-orb-wrapper .notification-popup {
+        display: none !important;
     }
 }
 
 /* Wrapper sets the 3D stage */
 .floating-orb-wrapper {
-    position: fixed;
-    top: var(--zone-top);
-    left: var(--zone-left);
+    position: relative;
     width: var(--zone-width);
     height: var(--zone-height);
     z-index: var(--z-orb);
@@ -74,6 +138,200 @@
     perspective: 700px;
     /* 3D perspective */
     transform-style: preserve-3d;
+}
+
+/* Dedicated spacing container so the orb never overlaps other sections */
+.orb-layout-spacer {
+    display: block;
+    width: 100%;
+    height: calc(var(--orbit-size) + 80px);
+}
+
+@media (max-width: 768px) {
+    .orb-layout-spacer {
+        height: calc(var(--orbit-size) + 180px);
+    }
+}
+
+/* =====================
+   Orb Navigator (Orbiting links)
+   ===================== */
+.orb-nav-container {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--orbit-size);
+    height: var(--orbit-size);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 4;
+}
+
+.orb-nav-container.rotating {
+    /* JS controls the orbit to create a Saturn-like horizontal ring */
+    animation: none;
+}
+
+/* Scroll-based horizontal line around orb */
+.orb-scroll-line {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--orbit-size) + 100px);
+    height: calc(var(--orbit-size) + 100px);
+    transform: translate(-50%, -50%) scaleY(0.4) rotateZ(var(--scroll-rotation, 0deg));
+    border: var(--scroll-line-width) solid transparent;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: 1;
+    background: conic-gradient(from 0deg,
+            rgba(0, 240, 255, 0.8) 0deg,
+            rgba(0, 240, 255, 0.4) 90deg,
+            rgba(180, 0, 255, 0.6) 180deg,
+            rgba(255, 107, 53, 0.5) 270deg,
+            rgba(0, 240, 255, 0.8) 360deg);
+    -webkit-mask:
+        radial-gradient(ellipse at center, transparent calc(50% - var(--scroll-line-width)),
+            black calc(50% - var(--scroll-line-width)),
+            black calc(50% + var(--scroll-line-width)),
+            transparent calc(50% + var(--scroll-line-width)));
+    mask:
+        radial-gradient(ellipse at center, transparent calc(50% - var(--scroll-line-width)),
+            black calc(50% - var(--scroll-line-width)),
+            black calc(50% + var(--scroll-line-width)),
+            transparent calc(50% + var(--scroll-line-width)));
+    transition: opacity 0.3s ease;
+}
+
+/* Lock points on the scroll line */
+.orb-scroll-line::before {
+    content: '';
+    position: absolute;
+    top: calc(50% - var(--lock-point-size) / 2);
+    left: calc(50% - var(--lock-point-size) / 2);
+    width: var(--lock-point-size);
+    height: var(--lock-point-size);
+    background: var(--orb-primary);
+    border-radius: 50%;
+    box-shadow: 0 0 8px rgba(0, 240, 255, 0.6);
+    transform: translateX(calc(var(--orbit-size) / 2));
+    animation: lock-point-pulse 2s ease-in-out infinite;
+}
+
+@keyframes lock-point-pulse {
+
+    0%,
+    100% {
+        opacity: 0.6;
+        transform: translateX(calc(var(--orbit-size) / 2)) scale(1);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateX(calc(var(--orbit-size) / 2)) scale(1.2);
+    }
+}
+
+/* Lock snap animation for satisfying feedback */
+.floating-orb-wrapper.lock-snap {
+    transform: translate(-50%, -50%) scale(1.02);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.floating-orb-wrapper.lock-snap .floating-orb {
+    filter: brightness(1.2) saturate(1.3);
+    box-shadow:
+        0 0 20px var(--orb-primary),
+        0 0 40px rgba(0, 240, 255, 0.4),
+        0 0 60px rgba(180, 0, 255, 0.2);
+    transition: all 0.2s ease;
+}
+
+.floating-orb-wrapper.lock-snap .orb-scroll-line {
+    opacity: 1 !important;
+    transform: translate(-50%, -50%) scaleY(0.3) rotateZ(var(--scroll-rotation, 0deg)) scale(1.05);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.orb-nav-container::before {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 100%;
+    height: 100%;
+    transform: translate(-50%, -50%) scaleY(0.32);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 50%;
+    box-shadow: inset 0 0 12px rgba(0, 240, 255, 0.15);
+    pointer-events: none;
+}
+
+.orb-nav-item {
+    --angle: 0deg;
+    /* base angle set by JS */
+    --nav-radius: calc(var(--orbit-size) / 2.2);
+    --x: 0px;
+    /* computed by JS */
+    --y: 0px;
+    /* computed by JS */
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 56px;
+    height: 56px;
+    transform: translate(-50%, -50%) translate(var(--x), var(--y));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: auto;
+    color: #b7f7ff;
+    text-decoration: none;
+    background: rgba(10, 20, 28, 0.6);
+    border: 1px solid rgba(0, 240, 255, 0.35);
+    box-shadow: 0 0 10px rgba(0, 240, 255, 0.25);
+    transition: transform .2s ease, box-shadow .2s ease, background .2s ease, opacity .2s ease, filter .2s ease;
+    backdrop-filter: blur(6px);
+    z-index: 1;
+}
+
+.orb-nav-item:hover {
+    transform: translate(-50%, -50%) translate(calc(var(--x) + 6px), var(--y));
+    background: rgba(0, 240, 255, 0.12);
+    box-shadow: 0 0 16px rgba(0, 240, 255, 0.4);
+}
+
+.orb-nav-item.in-front {
+    z-index: 6;
+    opacity: 1;
+    filter: none;
+}
+
+.orb-nav-item:not(.in-front) {
+    opacity: .6;
+    filter: brightness(.95) saturate(.9);
+    transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(.88);
+}
+
+.orb-nav-item:focus-visible {
+    outline: 3px solid var(--primary-neon);
+    outline-offset: 2px;
+    box-shadow: 0 0 0 6px rgba(0, 240, 255, 0.25);
+}
+
+@media (max-width: 768px) {
+    .orb-nav-item {
+        width: 52px;
+        height: 52px;
+        touch-action: manipulation;
+        -webkit-tap-highlight-color: rgba(0, 240, 255, 0.3);
+    }
+
+    .orb-nav-container {
+        /* slightly tighter orbit on mobile */
+        --nav-radius: calc(var(--orbit-size) / 2.3);
+    }
 }
 
 /* ========== The Orb ========== */
@@ -87,6 +345,7 @@
     border-radius: 50%;
     pointer-events: auto;
     cursor: pointer;
+    z-index: 2;
     /* layered radial gradients to fake depth */
     background:
         radial-gradient(35% 35% at 30% 30%, rgba(255, 255, 255, .25), transparent 60%),
@@ -133,20 +392,6 @@
         0 0 52px rgba(180, 0, 255, .28);
 }
 
-/* Chatbot-integrated states */
-.floating-orb-wrapper[data-chatbot="active"] .floating-orb {
-    box-shadow:
-        0 0 32px rgba(0, 240, 255, .55),
-        0 0 72px rgba(180, 0, 255, .32);
-    filter: brightness(1.07) saturate(1.05);
-}
-
-.floating-orb.typing::after {
-    box-shadow:
-        inset 0 0 34px rgba(0, 229, 255, .35),
-        0 0 30px rgba(180, 0, 255, .28),
-        0 0 18px rgba(0, 229, 255, .35);
-}
 
 /* brief pulse when messages arrive */
 @keyframes message-ping {
@@ -191,7 +436,7 @@
     left: 50%;
     width: var(--orbit-size);
     height: var(--orbit-size);
-    transform: translate(-50%, -50%) translateZ(-1px);
+    transform: translate(-50%, -50%) translateZ(-2px);
     border-radius: 50%;
     border: 1px solid rgba(0, 240, 255, .18);
     box-shadow: 0 0 12px rgba(0, 240, 255, .12) inset;
@@ -199,29 +444,6 @@
     pointer-events: none;
 }
 
-/* Optional: tiny moving spark for life */
-.notification-orbit .spark {
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: radial-gradient(circle, #fff, rgba(255, 255, 255, .2) 70%, transparent 71%);
-    top: 0;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    animation: orbit 9s linear infinite;
-    box-shadow: 0 0 12px rgba(255, 255, 255, .55);
-}
-
-@keyframes orbit {
-    from {
-        transform: rotate(0deg) translate(calc(var(--orbit-size)/2)) rotate(0deg);
-    }
-
-    to {
-        transform: rotate(360deg) translate(calc(var(--orbit-size)/2)) rotate(-360deg);
-    }
-}
 
 /* ========== Popup Panel ========== */
 .notification-popup {
@@ -240,12 +462,38 @@
     opacity: 0;
     pointer-events: none;
     transition: opacity .2s ease, transform .2s ease;
+    z-index: 4;
 }
 
 .notification-popup.show {
     opacity: 1;
     transform: translate(-50%, 0);
     pointer-events: auto;
+}
+
+/* ===== Usage Tooltip ===== */
+.orb-usage-tooltip {
+    position: absolute;
+    left: 50%;
+    top: 100%;
+    transform: translate(-50%, 16px);
+    padding: 10px 14px;
+    border-radius: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: #d9fbff;
+    font-size: 12px;
+    letter-spacing: .3px;
+    border: 1px solid rgba(0, 240, 255, .35);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, .35);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .25s ease, transform .25s ease;
+    z-index: 5;
+}
+
+.orb-usage-tooltip.show {
+    opacity: 1;
+    transform: translate(-50%, 10px);
 }
 
 /* notification items */

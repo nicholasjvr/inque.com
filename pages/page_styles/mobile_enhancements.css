@@ -24,6 +24,32 @@ body.mobile-device .profile-hub {
     /* Enhanced mobile profile hub */
     cursor: pointer;
     -webkit-tap-highlight-color: rgba(0, 240, 255, 0.3);
+    /* Ensure it's always visible on mobile */
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+body.mobile-device .profile-hub .hub-core {
+    /* Enhanced touch feedback */
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: rgba(0, 240, 255, 0.5);
+}
+
+body.mobile-device .profile-hub .hub-core:active {
+    transform: scale(0.98);
+    filter: brightness(1.1);
+}
+
+body.mobile-device .profile-hub .hub-control-btn {
+    /* Enhanced touch targets */
+    min-width: 44px;
+    min-height: 44px;
+    -webkit-tap-highlight-color: rgba(0, 240, 255, 0.3);
+}
+
+body.mobile-device .profile-hub .hub-control-btn:active {
+    transform: scale(0.95);
 }
 
 body.mobile-device .mobile-menu-toggle {
@@ -35,9 +61,9 @@ body.mobile-device .mobile-menu-toggle {
 /* Support for devices with notches and rounded corners */
 @supports (padding: max(0px)) {
     @media (max-width: 768px) {
-        .floating-orb-wrapper {
-            bottom: max(20px, env(safe-area-inset-bottom)) !important;
-            right: max(20px, env(safe-area-inset-right)) !important;
+        .floating-orb-wrapper.inline-under-title {
+            margin-top: max(16px, env(safe-area-inset-top));
+            margin-bottom: max(24px, env(safe-area-inset-bottom));
         }
 
         .profile-hub {
@@ -51,8 +77,8 @@ body.mobile-device .mobile-menu-toggle {
         }
 
         main {
-            padding-top: max(80px, calc(env(safe-area-inset-top) + 60px)) !important;
-            padding-bottom: max(120px, calc(env(safe-area-inset-bottom) + 100px)) !important;
+            padding-top: max(80px, calc(env(safe-area-inset-top) + 40px)) !important;
+            padding-bottom: max(120px, calc(env(safe-area-inset-bottom) + 80px)) !important;
         }
 
         .mobile-drawer-content {

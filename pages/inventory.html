@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -7,28 +7,68 @@
     <link rel="stylesheet" href="../core/styles.css" />
   </head>
   <body>
-    <div class="container">
-      <header>
-        <h1>My Inventory</h1>
-        <a href="../index.html" class="back-link">← Back to Home</a>
+    <div
+      class="container"
+      style="max-width: 1200px; margin: 24px auto; padding: 0 16px"
+    >
+      <header
+        style="
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          margin-bottom: 16px;
+        "
+      >
+        <h1 style="margin: 0; color: var(--primary-neon)">My Inventory</h1>
+        <a
+          href="../index.html"
+          class="back-link"
+          style="color: var(--primary-neon); text-decoration: none"
+          >← Back to Home</a
+        >
       </header>
 
       <main>
         <section class="inventory-content">
-          <h2>Your Widgets</h2>
-          <p>Manage your collection of interactive widgets and projects.</p>
+          <h2 style="margin: 0 0 8px 0">Your Widgets</h2>
+          <p style="color: var(--text-secondary); margin: 0 0 16px 0">
+            Manage your collection of interactive widgets and projects.
+          </p>
 
-          <div class="inventory-grid">
-            <div class="inventory-item">
-              <h3>Widget 1</h3>
-              <p>Description of your first widget</p>
-              <button class="edit-btn">Edit</button>
+          <div
+            class="inventory-grid"
+            style="
+              display: grid;
+              grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+              gap: 16px;
+            "
+          >
+            <div
+              class="neo-card"
+              style="display: flex; flex-direction: column; gap: 8px"
+            >
+              <h3 style="margin: 0">Widget 1</h3>
+              <p style="margin: 0; color: var(--text-secondary)">
+                Description of your first widget
+              </p>
+              <div style="display: flex; gap: 8px; margin-top: auto">
+                <button class="quick-action-btn">👁️ Preview</button>
+                <button class="quick-action-btn">✏️ Edit</button>
+              </div>
             </div>
 
-            <div class="inventory-item">
-              <h3>Widget 2</h3>
-              <p>Description of your second widget</p>
-              <button class="edit-btn">Edit</button>
+            <div
+              class="neo-card"
+              style="display: flex; flex-direction: column; gap: 8px"
+            >
+              <h3 style="margin: 0">Widget 2</h3>
+              <p style="margin: 0; color: var(--text-secondary)">
+                Description of your second widget
+              </p>
+              <div style="display: flex; gap: 8px; margin-top: auto">
+                <button class="quick-action-btn">👁️ Preview</button>
+                <button class="quick-action-btn">✏️ Edit</button>
+              </div>
             </div>
           </div>
         </section>

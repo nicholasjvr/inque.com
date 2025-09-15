@@ -214,249 +214,12 @@
         padding: 40px 0;
       }
 
-      .title-controls {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 25px;
-        margin-top: 25px;
-        padding: 25px;
-      }
-
       .font-control {
         display: flex;
         align-items: center;
         gap: 15px;
       }
 
-      .control-label {
-        color: var(--text-secondary);
-        font-size: 1rem;
-        font-weight: 600;
-        white-space: nowrap;
-        text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-      }
-
-      .font-dropdown {
-        background: rgba(0, 0, 0, 0.9);
-        border: 2px solid var(--primary-neon);
-        color: var(--primary-neon);
-        padding: 10px 20px;
-        border-radius: 10px;
-        font-size: 1rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        min-width: 180px;
-        text-shadow: 0 0 5px currentColor;
-      }
-
-      .font-dropdown:hover {
-        background: rgba(0, 240, 255, 0.1);
-        box-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-        transform: translateY(-2px);
-      }
-
-      .font-dropdown:focus {
-        outline: none;
-        box-shadow: 0 0 25px rgba(0, 240, 255, 0.6);
-      }
-
-      .title-actions {
-        display: flex;
-        gap: 15px;
-      }
-
-      .action-btn {
-        background: rgba(0, 0, 0, 0.9);
-        border: 2px solid var(--secondary-neon);
-        color: var(--secondary-neon);
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        font-size: 1.3rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        position: relative;
-        overflow: hidden;
-        text-shadow: 0 0 10px currentColor;
-      }
-
-      .action-btn:hover {
-        background: rgba(255, 107, 53, 0.2);
-        border-color: var(--accent-neon);
-        color: var(--accent-neon);
-        transform: scale(1.15) translateY(-3px);
-        box-shadow: 0 0 25px rgba(255, 107, 53, 0.5);
-      }
-
-      .action-btn:active {
-        transform: scale(0.95);
-      }
-
-      /* Social Links Styles */
-      .social-links-container {
-        margin-top: 30px;
-        padding: 25px;
-        background: rgba(0, 0, 0, 0.8);
-        border-radius: 20px;
-        border: 2px solid rgba(0, 240, 255, 0.3);
-        backdrop-filter: blur(2px);
-      }
-
-      .social-links-header {
-        text-align: center;
-        margin-bottom: 20px;
-      }
-
-      .social-label {
-        color: var(--text-secondary);
-        font-size: 1rem;
-        font-weight: 600;
-        text-shadow: 0 0 10px rgba(0, 240, 255, 0.5);
-        letter-spacing: 0.1em;
-      }
-
-      .social-links-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-        gap: 15px;
-        max-width: 800px;
-        margin: 0 auto;
-      }
-
-      .social-link {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        padding: 15px 10px;
-        background: rgba(0, 0, 0, 0.6);
-        border: 2px solid transparent;
-        border-radius: 15px;
-        text-decoration: none;
-        color: var(--text-secondary);
-        transition: all 0.3s ease;
-        position: relative;
-        overflow: hidden;
-      }
-
-      .social-link::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(
-          45deg,
-          transparent,
-          rgba(255, 255, 255, 0.1),
-          transparent
-        );
-        transform: translateX(-100%);
-        transition: transform 0.6s ease;
-      }
-
-      .social-link:hover::before {
-        transform: translateX(100%);
-      }
-
-      .social-icon {
-        font-size: 2rem;
-        margin-bottom: 8px;
-        transition: all 0.3s ease;
-        filter: drop-shadow(0 0 5px currentColor);
-      }
-
-      .social-text {
-        font-size: 0.9rem;
-        font-weight: 500;
-        text-align: center;
-        transition: all 0.3s ease;
-      }
-
-      /* Individual Social Link Styles */
-      .social-link.github:hover {
-        border-color: #333;
-        background: rgba(51, 51, 51, 0.3);
-        color: #fff;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(51, 51, 51, 0.5);
-      }
-
-      .social-link.github:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #fff);
-      }
-
-      .social-link.linkedin:hover {
-        border-color: #0077b5;
-        background: rgba(0, 119, 181, 0.3);
-        color: #0077b5;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(0, 119, 181, 0.5);
-      }
-
-      .social-link.linkedin:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #0077b5);
-      }
-
-      .social-link.patreon:hover {
-        border-color: #ff424d;
-        background: rgba(255, 66, 77, 0.3);
-        color: #ff424d;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(255, 66, 77, 0.5);
-      }
-
-      .social-link.patreon:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #ff424d);
-      }
-
-      .social-link.twitter:hover {
-        border-color: #1da1f2;
-        background: rgba(29, 161, 242, 0.3);
-        color: #1da1f2;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(29, 161, 242, 0.5);
-      }
-
-      .social-link.twitter:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #1da1f2);
-      }
-
-      .social-link.discord:hover {
-        border-color: #7289da;
-        background: rgba(114, 137, 218, 0.3);
-        color: #7289da;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(114, 137, 218, 0.5);
-      }
-
-      .social-link.discord:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #7289da);
-      }
-
-      .social-link.youtube:hover {
-        border-color: #ff0000;
-        background: rgba(255, 0, 0, 0.3);
-        color: #ff0000;
-        transform: translateY(-3px);
-        box-shadow: 0 0 20px rgba(255, 0, 0, 0.5);
-      }
-
-      .social-link.youtube:hover .social-icon {
-        transform: scale(1.2);
-        filter: drop-shadow(0 0 10px #ff0000);
-      }
 
       @keyframes headerGlow {
         0% {
@@ -470,87 +233,6 @@
             0 0 80px rgba(0, 240, 255, 0.6),
             0 0 140px rgba(255, 107, 53, 0.4),
             inset 0 0 80px rgba(0, 0, 0, 0.8);
-        }
-      }
-
-      /* Responsive Design */
-      @media (max-width: 768px) {
-        .title-line-1 {
-          font-size: 4rem;
-        }
-        .title-line-2 {
-          font-size: 3rem;
-        }
-
-        .title-header-section {
-          padding: 60px 20px;
-          min-height: 350px;
-        }
-
-        .title-controls {
-          flex-direction: column;
-          align-items: center;
-          gap: 20px;
-          padding: 20px;
-        }
-
-        .font-control {
-          flex-direction: column;
-          gap: 10px;
-        }
-
-        .action-btn {
-          width: 45px;
-          height: 45px;
-          font-size: 1.2rem;
-        }
-
-        .social-links-grid {
-          grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
-          gap: 12px;
-        }
-
-        .social-link {
-          padding: 12px 8px;
-        }
-
-        .social-icon {
-          font-size: 1.5rem;
-        }
-
-        .social-text {
-          font-size: 0.8rem;
-        }
-      }
-
-      @media (max-width: 480px) {
-        .title-line-1 {
-          font-size: 3rem;
-        }
-        .title-line-2 {
-          font-size: 2.5rem;
-        }
-
-        .title-header-section {
-          padding: 50px 15px;
-          min-height: 300px;
-        }
-
-        .social-links-grid {
-          grid-template-columns: repeat(2, 1fr);
-          gap: 10px;
-        }
-
-        .social-link {
-          padding: 10px 5px;
-        }
-
-        .social-icon {
-          font-size: 1.3rem;
-        }
-
-        .social-text {
-          font-size: 0.75rem;
         }
       }
     </style>
@@ -581,121 +263,169 @@
     >
       ☰
     </button>
-
-    <!-- Mobile Drawer/Sidebar -->
-    <div id="mobileDrawer" class="mobile-drawer">
-      <div class="mobile-drawer-overlay" id="mobileDrawerOverlay"></div>
-      <div class="mobile-drawer-content">
-        <div class="mobile-drawer-header">
-          <h3
-            style="
-              color: var(--primary-neon);
-              margin: 0;
-              font-family: &quot;Orbitron&quot;, monospace;
-            "
-          >
-            inQ Navigation
-          </h3>
-          <button
-            id="mobileDrawerClose"
-            class="mobile-drawer-close"
-            style="
-              background: none;
-              border: none;
-              color: var(--primary-neon);
-              font-size: 1.5rem;
-              cursor: pointer;
-              padding: 8px;
-            "
-            aria-label="Close mobile menu"
-          >
-            ×
-          </button>
-        </div>
-        <nav class="mobile-drawer-nav">
-          <a href="#" class="mobile-nav-item category-btn" data-category="home">
-            <span class="mobile-nav-icon">🏠</span>
-            <span class="mobile-nav-text">HOME</span>
-          </a>
-          <a
-            href="#"
-            class="mobile-nav-item category-btn"
-            data-category="guides"
-          >
-            <span class="mobile-nav-icon">📚</span>
-            <span class="mobile-nav-text">GUIDES</span>
-          </a>
-          <a
-            href="#"
-            class="mobile-nav-item category-btn"
-            data-category="showcase"
-          >
-            <span class="mobile-nav-icon">🏆</span>
-            <span class="mobile-nav-text">SHOWCASE</span>
-          </a>
-          <a
-            href="#"
-            class="mobile-nav-item category-btn"
-            data-category="inspiration"
-          >
-            <span class="mobile-nav-icon">💡</span>
-            <span class="mobile-nav-text">INSPIRATION</span>
-          </a>
-          <a
-            href="#"
-            class="mobile-nav-item category-btn"
-            data-category="tools"
-          >
-            <span class="mobile-nav-icon">🛠️</span>
-            <span class="mobile-nav-text">TOOLS</span>
-          </a>
-          <a
-            href="pages/my-projects.html"
-            class="mobile-nav-item mobile-nav-accent"
-          >
-            <span class="mobile-nav-icon">🚀</span>
-            <span class="mobile-nav-text">MY PROJECTS</span>
-          </a>
-        </nav>
-
-        <!-- Mobile User Section -->
-        <div class="mobile-drawer-user">
-          <div class="mobile-user-avatar" onclick="toggleProfileHub()">
-            <span style="font-size: 1.5rem">👤</span>
-          </div>
-          <div class="mobile-user-info">
-            <div
-              id="mobileUserName"
-              style="color: var(--text-primary); font-weight: 600"
-            >
-              Guest
-            </div>
-            <div
-              id="mobileUserStatus"
-              style="color: var(--text-secondary); font-size: 0.8rem"
-            >
-              Tap to open ProfileHub
-            </div>
-          </div>
-        </div>
-
-        <!-- Mobile Quick Actions -->
-        <div class="mobile-drawer-actions">
-          <button class="mobile-action-btn" onclick="toggleProfileHub()">
-            <span>🤖</span>
-            <span>PROFILE HUB</span>
-          </button>
-          <button class="mobile-action-btn" onclick="toggleProfileChatbot()">
-            <span>💬</span>
-            <span>AI CHAT</span>
-          </button>
-        </div>
       </div>
     </div>
 
     <!-- New ProfileHub System -->
     <link rel="stylesheet" href="pages/page_styles/profile_banner.css" />
-    <div id="profileHubContainer"></div>
+    <div id="profileHubContainer">
+      <div id="profileHub" class="profile-hub" data-state="expanded" data-theme="neo-brutalist" data-position="top-right" style="--hub-scale: 1;">
+        <div class="hub-core">
+          <div class="hub-user-section">
+            <div class="user-avatar-container">
+              <div id="hubUserAvatar" class="hub-user-avatar">
+                <span class="avatar-emoji">👤</span>
+                <div class="avatar-status-indicator offline" id="hubStatusIndicator"></div>
+              </div>
+            </div>
+            <div class="hub-user-info">
+              <div id="hubUserName" class="hub-user-name">Guest</div>
+              <div id="hubUserStatus" class="hub-user-status">Click to customize</div>
+              <div id="hubUserLevel" class="hub-user-level">LVL • ?</div>
+            </div>
+          </div>
+          <div class="hub-controls">
+            <button id="hubChatbotToggle" class="hub-control-btn" title="AI Assistant">
+              <span class="btn-icon">🤖</span>
+              <span class="btn-pulse" id="chatbotPulse"></span>
+            </button>
+            <button id="hubCustomizeToggle" class="hub-control-btn" title="Explore">
+              <span class="btn-icon">⚙️</span>
+            </button>
+            <button id="hubAuthToggle" class="hub-control-btn hub-auth-btn" title="Login / Profile">
+              <span class="btn-icon">🔐</span>
+            </button>
+          </div>
+          <button id="hubToggleBtn" class="hub-toggle-btn" title="Expand Hub">
+            <span class="toggle-icon">⫷</span>
+          </button>
+        </div>
+        <div class="hub-expanded-content" id="hubExpandedContent">
+          <div class="hub-navigation">
+            <h3 class="nav-section-title">Navigate</h3>
+            <div class="nav-links-grid">
+              <a href="pages/my-projects.html" class="nav-link" data-color="primary">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label">Projects</span>
+              </a>
+              <a href="pages/widget_studio.html" class="nav-link" data-color="secondary">
+                <span class="nav-icon">🎨</span>
+                <span class="nav-label">Studio</span>
+              </a>
+              <a href="pages/explore.html" class="nav-link" data-color="accent">
+                <span class="nav-icon">🔍</span>
+                <span class="nav-label">Explore</span>
+              </a>
+              <a href="pages/users.html" class="nav-link" data-color="success">
+                <span class="nav-icon">👥</span>
+                <span class="nav-label">Community</span>
+              </a>
+            </div>
+          </div>
+          <div class="hub-quick-actions">
+            <h3 class="nav-section-title">Quick Actions</h3>
+            <div class="quick-actions-grid">
+              <button class="quick-action-btn" data-action="newWidget">
+                <span class="action-icon">➕</span>
+                <span class="action-label">New Widget</span>
+              </button>
+              <button class="quick-action-btn" data-action="shareProfile">
+                <span class="action-icon">🔗</span>
+                <span class="action-label">Share</span>
+              </button>
+              <button class="quick-action-btn" data-action="notifications">
+                <span class="action-icon">🔔</span>
+                <span class="action-label">Notifications</span>
+                <span class="notification-badge" id="hubNotificationBadge" style="display: none;">0</span>
+              </button>
+              <button class="quick-action-btn" data-action="settings">
+                <span class="action-icon">⚙️</span>
+                <span class="action-label">Settings</span>
+              </button>
+            </div>
+          </div>
+          <div class="hub-user-stats" id="hubUserStats" style="display: none;">
+            <h3 class="nav-section-title">Stats</h3>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <span class="stat-value" id="hubWidgetCount">0</span>
+                <span class="stat-label">Widgets</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value" id="hubFollowerCount">0</span>
+                <span class="stat-label">Followers</span>
+              </div>
+              <div class="stat-item">
+                <span class="stat-value" id="hubViewCount">0</span>
+                <span class="stat-label">Views</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-chatbot-container" id="hubChatbotContainer">
+          <div class="chatbot-slider" id="chatbotSlider">
+            <div class="chatbot-header">
+              <div class="chatbot-title">
+                <span class="chatbot-icon">🤖</span>
+                <span>AI Assistant</span>
+              </div>
+              <div class="chatbot-controls">
+                <button id="chatbotMinimize" class="chatbot-control-btn" title="Minimize">−</button>
+                <button id="chatbotClose" class="chatbot-control-btn" title="Close">×</button>
+              </div>
+            </div>
+            <div class="chatbot-content">
+              <div class="chat-messages" id="hubChatMessages">
+                <div class="message ai-message">
+                  <div class="message-avatar">🤖</div>
+                  <div class="message-content">
+                    <p>Hi! I'm your AI assistant integrated into your ProfileHub. How can I help you navigate or customize your experience?</p>
+                  </div>
+                </div>
+              </div>
+              <div class="chat-input-container">
+                <input type="text" id="hubChatInput" class="chat-input" placeholder="Ask me anything..." maxlength="500">
+                <button id="hubSendChatBtn" class="send-chat-btn">
+                  <span class="btn-icon">📤</span>
+                </button>
+              </div>
+              <div class="chat-quick-commands" id="hubChatCommands">
+                <button class="command-chip" data-command="/navigate projects">🔗 Projects</button>
+                <button class="command-chip" data-command="/help customize">⚙️ Customize</button>
+                <button class="command-chip" data-command="/stats">📊 Stats</button>
+                <button class="command-chip" data-command="/help">❓ Help</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="hub-customization-panel" id="hubCustomizationPanel">
+          <div class="customization-content">
+            <h3>Customize Your Hub</h3>
+            <div class="customization-section">
+              <label class="section-label">Theme</label>
+              <div class="theme-selector">
+                <button class="theme-option active" data-theme="neo-brutalist">Neo</button>
+                <button class="theme-option" data-theme="minimal">Minimal</button>
+                <button class="theme-option" data-theme="cyberpunk">Cyber</button>
+                <button class="theme-option" data-theme="custom">Custom</button>
+              </div>
+            </div>
+            <div class="customization-section">
+              <label class="section-label">Primary Color</label>
+              <input type="color" id="hubPrimaryColor" class="color-picker" value="#00f0ff">
+            </div>
+            <div class="customization-section">
+              <label class="section-label">Hub Size</label>
+              <input type="range" id="hubSize" class="size-slider" min="0.8" max="1.5" step="0.1" value="1">
+            </div>
+            <div class="customization-actions">
+              <button id="saveCustomization" class="save-btn">Save Changes</button>
+              <button id="resetCustomization" class="reset-btn">Reset</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- Main Content -->
       <!-- 3D Title Header -->
       <section class="title-header-section">
@@ -705,126 +435,25 @@
               <span class="title-line-1">inque social</span>
               <span class="title-line-2">[creatives] platform</span>
             </div>
-
-            <div class="title-controls">
-              <div id="font-selector" class="font-control">
-                <label class="control-label">Font Style:</label>
-                <select id="font-dropdown" class="font-dropdown">
-                  <option value="default">Default</option>
-                </select>
-              </div>
-
-              <div class="title-actions">
-                <button
-                  id="title-animate-btn"
-                  class="action-btn"
-                  title="Animate Title"
-                >
-                  ⚡
-                </button>
-                <button
-                  id="title-reset-btn"
-                  class="action-btn"
-                  title="Reset Effects"
-                >
-                  🔄
-                </button>
-                <button
-                  id="title-fullscreen-btn"
-                  class="action-btn"
-                  title="Fullscreen View"
-                >
-                  🔍
-                </button>
-              </div>
-            </div>
-
-            <!-- Social Links Section -->
-            <div class="social-links-container">
-              <div class="social-links-header">
-                <span class="social-label">Connect & Support</span>
-              </div>
-              <div class="social-links-grid">
-                <a href="#" class="social-link github" title="GitHub Profile">
-                  <div class="social-icon">🐙</div>
-                  <span class="social-text">GitHub</span>
-                </a>
-                <a
-                  href="#"
-                  class="social-link linkedin"
-                  title="LinkedIn Profile"
-                >
-                  <div class="social-icon">💼</div>
-                  <span class="social-text">LinkedIn</span>
-                </a>
-                <a
-                  href="#"
-                  class="social-link patreon"
-                  title="Support on Patreon"
-                >
-                  <div class="social-icon">🎨</div>
-                  <span class="social-text">Patreon</span>
-                </a>
-                <a
-                  href="#"
-                  class="social-link twitter"
-                  title="Follow on Twitter"
-                >
-                  <div class="social-icon">🐦</div>
-                  <span class="social-text">Twitter</span>
-                </a>
-                <a href="#" class="social-link discord" title="Join Discord">
-                  <div class="social-icon">💬</div>
-                  <span class="social-text">Discord</span>
-                </a>
-                <a href="#" class="social-link youtube" title="YouTube Channel">
-                  <div class="social-icon">📺</div>
-                  <span class="social-text">YouTube</span>
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
       </section>
-
-      <!-- Hero Section -->
-      <section
-        id="home-section"
-        class="neo-section"
+       <!-- Background blur effects -->
+       <div
+        class="title-bg-effects"
         style="
-          background: linear-gradient(
-            135deg,
-            #0a0a0a 0%,
-            #1a1a1a 50%,
-            #0a0a0a 100%
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          width: 600px;
+          height: 200px;
+          background: radial-gradient(
+            ellipse,
+            rgba(0, 240, 255, 0.1) 0%,
+            transparent 70%
           );
-        "
-      >
-        <div style="max-width: 1400px; margin: 0 auto">
-          <!-- Welcome Section (for both authenticated and non-authenticated users) -->
-          <div
-            class="hero-section"
-            style="text-align: center; padding: 80px 20px; position: relative"
-          >
-            <!-- Background blur effects -->
-            <div
-              class="title-bg-effects"
-              style="
-                position: absolute;
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                width: 600px;
-                height: 200px;
-                background: radial-gradient(
-                  ellipse,
-                  rgba(0, 240, 255, 0.1) 0%,
-                  transparent 70%
-                );
-                filter: blur(40px);
-                z-index: 1;
-              "
-            ></div>
+          filter: blur(40px);
+          z-index: 1;
+        "></div>
             <div
               class="title-bg-effects-2"
               style="
@@ -840,27 +469,11 @@
                   transparent 70%
                 );
                 filter: blur(30px);
-                z-index: 1;
+                z-index: 2;
               "
             ></div>
-
             <!-- Clean, readable title -->
             <div style="position: relative; z-index: 2">
-              <h1
-                id="home-greeting"
-                style="
-                  font-size: 5rem;
-                  font-family: &quot;Orbitron&quot;, monospace;
-                  font-weight: 700;
-                  color: var(--primary-neon);
-                  margin: 0 0 30px 0;
-                  text-shadow: 0 0 20px rgba(0, 240, 255, 0.5);
-                  letter-spacing: 1px;
-                "
-              >
-                hi there.
-              </h1>
-
               <!-- Subtle decorative line -->
               <div
                 style="
@@ -876,7 +489,6 @@
                   opacity: 0.6;
                 "
               ></div>
-
               <p
                 id="home-subtitle"
                 style="
@@ -924,7 +536,7 @@
                   font-family: &quot;Orbitron&quot;, monospace;
                 "
               >
-                🚀 Join the inQ Community
+                Sign Up.
               </h2>
               <p
                 style="
@@ -934,10 +546,7 @@
                   line-height: 1.6;
                 "
               >
-                Connect with 1,200+ developers building the future with AI
-                IDEs.<br />
-                Share your projects, learn from others, and showcase your
-                creativity.
+                Create your online porfolio and share your projects with the community.<br />
               </p>
 
               <div
@@ -1017,7 +626,7 @@
                     box-shadow: 0 0 20px rgba(255, 107, 53, 0.3);
                   "
                 >
-                  🚀 Get Started Free
+                  Register
                 </button>
                 <button
                   id="guest-login-btn"
@@ -1036,10 +645,10 @@
                   opacity: 0.7;
                 "
               >
-                No spam, no commitments. Start creating in seconds.
+                Start exploreing and finding inspiration in seconds.
               </p>
             </div>
-          </div>
+        
 
           <!-- Authenticated User Quick Actions -->
           <div
@@ -1070,7 +679,7 @@
                 "
               >
                 <span style="font-size: 1.5rem">🔍</span>
-                <span>explore the demoverse</span>
+                <span>explore page</span>
               </button>
 
               <button
@@ -1087,7 +696,7 @@
                 "
               >
                 <span style="font-size: 1.5rem">📊</span>
-                <span>your project hub</span>
+                <span>project dashboard</span>
               </button>
 
               <button
@@ -1104,12 +713,12 @@
                 "
               >
                 <span style="font-size: 1.5rem">💡</span>
-                <span>improve your craft</span>
+                <span>knowledge base</span>
               </button>
             </div>
           </div>
-
-          <!-- Live Community Stats -->
+      <div style="height: 100px;"></div>
+      <!-- Live Community Stats -->
           <div
             class="live-stats-container"
             style="max-width: 1200px; margin: 0 auto"
@@ -1280,499 +889,16 @@
             </div>
           </div>
         </div>
+        <span class="orb-layout-spacer"></span>
       </section>
-
-      <!-- Guides Section -->
-      <section id="guides-section" class="neo-section" style="display: none">
-        <div style="max-width: 1400px; margin: 0 auto">
-          <h2
-            style="
-              font-size: 3rem;
-              color: var(--primary-neon);
-              text-align: center;
-              margin-bottom: 40px;
-            "
-            class="neo-text-glow"
-          >
-            📚 GUIDES
-          </h2>
-
-          <div style="text-align: center; margin-bottom: 40px">
-            <p
-              style="
-                font-size: 1.2rem;
-                color: var(--text-secondary);
-                margin-bottom: 20px;
-              "
-            >
-              Master AI IDE development with step-by-step guides from the
-              community
-            </p>
-            <button class="neo-button neo-brutalist-accent" id="createGuideBtn">
-              ✍️ CREATE GUIDE
-            </button>
-          </div>
-
-          <div class="neo-grid" id="guidesGrid">
-            <!-- Guides will be populated here -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Showcase Section -->
-      <section id="showcase-section" class="neo-section" style="display: none">
-        <div style="max-width: 1400px; margin: 0 auto">
-          <h2
-            style="
-              font-size: 3rem;
-              color: var(--secondary-neon);
-              text-align: center;
-              margin-bottom: 40px;
-            "
-            class="neo-text-glow"
-          >
-            🏆 SHOWCASE
-          </h2>
-
-          <div style="text-align: center; margin-bottom: 40px">
-            <p
-              style="
-                font-size: 1.2rem;
-                color: var(--text-secondary);
-                margin-bottom: 20px;
-              "
-            >
-              See what the inQ community has built using AI IDEs
-            </p>
-            <button
-              class="neo-button neo-brutalist-accent"
-              id="addToShowcaseBtn"
-            >
-              ➕ ADD TO SHOWCASE
-            </button>
-          </div>
-
-          <div class="neo-grid" id="showcaseGrid">
-            <!-- Showcase projects will be populated here -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Inspiration Section -->
-      <section
-        id="inspiration-section"
-        class="neo-section"
-        style="display: none"
-      >
-        <div style="max-width: 1400px; margin: 0 auto">
-          <h2
-            style="
-              font-size: 3rem;
-              color: var(--accent-neon);
-              text-align: center;
-              margin-bottom: 40px;
-            "
-            class="neo-text-glow"
-          >
-            💡 INSPIRATION
-          </h2>
-
-          <div style="text-align: center; margin-bottom: 40px">
-            <p
-              style="
-                font-size: 1.2rem;
-                color: var(--text-secondary);
-                margin-bottom: 20px;
-              "
-            >
-              Find inspiration from beautiful web designs and creative coding
-              examples
-            </p>
-          </div>
-
-          <div class="neo-grid" id="inspirationGrid">
-            <!-- Inspiration content will be populated here -->
-          </div>
-        </div>
-      </section>
-
-      <!-- Tools Section -->
-      <section id="tools-section" class="neo-section" style="display: none">
-        <div style="max-width: 1400px; margin: 0 auto">
-          <h2
-            style="
-              font-size: 3rem;
-              color: var(--warning-neon);
-              text-align: center;
-              margin-bottom: 40px;
-            "
-            class="neo-text-glow"
-          >
-            🛠️ TOOLS
-          </h2>
-
-          <div style="text-align: center; margin-bottom: 40px">
-            <p
-              style="
-                font-size: 1.2rem;
-                color: var(--text-secondary);
-                margin-bottom: 20px;
-              "
-            >
-              Complete library of tools to supercharge your development workflow
-            </p>
-          </div>
-
-          <div style="margin-bottom: 40px">
-            <div
-              style="
-                display: flex;
-                gap: 16px;
-                justify-content: center;
-                margin-bottom: 32px;
-                flex-wrap: wrap;
-              "
-            >
-              <button
-                class="neo-button tool-category active"
-                data-category="ai-ides"
-              >
-                AI IDEs
-              </button>
-              <button class="neo-button tool-category" data-category="design">
-                Design Tools
-              </button>
-              <button
-                class="neo-button tool-category"
-                data-category="productivity"
-              >
-                Productivity
-              </button>
-              <button
-                class="neo-button tool-category"
-                data-category="templates"
-              >
-                Templates
-              </button>
-            </div>
-          </div>
-
-          <div class="neo-grid" id="toolsGrid">
-            <!-- Tools will be populated here -->
-          </div>
-        </div>
-      </section>
-
-      <!-- My Projects Section -->
-      <section id="projects-section" class="neo-section" style="display: none">
-        <div style="max-width: 1400px; margin: 0 auto">
-          <h2
-            style="
-              font-size: 3rem;
-              color: var(--error-neon);
-              text-align: center;
-              margin-bottom: 40px;
-            "
-            class="neo-text-glow"
-          >
-            🚀 MY PROJECTS
-          </h2>
-
-          <div style="text-align: center; margin-bottom: 40px">
-            <p
-              style="
-                font-size: 1.2rem;
-                color: var(--text-secondary);
-                margin-bottom: 20px;
-              "
-            >
-              Your complete development workspace - from GitHub to deployment
-            </p>
-            <div
-              style="
-                display: flex;
-                justify-content: center;
-                gap: 16px;
-                flex-wrap: wrap;
-              "
-            >
-              <button
-                class="neo-button neo-brutalist-accent"
-                id="connectGithubBtn"
-              >
-                🔗 CONNECT GITHUB
-              </button>
-              <button class="neo-button" id="createProjectBtn">
-                ➕ NEW PROJECT
-              </button>
-            </div>
-          </div>
-
-          <!-- Project Management Interface -->
-          <div class="neo-card" style="margin-bottom: 32px">
-            <div
-              style="
-                display: grid;
-                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-                gap: 24px;
-              "
-            >
-              <div style="text-align: center">
-                <div style="font-size: 3rem; margin-bottom: 8px">📁</div>
-                <h4 style="color: var(--primary-neon); margin: 0 0 8px 0">
-                  Files & Assets
-                </h4>
-                <p
-                  style="
-                    color: var(--text-secondary);
-                    font-size: 0.9rem;
-                    margin: 0;
-                  "
-                >
-                  Upload and manage project files, documentation, and assets
-                </p>
-              </div>
-
-              <div style="text-align: center">
-                <div style="font-size: 3rem; margin-bottom: 8px">📊</div>
-                <h4 style="color: var(--secondary-neon); margin: 0 0 8px 0">
-                  Project Planning
-                </h4>
-                <p
-                  style="
-                    color: var(--text-secondary);
-                    font-size: 0.9rem;
-                    margin: 0;
-                  "
-                >
-                  Gantt charts, timelines, and project management tools
-                </p>
-              </div>
-
-              <div style="text-align: center">
-                <div style="font-size: 3rem; margin-bottom: 8px">💻</div>
-                <h4 style="color: var(--accent-neon); margin: 0 0 8px 0">
-                  GitHub Integration
-                </h4>
-                <p
-                  style="
-                    color: var(--text-secondary);
-                    font-size: 0.9rem;
-                    margin: 0;
-                  "
-                >
-                  Sync with your repositories and manage codebases
-                </p>
-              </div>
-
-              <div style="text-align: center">
-                <div style="font-size: 3rem; margin-bottom: 8px">🎨</div>
-                <h4 style="color: var(--warning-neon); margin: 0 0 8px 0">
-                  Widget Studio
-                </h4>
-                <p
-                  style="
-                    color: var(--text-secondary);
-                    font-size: 0.9rem;
-                    margin: 0;
-                  "
-                >
-                  Create and manage interactive widgets for your projects
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <!-- Project Timeline (Widget Display Integration) -->
-          <div class="neo-card">
-            <h3
-              style="
-                color: var(--primary-neon);
-                margin: 0 0 24px 0;
-                text-align: center;
-              "
-            >
-              📅 PROJECT TIMELINE
-            </h3>
-            <div id="projectTimeline" style="min-height: 300px">
-              <!-- Timeline will be populated by timeline-manager.js -->
-              <div
-                style="
-                  text-align: center;
-                  color: var(--text-secondary);
-                  padding: 40px;
-                "
-              >
-                <div style="font-size: 4rem; margin-bottom: 16px">⚡</div>
-                <p>
-                  Connect your GitHub and start building amazing projects with
-                  AI assistance!
-                </p>
-                <button
-                  class="neo-button neo-brutalist-accent"
-                  style="margin-top: 20px"
-                >
-                  GET STARTED →
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-    </main>
+    </div>
+  </section>
+</main>
 
     <!-- Footer -->
-    <footer
-      style="
-        background: var(--bg-secondary);
-        border-top: var(--border-width) solid var(--primary-neon);
-        padding: 40px 20px;
-        margin-top: 60px;
-      "
-    >
-      <div style="max-width: 1400px; margin: 0 auto">
-        <div
-          style="
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 40px;
-          "
-        >
-          <div>
-            <h3
-              style="
-                color: var(--primary-neon);
-                margin: 0 0 16px 0;
-                font-family: &quot;Orbitron&quot;, monospace;
-              "
-            >
-              inQ - Platform
-            </h3>
-            <p style="color: var(--text-secondary); margin: 0">
-              The ultimate development hub for AI IDE users. Build faster, share
-              knowledge, and create amazing software.
-            </p>
-          </div>
-
-          <div>
-            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
-              PLATFORM
-            </h4>
-            <ul style="list-style: none; padding: 0; margin: 0">
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Guides</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Showcase</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Tools</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Inspiration</a
-                >
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
-              COMMUNITY
-            </h4>
-            <ul style="list-style: none; padding: 0; margin: 0">
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Discord</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >GitHub</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Twitter</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Newsletter</a
-                >
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h4 style="color: var(--text-primary); margin: 0 0 16px 0">
-              RESOURCES
-            </h4>
-            <ul style="list-style: none; padding: 0; margin: 0">
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Documentation</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >API Reference</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Support</a
-                >
-              </li>
-              <li style="margin-bottom: 8px">
-                <a
-                  href="#"
-                  style="color: var(--text-secondary); text-decoration: none"
-                  >Privacy Policy</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-
-        <div
-          style="
-            border-top: 1px solid var(--primary-neon);
-            margin-top: 40px;
-            padding-top: 20px;
-            text-align: center;
-          "
-        >
+    <footer>
           <p style="color: var(--text-secondary); margin: 0">
-            © sleeksoftware 2025.
+            © nicholasjvr 2025.
           </p>
         </div>
       </div>
@@ -1849,62 +975,7 @@
               >
             </div>
           </form>
-
-          <!-- Icon-Only Social Login -->
-          <div style="margin-top: 20px; text-align: center">
-            <div style="margin-bottom: 12px">
-              <span style="color: var(--text-secondary); font-size: 13px"
-                >Or</span
-              >
-            </div>
-            <div style="display: flex; gap: 12px; justify-content: center">
-              <button
-                id="googleLoginBtn"
-                type="button"
-                style="
-                  width: 40px;
-                  height: 40px;
-                  background: #fff;
-                  border: 2px solid var(--border-color);
-                  border-radius: 50%;
-                  cursor: pointer;
-                  transition: all 0.2s ease;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 18px;
-                "
-                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
-                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
-                title="Login with Google"
-              >
-                🔍
-              </button>
-              <button
-                id="githubLoginBtn"
-                type="button"
-                style="
-                  width: 40px;
-                  height: 40px;
-                  background: #333;
-                  border: 2px solid var(--border-color);
-                  border-radius: 50%;
-                  cursor: pointer;
-                  transition: all 0.2s ease;
-                  display: flex;
-                  align-items: center;
-                  justify-content: center;
-                  font-size: 18px;
-                "
-                onmouseover="this.style.borderColor='var(--primary-neon)'; this.style.transform='scale(1.1)'"
-                onmouseout="this.style.borderColor='var(--border-color)'; this.style.transform='scale(1)'"
-                title="Login with GitHub"
-              >
-                🐙
-              </button>
-            </div>
-          </div>
-
+   
           <!-- Sign Up Form -->
           <form id="signUpForm" class="auth-form" style="display: none">
             <div style="margin-bottom: 16px">
@@ -2023,79 +1094,6 @@
               <button class="tab-button" data-tab="history">History</button>
             </div>
 
-            <!-- Workflows Tab -->
-            <div id="workflows-tab" class="tab-content active">
-              <div class="workflow-header">
-                <h3>Available Workflows</h3>
-                <button id="createWorkflowBtn" class="btn btn-primary">
-                  <span class="btn-icon">➕</span>
-                  Create Workflow
-                </button>
-              </div>
-
-              <div class="workflow-list" id="workflowList">
-                <!-- Workflows will be loaded here -->
-              </div>
-            </div>
-
-            <!-- Templates Tab -->
-            <div id="templates-tab" class="tab-content">
-              <div class="template-header">
-                <h3>Workflow Templates</h3>
-                <p>
-                  Choose from pre-built workflow templates to get started
-                  quickly
-                </p>
-              </div>
-
-              <div class="template-grid" id="templateGrid">
-                <!-- Templates will be loaded here -->
-              </div>
-            </div>
-
-            <!-- Scheduled Tab -->
-            <div id="scheduled-tab" class="tab-content">
-              <div class="scheduled-header">
-                <h3>Scheduled Workflows</h3>
-                <button id="scheduleWorkflowBtn" class="btn btn-secondary">
-                  <span class="btn-icon">⏰</span>
-                  Schedule Workflow
-                </button>
-              </div>
-
-              <div class="scheduled-list" id="scheduledList">
-                <!-- Scheduled workflows will be loaded here -->
-              </div>
-            </div>
-
-            <!-- History Tab -->
-            <div id="history-tab" class="tab-content">
-              <div class="history-header">
-                <h3>Workflow Execution History</h3>
-                <div class="history-filters">
-                  <select id="statusFilter">
-                    <option value="">All Status</option>
-                    <option value="completed">Completed</option>
-                    <option value="failed">Failed</option>
-                    <option value="running">Running</option>
-                  </select>
-                  <input
-                    type="date"
-                    id="dateFilter"
-                    placeholder="Filter by date"
-                  />
-                </div>
-              </div>
-
-              <div class="history-list" id="historyList">
-                <!-- History will be loaded here -->
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- Scripts -->
     <script type="module" src="main.js"></script>
     <script type="module" src="pages/page_scripts/floating-orb.js"></script>
@@ -2110,315 +1108,39 @@
     <script type="module" src="scripts/upload/cloud-upload.js"></script>
     <script type="module" src="scripts/social/social-features.js"></script>
     <script type="module" src="scripts/ui/profile_banner.js"></script>
-    <script
-      type="module"
-      src="pages/page_modals/modal_scripts/workflow-manager.js"
-    ></script>
 
-    <!-- 3D Title Manager Script -->
     <script>
-      // 3D Title and Font Management System
-      class TitleManager {
-        constructor() {
-          this.fonts = [];
-          this.currentFont = "default";
-          this.init();
-        }
-
-        async init() {
-          console.log("🎨 Initializing 3D Title Manager...");
-          await this.loadAvailableFonts();
-          this.setupFontSelector();
-          this.setupTitleEffects();
-          this.addDebugLog("3D Title system initialized successfully");
-        }
-
-        async loadAvailableFonts() {
-          const fontFiles = [
-            {
-              name: "Neon Lights",
-              file: "neon-lights-font.zip",
-              class: "font-neon",
-            },
-            {
-              name: "Chromatic",
-              file: "c-chromatic-font.zip",
-              class: "font-chromatic",
-            },
-            { name: "Button", file: "button-font.zip", class: "font-button" },
-            {
-              name: "Excluded",
-              file: "excluded-font.zip",
-              class: "font-excluded",
-            },
-          ];
-
-          for (const font of fontFiles) {
-            try {
-              await this.loadFont(font);
-              this.fonts.push(font);
-              console.log(`✅ Loaded font: ${font.name}`);
-            } catch (error) {
-              console.warn(`⚠️ Could not load font ${font.name}:`, error);
-            }
-          }
-
-          this.addDebugLog(
-            `Loaded ${this.fonts.length} custom fonts from FONTS folder`
-          );
-        }
-
-        async loadFont(fontInfo) {
-          return new Promise((resolve, reject) => {
-            // For now, we'll simulate font loading since we can't directly extract from zip files
-            // In a real implementation, you'd need to extract the font files first
-            const fontFace = new FontFace(
-              fontInfo.name.replace(/\s+/g, ""),
-              `url('./assets/FONTS/${fontInfo.file}')`
-            );
-
-            fontFace
-              .load()
-              .then(() => {
-                document.fonts.add(fontFace);
-                resolve(fontInfo);
-              })
-              .catch(() => {
-                // Fallback: add font class without actual font loading
-                resolve(fontInfo);
-              });
-          });
-        }
-
-        setupFontSelector() {
-          const dropdown = document.getElementById("font-dropdown");
-          if (!dropdown) return;
-
-          // Add default option
-          dropdown.innerHTML =
-            '<option value="default">Default (Orbitron)</option>';
-
-          // Add custom font options
-          this.fonts.forEach((font) => {
-            const option = document.createElement("option");
-            option.value = font.class;
-            option.textContent = font.name;
-            dropdown.appendChild(option);
-          });
-
-          // Add event listener
-          dropdown.addEventListener("change", (e) => {
-            this.changeFont(e.target.value);
-          });
-
-          this.addDebugLog(
-            "Font selector initialized with " +
-              (this.fonts.length + 1) +
-              " options"
-          );
-        }
-
-        changeFont(fontClass) {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          // Remove all font classes
-          titleContainer.className = "title-3d";
-
-          // Add new font class if not default
-          if (fontClass !== "default") {
-            titleContainer.classList.add(fontClass);
-          }
-
-          this.currentFont = fontClass;
-          this.addDebugLog(`Font changed to: ${fontClass}`);
-
-          // Add transition effect
-          titleContainer.style.transition = "all 0.5s ease-in-out";
-          setTimeout(() => {
-            titleContainer.style.transition = "";
-          }, 500);
-        }
-
-        setupTitleEffects() {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          // Add data attributes for 3D effect
-          const line1 = titleContainer.querySelector(".title-line-1");
-          const line2 = titleContainer.querySelector(".title-line-2");
-
-          if (line1) {
-            line1.setAttribute("data-text", line1.textContent);
-          }
-          if (line2) {
-            line2.setAttribute("data-text", line2.textContent);
-          }
-
-          // Add mouse interaction effects
-          titleContainer.addEventListener("mouseenter", () => {
-            this.addTitleEffect("hover");
-          });
-
-          titleContainer.addEventListener("mouseleave", () => {
-            this.removeTitleEffect("hover");
-          });
-
-          // Add click effect
-          titleContainer.addEventListener("click", () => {
-            this.addTitleEffect("click");
-            setTimeout(() => this.removeTitleEffect("click"), 600);
-          });
-
-          // Setup action buttons
-          this.setupActionButtons();
-
-          this.addDebugLog("Title effects and interactions configured");
-        }
-
-        setupActionButtons() {
-          // Animate button
-          const animateBtn = document.getElementById("title-animate-btn");
-          if (animateBtn) {
-            animateBtn.addEventListener("click", () => {
-              this.triggerSpecialAnimation();
-            });
-          }
-
-          // Reset button
-          const resetBtn = document.getElementById("title-reset-btn");
-          if (resetBtn) {
-            resetBtn.addEventListener("click", () => {
-              this.resetTitleEffects();
-            });
-          }
-
-          // Fullscreen button
-          const fullscreenBtn = document.getElementById("title-fullscreen-btn");
-          if (fullscreenBtn) {
-            fullscreenBtn.addEventListener("click", () => {
-              this.toggleFullscreen();
-            });
-          }
-
-          this.addDebugLog("Action buttons configured");
-        }
-
-        triggerSpecialAnimation() {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          // Add special animation class
-          titleContainer.style.animation = "none";
-          setTimeout(() => {
-            titleContainer.style.animation =
-              "titleFloat 0.5s ease-in-out, titleGlow 0.3s ease-in-out infinite alternate";
-            titleContainer.style.transform =
-              "scale(1.2) rotateX(360deg) rotateY(360deg)";
-
-            setTimeout(() => {
-              titleContainer.style.transform = "";
-              titleContainer.style.animation = "";
-            }, 2000);
-          }, 10);
-
-          this.addDebugLog("Special animation triggered");
-        }
-
-        resetTitleEffects() {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          // Reset all styles
-          titleContainer.style.transform = "";
-          titleContainer.style.filter = "";
-          titleContainer.style.animation = "";
-
-          // Reset font to default
-          this.changeFont("default");
-
-          this.addDebugLog("Title effects reset");
-        }
-
-        toggleFullscreen() {
-          const container = document.querySelector(".title-header-section");
-          if (!container) return;
-
-          if (!document.fullscreenElement) {
-            container
-              .requestFullscreen()
-              .then(() => {
-                container.style.fontSize = "1.5rem";
-                this.addDebugLog("Entered fullscreen mode");
-              })
-              .catch((err) => {
-                console.warn("Could not enter fullscreen:", err);
-              });
-          } else {
-            document.exitFullscreen().then(() => {
-              container.style.fontSize = "";
-              this.addDebugLog("Exited fullscreen mode");
-            });
-          }
-        }
-
-        addTitleEffect(type) {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          switch (type) {
-            case "hover":
-              titleContainer.style.transform =
-                "scale(1.05) rotateX(0deg) rotateY(0deg)";
-              titleContainer.style.filter = "brightness(1.2)";
-              break;
-            case "click":
-              titleContainer.style.transform = "scale(0.95)";
-              titleContainer.style.filter = "brightness(1.5)";
-              break;
-          }
-        }
-
-        removeTitleEffect(type) {
-          const titleContainer = document.getElementById("main-title");
-          if (!titleContainer) return;
-
-          titleContainer.style.transform = "";
-          titleContainer.style.filter = "";
-        }
-
-        addDebugLog(message) {
-          console.log(`🎨 [Title Manager] ${message}`);
-        }
-
-        // Public method to get current font info
-        getCurrentFont() {
-          return {
-            class: this.currentFont,
-            name:
-              this.currentFont === "default"
-                ? "Default (Orbitron)"
-                : this.fonts.find((f) => f.class === this.currentFont)?.name ||
-                  "Unknown",
-          };
-        }
-      }
-
-      // Initialize when DOM is loaded
       document.addEventListener("DOMContentLoaded", () => {
-        window.titleManager = new TitleManager();
-      });
-
-      // Add some extra jaw-dropping effects
-      document.addEventListener("DOMContentLoaded", () => {
-        // Add particle effect background
+        console.log("🚀 Profile Hub: Initializing mobile-friendly profile hub system");
         createParticleBackground();
-
-        // Add typing effect for subtitle
         setTimeout(() => {
           typeWriterEffect();
         }, 2000);
+        
+        // Initialize profile hub for mobile
+        setTimeout(() => {
+          initializeProfileHub();
+        }, 1000);
       });
+
+      function initializeProfileHub() {
+        const profileHub = document.getElementById('profileHub');
+        if (profileHub) {
+          console.log("✅ Profile Hub: Successfully initialized and visible on mobile");
+          
+          // Add mobile-specific event listeners
+          profileHub.addEventListener('touchstart', function(e) {
+            console.log("📱 Profile Hub: Touch interaction detected");
+          });
+          
+          // Ensure visibility on mobile
+          profileHub.style.display = 'block';
+          profileHub.style.visibility = 'visible';
+          profileHub.style.opacity = '1';
+        } else {
+          console.log("❌ Profile Hub: Element not found");
+        }
+      }
 
       function createParticleBackground() {
         const container = document.getElementById("title-container");

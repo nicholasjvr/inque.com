@@ -161,6 +161,34 @@ class CloudUploadManager {
     }
   }
 
+  // Reupload files for an existing widget (replace files, keep metadata)
+  async reuploadWidgetFiles(widgetId, files) {
+    try {
+      this.log("Starting widget reupload via Cloud Functions", {
+        widgetId,
+        fileCount: files.length,
+      });
+
+      if (!auth.currentUser) {
+        throw new Error("User must be authenticated to reupload files");
+      }
+
+      const filePromises = Array.from(files).map((file) =>
+        this.fileToBase64(file)
+      );
+      const base64Files = await Promise.all(filePromises);
+
+      const reupload = httpsCallable(this.functions, "reuploadWidgetFiles");
+      const result = await reupload({ widgetId, files: base64Files });
+
+      this.log("Widget reupload successful", result.data);
+      return result.data;
+    } catch (error) {
+      this.error("Widget reupload failed", error);
+      throw new Error(`Reupload failed: ${error.message}`);
+    }
+  }
+
   // Validate files before upload
   validateFiles(files) {
     const allowedTypes = [
@@ -281,3 +309,6 @@ export const uploadWithProgress = (files, slot, widgetData, progressCallback) =>
     widgetData,
     progressCallback
   );
+
+export const reuploadWidgetFiles = (widgetId, files) =>
+  cloudUploadManager.reuploadWidgetFiles(widgetId, files);

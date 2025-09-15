@@ -18,6 +18,11 @@ import {
   signOut,
   updateProfile,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
+import {
+  deleteWidget as cfDeleteWidget,
+  getWidgetDownloadUrls as cfGetWidgetUrls,
+  reuploadWidgetFiles as cfReuploadWidgetFiles,
+} from "../../scripts/upload/cloud-upload.js";
 
 // Debug logging
 const DEBUG = {
@@ -385,19 +390,295 @@ class MyProjectsManager {
   createWidgetCard(widget) {
     const card = document.createElement("div");
     card.className = "neo-card";
+    card.style.display = "flex";
+    card.style.flexDirection = "column";
+    card.style.gap = "8px";
     card.innerHTML = `
-      <h3>${widget.title || "Untitled Widget"}</h3>
-      <p>${widget.description || "No description"}</p>
-      <div style="margin-top: auto; display: flex; gap: 0.5rem;">
-        <button class="quick-action-btn" onclick="window.open('${widget.files?.[0]?.downloadURL || "#"}', '_blank')">
-          👁️ Preview
-        </button>
-        <button class="quick-action-btn" onclick="navigator.share({ title: '${widget.title}', url: '${widget.files?.[0]?.downloadURL || ""}' })">
-          📤 Share
-        </button>
+      <div style="display:flex; align-items:flex-start; justify-content:space-between; gap: 12px;">
+        <div>
+          <h3 style="margin:0 0 6px 0">${widget.title || "Untitled Widget"}</h3>
+          <div style="font-size:.85rem; color:#a0a0a0; margin-bottom:8px">Slot ${
+            widget.slot || "?"
+          } • ${widget.files?.length || 0} files</div>
+          <p style="margin:0; color:#a0a0a0">${
+            widget.description || "No description"
+          }</p>
+        </div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap">
+          <button class="quick-action-btn" data-action="preview" data-id="${
+            widget.id
+          }">👁️ Preview</button>
+          <button class="quick-action-btn" data-action="urls" data-id="${
+            widget.id
+          }">🔗 Links</button>
+        </div>
+      </div>
+      <div style="display:flex; gap:8px; flex-wrap:wrap; margin-top: 8px;">
+        <button class="quick-action-btn" data-action="edit" data-id="${
+          widget.id
+        }">✏️ Edit</button>
+        <button class="quick-action-btn" data-action="reupload" data-id="${
+          widget.id
+        }">🔁 Reupload</button>
+        <button class="quick-action-btn" data-action="move" data-id="${
+          widget.id
+        }">📦 Move</button>
+        <button class="quick-action-btn" data-action="delete" data-id="${
+          widget.id
+        }" style="border-color:#ef4444; color:#ef4444">🗑️ Delete</button>
       </div>
     `;
+
+    // Wire actions
+    card.querySelectorAll("button[data-action]").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        const action = e.currentTarget.getAttribute("data-action");
+        const id = e.currentTarget.getAttribute("data-id");
+        const found = this.widgets.find((w) => w.id === id);
+        if (!found) return;
+        switch (action) {
+          case "preview":
+            window.open(found.files?.[0]?.downloadURL || "#", "_blank");
+            break;
+          case "urls":
+            this.showDownloadUrls(found);
+            break;
+          case "edit":
+            this.openEditModal(found);
+            break;
+          case "reupload":
+            this.openReuploadModal(found);
+            break;
+          case "move":
+            this.openMoveModal(found);
+            break;
+          case "delete":
+            this.openDeleteModal(found);
+            break;
+        }
+      });
+    });
     return card;
+  }
+
+  // Modal helpers
+  openEditModal(widget) {
+    const modal = document.getElementById("editWidgetModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    this.editingWidgetId = widget.id;
+    const t = document.getElementById("editWidgetTitle");
+    const d = document.getElementById("editWidgetDescription");
+    const g = document.getElementById("editWidgetTags");
+    if (t) t.value = widget.title || "";
+    if (d) d.value = widget.description || "";
+    if (g) g.value = widget.tags || "";
+
+    const close = document.getElementById("editWidgetClose");
+    if (close) close.onclick = () => (modal.style.display = "none");
+
+    const form = document.getElementById("editWidgetForm");
+    if (form && !form._wired) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        await this.saveWidgetEdits();
+      });
+      form._wired = true;
+    }
+  }
+
+  async saveWidgetEdits() {
+    try {
+      const id = this.editingWidgetId;
+      const title = document.getElementById("editWidgetTitle").value.trim();
+      const description = document
+        .getElementById("editWidgetDescription")
+        .value.trim();
+      const tags = document.getElementById("editWidgetTags").value.trim();
+
+      await (
+        await import(
+          "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+        )
+      ).updateDoc(
+        (
+          await import(
+            "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+          )
+        ).doc(db, "widgets", id),
+        {
+          title,
+          description,
+          tags,
+          updatedAt:
+            (
+              await import(
+                "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+              )
+            ).serverTimestamp?.() || new Date(),
+        }
+      );
+
+      // Update local
+      const w = this.widgets.find((x) => x.id === id);
+      if (w) {
+        w.title = title;
+        w.description = description;
+        w.tags = tags;
+      }
+      this.renderWidgets();
+      document.getElementById("editWidgetModal").style.display = "none";
+      this.showToast("Widget updated", "success");
+    } catch (err) {
+      DEBUG.error("Failed to save edits", err);
+      this.showToast("Failed to save changes", "error");
+    }
+  }
+
+  openReuploadModal(widget) {
+    const modal = document.getElementById("reuploadModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    this.reuploadWidgetId = widget.id;
+
+    const close = document.getElementById("reuploadClose");
+    if (close) close.onclick = () => (modal.style.display = "none");
+
+    const confirm = document.getElementById("confirmReuploadBtn");
+    if (confirm && !confirm._wired) {
+      confirm.addEventListener("click", () => this.performReupload());
+      confirm._wired = true;
+    }
+  }
+
+  async performReupload() {
+    const input = document.getElementById("reuploadFileInput");
+    if (!input || !input.files || input.files.length === 0) {
+      this.showToast("Select files to upload", "warning");
+      return;
+    }
+    const progressDiv = document.getElementById("reuploadProgress");
+    const progressFill = document.getElementById("reuploadProgressFill");
+    const progressText = document.getElementById("reuploadProgressText");
+    progressDiv.style.display = "block";
+    progressFill.style.width = "10%";
+    progressText.textContent = "Preparing...";
+
+    try {
+      const res = await cfReuploadWidgetFiles(
+        this.reuploadWidgetId,
+        Array.from(input.files)
+      );
+      progressFill.style.width = "100%";
+      progressText.textContent = "Uploaded";
+
+      // Update local files
+      const w = this.widgets.find((x) => x.id === this.reuploadWidgetId);
+      if (w) w.files = res.files || w.files;
+      this.renderWidgets();
+
+      this.showToast("Files reuploaded", "success");
+      document.getElementById("reuploadModal").style.display = "none";
+      input.value = "";
+    } catch (err) {
+      DEBUG.error("Reupload failed", err);
+      this.showToast("Reupload failed", "error");
+    }
+  }
+
+  openMoveModal(widget) {
+    const modal = document.getElementById("moveModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    this.movingWidgetId = widget.id;
+    const select = document.getElementById("moveSlotSelect");
+    if (select) select.value = String(widget.slot || 1);
+    const close = document.getElementById("moveClose");
+    if (close) close.onclick = () => (modal.style.display = "none");
+    const confirm = document.getElementById("confirmMoveBtn");
+    if (confirm && !confirm._wired) {
+      confirm.addEventListener("click", () => this.performMove());
+      confirm._wired = true;
+    }
+  }
+
+  async performMove() {
+    try {
+      const id = this.movingWidgetId;
+      const slot = parseInt(
+        document.getElementById("moveSlotSelect").value,
+        10
+      );
+      const { doc: dd, updateDoc: uu } = await import(
+        "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js"
+      );
+      await uu(dd(db, "widgets", id), { slot, updatedAt: new Date() });
+      const w = this.widgets.find((x) => x.id === id);
+      if (w) w.slot = slot;
+      this.renderWidgets();
+      document.getElementById("moveModal").style.display = "none";
+      this.showToast("Widget moved", "success");
+    } catch (err) {
+      DEBUG.error("Move failed", err);
+      this.showToast("Move failed", "error");
+    }
+  }
+
+  openDeleteModal(widget) {
+    const modal = document.getElementById("deleteModal");
+    if (!modal) return;
+    modal.style.display = "flex";
+    this.deletingWidgetId = widget.id;
+    const close = document.getElementById("deleteClose");
+    if (close) close.onclick = () => (modal.style.display = "none");
+    const cancel = document.getElementById("cancelDeleteBtn");
+    if (cancel) cancel.onclick = () => (modal.style.display = "none");
+    const confirm = document.getElementById("confirmDeleteBtn");
+    if (confirm && !confirm._wired) {
+      confirm.addEventListener("click", () => this.performDelete());
+      confirm._wired = true;
+    }
+  }
+
+  async performDelete() {
+    try {
+      const id = this.deletingWidgetId;
+      await cfDeleteWidget(id);
+      this.widgets = this.widgets.filter((w) => w.id !== id);
+      this.renderWidgets();
+      document.getElementById("deleteModal").style.display = "none";
+      this.showToast("Widget deleted", "success");
+    } catch (err) {
+      DEBUG.error("Delete failed", err);
+      this.showToast("Delete failed", "error");
+    }
+  }
+
+  async showDownloadUrls(widget) {
+    try {
+      const res = await cfGetWidgetUrls(widget.id);
+      const urls = res.downloadUrls || [];
+      if (urls.length === 0) {
+        this.showToast("No files available", "info");
+        return;
+      }
+      const list = urls
+        .map(
+          (u) =>
+            `<div style="display:flex; justify-content:space-between; gap:8px; align-items:center; margin:6px 0"><span style="color:#a0a0a0">${u.fileName}</span><a class="quick-action-btn" href="${u.downloadURL}" target="_blank">Download</a></div>`
+        )
+        .join("");
+      const container = document.createElement("div");
+      container.innerHTML = list;
+      const toast = document.createElement("div");
+      toast.className = "toast info";
+      toast.appendChild(container);
+      this.domElements.toastContainer.appendChild(toast);
+      setTimeout(() => toast.remove(), 6000);
+    } catch (err) {
+      DEBUG.error("Failed to fetch URLs", err);
+      this.showToast("Failed to fetch links", "error");
+    }
   }
 
   setupTimelineListener() {

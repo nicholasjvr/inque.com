@@ -333,6 +333,28 @@ main section {
     transition: all 0.3s ease;
 }
 
+/* Home hero spacing with inline orb focus */
+.title-header-section .title-main-container {
+    display: block;
+}
+
+/* Ensure good spacing around the inline orb and CTA */
+#title-container>.floating-orb-wrapper.inline-under-title {
+    margin-top: 24px;
+    margin-bottom: 28px;
+}
+
+@media (max-width: 768px) {
+    #title-container>.floating-orb-wrapper.inline-under-title {
+        margin-top: 16px;
+        margin-bottom: 24px;
+    }
+
+    #guest-cta-section .cta-container {
+        margin-top: 12px !important;
+    }
+}
+
 main section:hover {
     background: rgba(16, 21, 32, 0.5);
     border-color: var(--accent-color);

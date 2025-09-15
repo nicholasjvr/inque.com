@@ -46,6 +46,13 @@ class FloatingOrbManager {
 
       ORB_DEBUG.log("Floating orb system initialized successfully");
 
+      // Debug log for mobile positioning
+      if (window.innerWidth <= 768) {
+        ORB_DEBUG.log(
+          "Mobile layout detected - orb positioned in center-right area"
+        );
+      }
+
       // Add some demo notifications for testing
       if (this.options.debugMode) {
         this.addDemoNotifications();
@@ -128,6 +135,21 @@ class FloatingOrbManager {
     this.stage.style.width = "var(--orbit-size)";
     this.stage.style.height = "var(--orbit-size)";
 
+    // Create scroll-based horizontal line
+    this.scrollLine = document.createElement("div");
+    this.scrollLine.className = "orb-scroll-line";
+
+    // Initialize scroll state [[memory:4664284]]
+    this.scrollState = {
+      currentRotation: 0,
+      targetRotation: 0,
+      lockPoints: [0, 60, 120, 180, 240, 300], // 6 lock points for 6 nav items
+      isLocked: false,
+      sensitivity: 0.5,
+    };
+
+    ORB_DEBUG.log("Orb scroll system initialized with lock points");
+
     // Create the orb (CSS fallback)
     this.orb = document.createElement("div");
     this.orb.className = "floating-orb";
@@ -141,16 +163,37 @@ class FloatingOrbManager {
     this.popup = document.createElement("div");
     this.popup.className = "notification-popup";
 
+    // Create orbiting nav container
+    this.navContainer = document.createElement("div");
+    this.navContainer.className = "orb-nav-container rotating";
+
+    // One-time helper tooltip
+    this.tooltip = document.createElement("div");
+    this.tooltip.className = "orb-usage-tooltip";
+    this.tooltip.setAttribute("role", "status");
+    this.tooltip.setAttribute("aria-live", "polite");
+    this.tooltip.textContent = "Scroll or drag to rotate • Release to snap";
+
     // Assemble the structure
-    this.stage.appendChild(this.orb);
+    // Layering: scroll line (z:0), orbit guide (z:1), nav (z:2), orb (z:3), popup floats
+    this.stage.appendChild(this.scrollLine);
     this.stage.appendChild(this.orbit);
+    this.stage.appendChild(this.navContainer);
+    this.stage.appendChild(this.orb);
     this.container.appendChild(this.stage);
+    this.container.appendChild(this.tooltip);
     this.container.appendChild(this.popup);
 
-    // Add to DOM
+    // Add to DOM (desktop default)
     document.body.appendChild(this.container);
 
     ORB_DEBUG.log("Orb DOM structure created");
+
+    // Docking behavior based on viewport
+    this.updateDockingPosition();
+    window.addEventListener("resize", () => this.updateDockingPosition(), {
+      passive: true,
+    });
 
     // Notify listeners that the orb exists in the DOM
     try {
@@ -177,6 +220,367 @@ class FloatingOrbManager {
           e
         );
       });
+    }
+
+    // Build initial nav after DOM create
+    this.buildOrbNavigation();
+    this.startRingOrbit();
+    this.setupScrollSystem();
+
+    // Show tooltip briefly for first-time users
+    try {
+      const seen = localStorage.getItem("orb_tooltip_seen");
+      if (!seen) {
+        this.showToolTip();
+        localStorage.setItem("orb_tooltip_seen", "1");
+      }
+    } catch {}
+  }
+
+  showToolTip() {
+    if (!this.tooltip) return;
+    this.tooltip.classList.add("show");
+    clearTimeout(this._tooltipTimer);
+    this._tooltipTimer = setTimeout(() => {
+      this.tooltip && this.tooltip.classList.remove("show");
+    }, 3200);
+  }
+
+  updateDockingPosition() {
+    const titleContainer =
+      document.getElementById("title-container") ||
+      document.querySelector(".title-main-container");
+    const subtitleElement = document.getElementById("home-subtitle");
+
+    // Prefer inline placement between title and subtitle on all viewports
+    if (titleContainer) {
+      // Ensure the container is a child of the title block
+      if (this.container.parentElement !== titleContainer) {
+        // If subtitle exists, insert before it to sit between title and subtitle
+        if (subtitleElement && titleContainer.contains(subtitleElement)) {
+          titleContainer.insertBefore(this.container, subtitleElement);
+        } else {
+          // Fallback: append after the title block
+          titleContainer.appendChild(this.container);
+        }
+        ORB_DEBUG.log("Orb docked inline under title container");
+      }
+
+      // Apply inline style class (static, not sticky)
+      this.container.classList.add("inline-under-title");
+      this.container.classList.remove("mobile-under-title");
+
+      // Clear any fixed positioning styles from previous modes
+      this.container.style.top = "";
+      this.container.style.left = "";
+      this.container.style.transform = "";
+    } else {
+      // Fallback: ensure still visible in the document flow
+      if (this.container.parentElement !== document.body) {
+        document.body.appendChild(this.container);
+      }
+      this.container.classList.remove("inline-under-title");
+      this.container.classList.remove("mobile-under-title");
+    }
+  }
+
+  buildOrbNavigation() {
+    try {
+      const items = [
+        {
+          id: "nav-home",
+          icon: "🏠",
+          title: "Home",
+          onClick: () => this.navigateToSection("home-section"),
+        },
+        {
+          id: "nav-guides",
+          icon: "📚",
+          title: "Guides",
+          onClick: () => this.navigateToSection("guides-section"),
+        },
+        {
+          id: "nav-showcase",
+          icon: "🏆",
+          title: "Showcase",
+          onClick: () => this.navigateToSection("showcase-section"),
+        },
+        {
+          id: "nav-tools",
+          icon: "🛠️",
+          title: "Tools",
+          onClick: () => this.navigateToSection("tools-section"),
+        },
+        {
+          id: "nav-projects",
+          icon: "🚀",
+          title: "Projects",
+          onClick: () => this.navigateToSection("projects-section"),
+        },
+        {
+          id: "nav-chat",
+          icon: "💬",
+          title: "Chatbot",
+          onClick: () => window.profileHubManager?.toggleChatbot?.(),
+        },
+      ];
+
+      this.navContainer.innerHTML = "";
+
+      const angleStep = 360 / items.length;
+      items.forEach((item, idx) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "orb-nav-item";
+        btn.setAttribute("title", item.title);
+        btn.style.setProperty("--angle", `${idx * angleStep}deg`);
+        btn.innerText = item.icon;
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          item.onClick?.();
+        });
+        this.navContainer.appendChild(btn);
+      });
+
+      ORB_DEBUG.log("Orb navigation constructed", { count: items.length });
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to build orb navigation", err);
+    }
+  }
+
+  navigateToSection(sectionId) {
+    try {
+      const el = document.getElementById(sectionId);
+      if (!el) return;
+      // Show target section (others may be hidden by app logic)
+      el.style.display = "block";
+      const drawer = document.getElementById("mobileDrawer");
+      if (drawer?.classList?.contains("active"))
+        drawer.classList.remove("active");
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      ORB_DEBUG.log("Navigated to section via orb", { sectionId });
+    } catch {}
+  }
+
+  startRingOrbit() {
+    // Saturn-like horizontal ring animation driven by scroll interaction
+    try {
+      const items = Array.from(this.navContainer?.children || []);
+      if (!items.length) return;
+
+      const TWO_PI = Math.PI * 2;
+
+      const animate = () => {
+        // Use scroll-controlled rotation instead of time-based
+        const scrollRotationRad =
+          (this.scrollState.currentRotation * Math.PI) / 180;
+
+        const rect = this.navContainer.getBoundingClientRect();
+        const radius = (rect.width || 180) / 2.3; // a touch tighter
+        const tilt = 0.3; // slightly flatter ring
+
+        items.forEach((el, idx) => {
+          const baseAngle = (TWO_PI * idx) / items.length;
+          const angle = baseAngle + scrollRotationRad;
+          const x = Math.cos(angle) * radius;
+          const y = Math.sin(angle) * radius * tilt;
+
+          // mark front/back for z-index accessibility
+          const front = Math.cos(angle) > 0; // front half
+          if (front) {
+            el.classList.add("in-front");
+          } else {
+            el.classList.remove("in-front");
+          }
+          el.style.setProperty("--x", `${x}px`);
+          el.style.setProperty("--y", `${y}px`);
+        });
+
+        this._ringFrame = requestAnimationFrame(animate);
+      };
+
+      if (this._ringFrame) cancelAnimationFrame(this._ringFrame);
+      this._ringFrame = requestAnimationFrame(animate);
+      ORB_DEBUG.log("Saturn ring orbit started with scroll control");
+
+      // Recompute on resize
+      window.addEventListener(
+        "resize",
+        () => {
+          if (this._ringFrame) {
+            cancelAnimationFrame(this._ringFrame);
+            this._ringFrame = null;
+          }
+          this.startRingOrbit();
+        },
+        { passive: true }
+      );
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to start ring orbit", err);
+    }
+  }
+
+  setupScrollSystem() {
+    try {
+      let scrollTimeout;
+      let isDragging = false;
+      let lastScrollTime = 0;
+
+      ORB_DEBUG.log("Setting up orb scroll system with lock points");
+
+      // Smooth scroll animation loop
+      const updateScrollAnimation = () => {
+        const diff =
+          this.scrollState.targetRotation - this.scrollState.currentRotation;
+        if (Math.abs(diff) > 0.1) {
+          this.scrollState.currentRotation += diff * 0.15; // Smooth easing
+
+          // Update the scroll line rotation
+          this.scrollLine.style.setProperty(
+            "--scroll-rotation",
+            `${this.scrollState.currentRotation}deg`
+          );
+
+          requestAnimationFrame(updateScrollAnimation);
+        }
+      };
+
+      // Handle scroll events on the orb container
+      const handleScroll = (deltaY) => {
+        const now = Date.now();
+        if (now - lastScrollTime < 16) return; // Throttle to ~60fps
+        lastScrollTime = now;
+
+        // Update target rotation based on scroll
+        this.scrollState.targetRotation +=
+          deltaY * this.scrollState.sensitivity;
+
+        // Clear existing timeout
+        clearTimeout(scrollTimeout);
+
+        // Start smooth animation if not already running
+        updateScrollAnimation();
+
+        // Set up lock point snapping after scroll ends
+        scrollTimeout = setTimeout(() => {
+          this.snapToNearestLockPoint();
+        }, 150);
+      };
+
+      // Add wheel event listener
+      this.container.addEventListener(
+        "wheel",
+        (e) => {
+          e.preventDefault();
+          handleScroll(e.deltaY);
+          this.scrollLine.style.opacity = "1";
+
+          clearTimeout(this._scrollLineTimeout);
+          this._scrollLineTimeout = setTimeout(() => {
+            this.scrollLine.style.opacity = "0.3";
+          }, 2000);
+        },
+        { passive: false }
+      );
+
+      // Add touch/drag support for mobile
+      let startY = 0;
+      let startRotation = 0;
+
+      this.container.addEventListener(
+        "touchstart",
+        (e) => {
+          if (e.touches.length === 1) {
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            startRotation = this.scrollState.currentRotation;
+            this.scrollLine.style.opacity = "1";
+          }
+        },
+        { passive: true }
+      );
+
+      this.container.addEventListener(
+        "touchmove",
+        (e) => {
+          if (isDragging && e.touches.length === 1) {
+            e.preventDefault();
+            const deltaY = (startY - e.touches[0].clientY) * 2; // Increase sensitivity for touch
+            this.scrollState.targetRotation = startRotation + deltaY;
+            updateScrollAnimation();
+          }
+        },
+        { passive: false }
+      );
+
+      this.container.addEventListener(
+        "touchend",
+        () => {
+          if (isDragging) {
+            isDragging = false;
+            setTimeout(() => this.snapToNearestLockPoint(), 100);
+
+            setTimeout(() => {
+              this.scrollLine.style.opacity = "0.3";
+            }, 1500);
+          }
+        },
+        { passive: true }
+      );
+
+      // Initialize scroll line opacity
+      this.scrollLine.style.opacity = "0.3";
+
+      ORB_DEBUG.log(
+        "Scroll system initialized with lock points:",
+        this.scrollState.lockPoints
+      );
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to setup scroll system", err);
+    }
+  }
+
+  snapToNearestLockPoint() {
+    try {
+      // Normalize current rotation to 0-360 range
+      let normalizedRotation = this.scrollState.targetRotation % 360;
+      if (normalizedRotation < 0) normalizedRotation += 360;
+
+      // Find nearest lock point
+      let nearestLockPoint = this.scrollState.lockPoints[0];
+      let minDistance = Math.abs(normalizedRotation - nearestLockPoint);
+
+      for (const lockPoint of this.scrollState.lockPoints) {
+        const distance = Math.min(
+          Math.abs(normalizedRotation - lockPoint),
+          Math.abs(normalizedRotation - lockPoint - 360),
+          Math.abs(normalizedRotation - lockPoint + 360)
+        );
+
+        if (distance < minDistance) {
+          minDistance = distance;
+          nearestLockPoint = lockPoint;
+        }
+      }
+
+      // Snap to the nearest lock point with smooth animation
+      const targetRotation =
+        Math.floor(this.scrollState.targetRotation / 360) * 360 +
+        nearestLockPoint;
+      this.scrollState.targetRotation = targetRotation;
+      this.scrollState.isLocked = true;
+
+      // Add haptic-like visual feedback
+      if (this.container) {
+        this.container.classList.add("lock-snap");
+        setTimeout(() => {
+          this.container && this.container.classList.remove("lock-snap");
+        }, 200);
+      }
+
+      ORB_DEBUG.log("Snapped to lock point:", nearestLockPoint);
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to snap to lock point", err);
     }
   }
 
@@ -317,14 +721,42 @@ class FloatingOrbManager {
       ORB_DEBUG.log("Orb clicked - toggling notifications");
     });
 
-    // Orb hover handlers
+    // Orb hover handlers (desktop only)
     this.orb.addEventListener("mouseenter", () => {
-      this.showLatestNotification();
+      if (window.innerWidth > 768) {
+        this.showLatestNotification();
+      }
     });
 
     this.orb.addEventListener("mouseleave", () => {
-      this.hideNotificationPopup();
+      if (window.innerWidth > 768) {
+        this.hideNotificationPopup();
+      }
     });
+
+    // Touch events for mobile (passive to avoid intervention warnings)
+    this.orb.addEventListener(
+      "touchstart",
+      (e) => {
+        if (window.innerWidth <= 768) {
+          this.showLatestNotification();
+          ORB_DEBUG.log("Mobile touch detected - showing notification");
+        }
+      },
+      { passive: true }
+    );
+
+    this.orb.addEventListener(
+      "touchend",
+      (e) => {
+        if (window.innerWidth <= 768) {
+          setTimeout(() => {
+            this.hideNotificationPopup();
+          }, 2000);
+        }
+      },
+      { passive: true }
+    );
 
     // Global click handler to close popup
     document.addEventListener("click", (e) => {
@@ -332,6 +764,35 @@ class FloatingOrbManager {
         this.hideNotificationPopup();
       }
     });
+
+    // Mobile-specific: Close notifications when mobile drawer opens
+    const mobileMenuToggle = document.getElementById("mobileMenuToggle");
+    if (mobileMenuToggle) {
+      mobileMenuToggle.addEventListener("click", () => {
+        this.hideNotificationPopup();
+        ORB_DEBUG.log("Mobile menu opened - hiding orb notifications");
+      });
+    }
+
+    // Also listen for mobile drawer state changes
+    const mobileDrawer = document.getElementById("mobileDrawer");
+    if (mobileDrawer) {
+      // Use MutationObserver to detect when drawer becomes active
+      const observer = new MutationObserver((mutations) => {
+        mutations.forEach((mutation) => {
+          if (
+            mutation.type === "attributes" &&
+            mutation.attributeName === "class"
+          ) {
+            if (mobileDrawer.classList.contains("active")) {
+              this.hideNotificationPopup();
+              ORB_DEBUG.log("Mobile drawer opened - hiding orb notifications");
+            }
+          }
+        });
+      });
+      observer.observe(mobileDrawer, { attributes: true });
+    }
 
     // Keyboard accessibility
     this.orb.addEventListener("keydown", (e) => {
