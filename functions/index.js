@@ -427,3 +427,126 @@ exports.getWidgetDownloadUrls = functions
       );
     }
   });
+
+// Cloud Function: Reupload files for existing widget (replace files, keep metadata)
+exports.reuploadWidgetFiles = functions
+  .runWith(runtimeOpts)
+  .https.onCall(async (data, context) => {
+    console.log("[REUPLOAD WIDGET] Starting reupload process");
+
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated"
+      );
+    }
+
+    const { widgetId, files } = data;
+    const userId = context.auth.uid;
+
+    if (!widgetId || !files || !Array.isArray(files) || files.length === 0) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "widgetId and files are required"
+      );
+    }
+
+    try {
+      // Load widget and validate ownership
+      const widgetRef = db.collection("widgets").doc(widgetId);
+      const widgetSnap = await widgetRef.get();
+      if (!widgetSnap.exists) {
+        throw new functions.https.HttpsError("not-found", "Widget not found");
+      }
+      const widgetData = widgetSnap.data();
+      if (widgetData.userId !== userId) {
+        throw new functions.https.HttpsError(
+          "permission-denied",
+          "You can only update your own widgets"
+        );
+      }
+
+      // Upload new files under new uploadId
+      const uploadResults = [];
+      const uploadId = `upload_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        if (!validateFile(file)) {
+          console.warn(`[REUPLOAD WIDGET] Invalid file type: ${file.name}`);
+          continue;
+        }
+        try {
+          const fileRef = storage
+            .bucket()
+            .file(`uploads/${uploadId}/${file.name}`);
+
+          const buffer = Buffer.from(file.data, "base64");
+          const token = randomUUID();
+          await fileRef.save(buffer, {
+            metadata: {
+              contentType: file.type || "application/octet-stream",
+              metadata: {
+                uploadedBy: userId,
+                slot: widgetData.slot,
+                originalName: file.name,
+                firebaseStorageDownloadTokens: token,
+              },
+            },
+          });
+
+          const bucketName = fileRef.bucket.name;
+          const encodedPath = encodeURIComponent(fileRef.name);
+          const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
+
+          uploadResults.push({
+            fileName: file.name,
+            downloadURL,
+            size: buffer.length,
+            type: file.type,
+          });
+        } catch (err) {
+          console.error(`[REUPLOAD WIDGET] Error uploading ${file.name}:`, err);
+          throw new functions.https.HttpsError(
+            "internal",
+            `Failed to upload ${file.name}`
+          );
+        }
+      }
+
+      // Optionally: delete previous upload folder to save space
+      try {
+        if (widgetData.uploadId) {
+          const bucket = storage.bucket();
+          await bucket.deleteFiles({ prefix: `uploads/${widgetData.uploadId}/` });
+          console.log("[REUPLOAD WIDGET] Old files deleted");
+        }
+      } catch (cleanupError) {
+        console.warn("[REUPLOAD WIDGET] Cleanup failed (non-fatal)", cleanupError);
+      }
+
+      await widgetRef.update({
+        files: uploadResults,
+        uploadId: uploadId,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`[REUPLOAD WIDGET] Widget updated: ${widgetId}`);
+
+      return {
+        success: true,
+        widgetId,
+        files: uploadResults,
+        uploadId,
+        message: `Reuploaded ${uploadResults.length} files`,
+      };
+    } catch (error) {
+      console.error("[REUPLOAD WIDGET] Function error:", error);
+      throw new functions.https.HttpsError(
+        "internal",
+        "Reupload failed: " + error.message
+      );
+    }
+  });
