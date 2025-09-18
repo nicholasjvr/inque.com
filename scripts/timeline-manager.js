@@ -13,7 +13,7 @@ import {
   doc,
   updateDoc,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import profileDashboardManager from "./widgets/profile-dashboard-manager.js";
+import profileDashboardManager from "../pages/profile_dashboard/pd_scripts/profile-dashboard-manager.js";
 
 // Debug logging utility for timeline manager
 const DEBUG = {

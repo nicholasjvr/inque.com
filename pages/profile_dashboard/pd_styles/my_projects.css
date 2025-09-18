@@ -1,0 +1,104 @@
+/* Neo Grid and Card Classes for Projects Dashboard */
+.neo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 20px;
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+    padding: 0;
+    margin: 0;
+}
+
+.neo-card {
+    background: linear-gradient(135deg,
+            rgba(16, 21, 32, 0.95) 0%,
+            rgba(26, 34, 50, 0.95) 50%,
+            rgba(16, 21, 32, 0.95) 100%);
+    border: 2px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    padding: 24px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    backdrop-filter: blur(15px);
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+}
+
+.neo-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg,
+            rgba(0, 240, 255, 0.05),
+            rgba(255, 0, 255, 0.05),
+            rgba(255, 255, 0, 0.05));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.neo-card:hover {
+    transform: translateY(-8px);
+    border-color: var(--border-glow);
+    box-shadow:
+        0 15px 40px rgba(0, 240, 255, 0.2),
+        0 0 20px rgba(0, 240, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.neo-card:hover::before {
+    opacity: 1;
+}
+
+.neo-card h3 {
+    color: var(--border-glow);
+    margin: 0 0 12px 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.neo-card p {
+    color: var(--text-light);
+    margin: 0 0 16px 0;
+    line-height: 1.5;
+    flex: 1;
+    opacity: 0.8;
+}
+
+.neo-card .quick-action-btn {
+    margin-top: auto;
+    align-self: flex-start;
+}
+
+/* Responsive adjustments for neo-grid */
+@media (max-width: 768px) {
+    .neo-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+
+    .neo-card {
+        padding: 20px;
+        min-height: 180px;
+    }
+}
+
+@media (max-width: 480px) {
+    .neo-grid {
+        gap: 12px;
+    }
+
+    .neo-card {
+        padding: 16px;
+        min-height: 160px;
+    }
+
+    .neo-card h3 {
+        font-size: 1.1rem;
+    }
+}

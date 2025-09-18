@@ -15,10 +15,19 @@ export default defineConfig({
         main: resolve(__dirname, "index.html"),
         explore: resolve(__dirname, "pages/explore.html"),
         users: resolve(__dirname, "pages/users.html"),
-        myProjects: resolve(__dirname, "pages/my-projects.html"),
-        inventory: resolve(__dirname, "pages/inventory.html"),
-        widgetStudio: resolve(__dirname, "pages/widget_studio.html"),
-        profileEdit: resolve(__dirname, "pages/profile-edit.html"),
+        myProjects: resolve(
+          __dirname,
+          "pages/profile_dashboard/my-projects.html"
+        ),
+        inventory: resolve(__dirname, "pages/profile_dashboard/inventory.html"),
+        widgetStudio: resolve(
+          __dirname,
+          "pages/profile_dashboard/widget_studio.html"
+        ),
+        profileEdit: resolve(
+          __dirname,
+          "pages/profile_dashboard/profile-edit.html"
+        ),
         knowledgeBase: resolve(__dirname, "pages/knowledge-base.html"),
       },
     },

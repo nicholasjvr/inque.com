@@ -1,0 +1,547 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Edit Profile • inque</title>
+    <link rel="stylesheet" href="../../core/styles/index.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      .editor-container {
+        max-width: 1100px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .editor-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 16px;
+      }
+      .editor-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 16px;
+      }
+      .editor-card {
+        background: #111;
+        border: 1px solid #222;
+        border-radius: 12px;
+        padding: 16px;
+      }
+      .editor-card h3 {
+        margin: 0 0 8px 0;
+      }
+      .sortable-ghost {
+        opacity: 0.5;
+      }
+      .sortable-chosen {
+        outline: 2px dashed #6cf;
+      }
+      .section-handle {
+        cursor: grab;
+        font-size: 20px;
+        user-select: none;
+      }
+      .topbar-actions {
+        display: flex;
+        gap: 8px;
+      }
+      .primary {
+        background: #3b82f6;
+        color: #fff;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+      .secondary {
+        background: #1f2937;
+        color: #cbd5e1;
+        border: 1px solid #334155;
+        padding: 8px 12px;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="editor-container">
+      <div class="editor-header">
+        <h2>Edit Profile & Dashboard</h2>
+        <div class="topbar-actions">
+          <button id="saveBtn" class="primary">Save</button>
+          <button id="backBtn" class="secondary">Back</button>
+        </div>
+      </div>
+      <div id="sections" class="editor-grid">
+        <div class="editor-card" data-section="profile">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Profile Information</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <div class="form-group">
+            <label>Display Name</label
+            ><input id="editName" type="text" placeholder="Your name" />
+          </div>
+          <div class="form-group">
+            <label>Bio</label
+            ><textarea
+              id="editBio"
+              rows="3"
+              placeholder="Tell us about yourself..."
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label>Photo</label
+            ><input id="editPhotoFile" type="file" accept="image/*" />
+          </div>
+        </div>
+        <div class="editor-card" data-section="settings">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Account Settings</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <label
+            ><input type="checkbox" id="setEmail" checked /> Email
+            notifications</label
+          ><br />
+          <label
+            ><input type="checkbox" id="setPublic" checked /> Public
+            profile</label
+          ><br />
+          <label
+            ><input type="checkbox" id="setAutoSave" checked /> Alerts</label
+          >
+        </div>
+        <div class="editor-card" data-section="dashboard">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Dashboard Customization</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+
+          <!-- Layout Settings -->
+          <div class="form-group">
+            <label>Layout Style</label>
+            <select id="dashboardLayout">
+              <option value="grid">Grid Layout</option>
+              <option value="list">List Layout</option>
+              <option value="timeline">Timeline Layout</option>
+            </select>
+          </div>
+
+          <!-- Theme Settings -->
+          <div class="form-group">
+            <label>Theme</label>
+            <select id="dashboardTheme">
+              <option value="neo-brutalist">Neo-Brutalist</option>
+              <option value="minimal">Minimal</option>
+              <option value="dark">Dark</option>
+              <option value="custom">Custom</option>
+            </select>
+          </div>
+
+          <!-- Custom Colors -->
+          <div class="form-group">
+            <label>Primary Color</label>
+            <input type="color" id="primaryColor" value="#00ffff" />
+          </div>
+          <div class="form-group">
+            <label>Secondary Color</label>
+            <input type="color" id="secondaryColor" value="#ff00ff" />
+          </div>
+          <div class="form-group">
+            <label>Accent Color</label>
+            <input type="color" id="accentColor" value="#ffff00" />
+          </div>
+
+          <!-- Widget Styling -->
+          <div class="form-group">
+            <label>Widget Border Color</label>
+            <input type="color" id="widgetBorderColor" value="#00ffff" />
+          </div>
+          <div class="form-group">
+            <label>Widget Border Width</label>
+            <select id="widgetBorderWidth">
+              <option value="1px">Thin (1px)</option>
+              <option value="2px">Medium (2px)</option>
+              <option value="3px" selected>Thick (3px)</option>
+              <option value="5px">Extra Thick (5px)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Widget Border Radius</label>
+            <select id="widgetBorderRadius">
+              <option value="0px" selected>Sharp (0px)</option>
+              <option value="4px">Slightly Rounded (4px)</option>
+              <option value="8px">Rounded (8px)</option>
+              <option value="12px">Very Rounded (12px)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Widget Height</label>
+            <select id="widgetHeight">
+              <option value="200px">Small (200px)</option>
+              <option value="300px" selected>Medium (300px)</option>
+              <option value="400px">Large (400px)</option>
+              <option value="500px">Extra Large (500px)</option>
+            </select>
+          </div>
+
+          <!-- Spacing Settings -->
+          <div class="form-group">
+            <label>Widget Gap</label>
+            <select id="widgetGap">
+              <option value="12px">Tight (12px)</option>
+              <option value="24px" selected>Normal (24px)</option>
+              <option value="36px">Spacious (36px)</option>
+              <option value="48px">Very Spacious (48px)</option>
+            </select>
+          </div>
+
+          <!-- Animation Settings -->
+          <div class="form-group">
+            <label>
+              <input type="checkbox" id="animationsEnabled" checked />
+              Enable Animations
+            </label>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="form-group" style="margin-top: 20px">
+            <button
+              id="previewDashboard"
+              class="secondary"
+              style="margin-right: 10px"
+            >
+              👁️ Preview
+            </button>
+            <button
+              id="resetDashboard"
+              class="secondary"
+              style="margin-right: 10px"
+            >
+              🔄 Reset
+            </button>
+            <button id="exportDashboard" class="secondary">📤 Export</button>
+          </div>
+        </div>
+
+        <div class="editor-card" data-section="widgets">
+          <div
+            style="
+              display: flex;
+              align-items: center;
+              justify-content: space-between;
+            "
+          >
+            <h3>Widget Showcase</h3>
+            <span class="section-handle" title="Drag to reorder">☰</span>
+          </div>
+          <p>
+            Manage your widget slots from the Widget Studio page. Upload and
+            customize your interactive projects.
+          </p>
+          <div style="margin-top: 16px">
+            <a
+              href="widget_studio.html"
+              class="primary"
+              style="
+                text-decoration: none;
+                padding: 8px 16px;
+                border-radius: 8px;
+              "
+            >
+              🎨 Open Widget Studio
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module">
+      import Sortable from "https://cdn.jsdelivr.net/npm/sortablejs@1.15.2/modular/sortable.esm.js";
+      import {
+        auth,
+        db,
+        onAuthStateChanged,
+      } from "../../core/firebase-core.js";
+      import {
+        doc,
+        getDoc,
+        updateDoc,
+      } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
+      import { uploadProfilePhoto } from "../../scripts/upload/cloud-upload.js";
+      import profileDashboardManager from "../profile_dashboard/pd_scripts/profile-dashboard-manager.js";
+
+      console.log("[PROFILE EDIT] Initializing editor");
+      const sectionsEl = document.getElementById("sections");
+      const saveBtn = document.getElementById("saveBtn");
+      const backBtn = document.getElementById("backBtn");
+      const nameEl = document.getElementById("editName");
+      const bioEl = document.getElementById("editBio");
+      const photoEl = document.getElementById("editPhotoFile");
+
+      // Enable drag-and-drop reordering of cards
+      Sortable.create(sectionsEl, {
+        handle: ".section-handle",
+        animation: 150,
+        ghostClass: "sortable-ghost",
+        chosenClass: "sortable-chosen",
+        onEnd: () => console.log("[PROFILE EDIT] Sections reordered"),
+      });
+
+      async function loadProfile() {
+        console.log("[PROFILE EDIT] Loading profile");
+        const user = auth.currentUser;
+        if (!user) return;
+        const snap = await getDoc(doc(db, "users", user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          nameEl.value = data.name || data.displayName || "";
+          bioEl.value = data.bio || "";
+
+          // Load dashboard settings
+          if (data.dashboardSettings) {
+            loadDashboardSettings(data.dashboardSettings);
+          }
+        }
+      }
+
+      function loadDashboardSettings(settings) {
+        console.log("[PROFILE EDIT] Loading dashboard settings", settings);
+
+        // Layout
+        const layoutSelect = document.getElementById("dashboardLayout");
+        if (layoutSelect) layoutSelect.value = settings.layout || "grid";
+
+        // Theme
+        const themeSelect = document.getElementById("dashboardTheme");
+        if (themeSelect) themeSelect.value = settings.theme || "neo-brutalist";
+
+        // Colors
+        const primaryColor = document.getElementById("primaryColor");
+        if (primaryColor)
+          primaryColor.value = settings.customColors?.primary || "#00ffff";
+
+        const secondaryColor = document.getElementById("secondaryColor");
+        if (secondaryColor)
+          secondaryColor.value = settings.customColors?.secondary || "#ff00ff";
+
+        const accentColor = document.getElementById("accentColor");
+        if (accentColor)
+          accentColor.value = settings.customColors?.accent || "#ffff00";
+
+        // Widget styling
+        const widgetBorderColor = document.getElementById("widgetBorderColor");
+        if (widgetBorderColor)
+          widgetBorderColor.value =
+            settings.widgetDefaults?.borderColor || "#00ffff";
+
+        const widgetBorderWidth = document.getElementById("widgetBorderWidth");
+        if (widgetBorderWidth)
+          widgetBorderWidth.value =
+            settings.widgetDefaults?.borderWidth || "3px";
+
+        const widgetBorderRadius =
+          document.getElementById("widgetBorderRadius");
+        if (widgetBorderRadius)
+          widgetBorderRadius.value =
+            settings.widgetDefaults?.borderRadius || "0px";
+
+        const widgetHeight = document.getElementById("widgetHeight");
+        if (widgetHeight)
+          widgetHeight.value = settings.widgetDefaults?.height || "300px";
+
+        // Spacing
+        const widgetGap = document.getElementById("widgetGap");
+        if (widgetGap) widgetGap.value = settings.spacing?.widgetGap || "24px";
+
+        // Animations
+        const animationsEnabled = document.getElementById("animationsEnabled");
+        if (animationsEnabled)
+          animationsEnabled.checked = settings.animations?.enabled !== false;
+      }
+
+      async function saveProfile() {
+        const user = auth.currentUser;
+        if (!user) return;
+        const name = nameEl.value.trim();
+        const payload = {
+          name,
+          displayName: name,
+          bio: bioEl.value.trim(),
+          updatedAt: new Date(),
+        };
+
+        // Save dashboard settings
+        const dashboardSettings = getDashboardSettingsFromForm();
+        if (dashboardSettings) {
+          payload.dashboardSettings = dashboardSettings;
+        }
+
+        if (photoEl.files && photoEl.files[0]) {
+          console.log("[PROFILE EDIT] Uploading new profile photo");
+          try {
+            const res = await uploadProfilePhoto(photoEl.files[0]);
+            payload.photoURL = res.photoURL;
+          } catch (e) {
+            console.warn("[PROFILE EDIT] Photo upload failed", e);
+          }
+        }
+        await updateDoc(doc(db, "users", user.uid), payload);
+        console.log("[PROFILE EDIT] Profile saved");
+        alert("Saved!");
+      }
+
+      function getDashboardSettingsFromForm() {
+        try {
+          const layout =
+            document.getElementById("dashboardLayout")?.value || "grid";
+          const theme =
+            document.getElementById("dashboardTheme")?.value || "neo-brutalist";
+          const primaryColor =
+            document.getElementById("primaryColor")?.value || "#00ffff";
+          const secondaryColor =
+            document.getElementById("secondaryColor")?.value || "#ff00ff";
+          const accentColor =
+            document.getElementById("accentColor")?.value || "#ffff00";
+          const widgetBorderColor =
+            document.getElementById("widgetBorderColor")?.value || "#00ffff";
+          const widgetBorderWidth =
+            document.getElementById("widgetBorderWidth")?.value || "3px";
+          const widgetBorderRadius =
+            document.getElementById("widgetBorderRadius")?.value || "0px";
+          const widgetHeight =
+            document.getElementById("widgetHeight")?.value || "300px";
+          const widgetGap =
+            document.getElementById("widgetGap")?.value || "24px";
+          const animationsEnabled =
+            document.getElementById("animationsEnabled")?.checked !== false;
+
+          return {
+            layout,
+            theme,
+            customColors: {
+              primary: primaryColor,
+              secondary: secondaryColor,
+              accent: accentColor,
+              background: "#0a0a0a",
+              text: "#ffffff",
+            },
+            widgetDefaults: {
+              borderColor: widgetBorderColor,
+              borderWidth: widgetBorderWidth,
+              borderRadius: widgetBorderRadius,
+              width: "100%",
+              height: widgetHeight,
+              shadow: `0 0 20px ${widgetBorderColor}40`,
+            },
+            spacing: {
+              widgetGap: widgetGap,
+              sectionPadding: "40px",
+              cardPadding: "24px",
+            },
+            animations: {
+              enabled: animationsEnabled,
+              duration: "0.3s",
+              easing: "ease-out",
+            },
+          };
+        } catch (error) {
+          console.error(
+            "[PROFILE EDIT] Error getting dashboard settings",
+            error
+          );
+          return null;
+        }
+      }
+
+      // Dashboard action buttons
+      const previewBtn = document.getElementById("previewDashboard");
+      const resetBtn = document.getElementById("resetDashboard");
+      const exportBtn = document.getElementById("exportDashboard");
+
+      if (previewBtn) {
+        previewBtn.addEventListener("click", () => {
+          console.log("[PROFILE EDIT] Previewing dashboard settings");
+          const settings = getDashboardSettingsFromForm();
+          if (settings && profileDashboardManager) {
+            profileDashboardManager.previewDashboardSettings(
+              settings.widgetDefaults
+            );
+          }
+        });
+      }
+
+      if (resetBtn) {
+        resetBtn.addEventListener("click", () => {
+          console.log("[PROFILE EDIT] Resetting dashboard settings");
+          if (profileDashboardManager) {
+            profileDashboardManager.resetToDefaults();
+            loadDashboardSettings(
+              profileDashboardManager.getDefaultDashboardSettings()
+            );
+          }
+        });
+      }
+
+      if (exportBtn) {
+        exportBtn.addEventListener("click", () => {
+          console.log("[PROFILE EDIT] Exporting dashboard settings");
+          if (profileDashboardManager) {
+            profileDashboardManager.exportSettings();
+          }
+        });
+      }
+
+      backBtn.addEventListener("click", () => {
+        history.length > 1
+          ? history.back()
+          : (window.location.href = "../index.html");
+      });
+      saveBtn.addEventListener("click", saveProfile);
+
+      // Wait for auth to be ready
+      if (auth.currentUser) {
+        console.log("[PROFILE EDIT] Auth ready, user present");
+        loadProfile();
+      } else {
+        console.log("[PROFILE EDIT] Waiting for auth state…");
+        const unsub = onAuthStateChanged(auth, (user) => {
+          unsub();
+          if (!user) {
+            console.log("[PROFILE EDIT] No user, redirecting");
+            window.location.href = "../index.html";
+          } else {
+            console.log("[PROFILE EDIT] User detected, loading profile");
+            loadProfile();
+          }
+        });
+      }
+    </script>
+  </body>
+</html>
