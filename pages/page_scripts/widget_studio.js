@@ -12,7 +12,7 @@ import {
   getDocs,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import cloudUploadManager from "../../scripts/upload/cloud-upload.js";
-import profileDashboardManager from "../../scripts/widgets/profile-dashboard-manager.js";
+import profileDashboardManager from "../profile_dashboard/pd_scripts/profile-dashboard-manager.js";
 
 class WidgetStudioManager {
   constructor() {

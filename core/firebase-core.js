@@ -14,11 +14,6 @@ import {
   onAuthStateChanged,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 import { getStorage } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-storage.js";
-// Import functions only when needed to avoid circular dependencies
-// import { uploadWidgetToSlot } from "../scripts/upload/upload.js";
-// import { saveWidgetSlotMetadata } from "../scripts/widgets/project-manager.js";
-
-// Debug logging utility
 const DEBUG = {
   log: (message, data = null) => {
     console.log(`[DEBUG] Firebase Core: ${message}`, data || "");
