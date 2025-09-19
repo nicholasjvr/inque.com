@@ -1,0 +1,2046 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>My Projects - inque</title>
+    <link rel="stylesheet" href="../core/styles.css" />
+    <link rel="stylesheet" href="page_styles/users.css" />
+    <link rel="stylesheet" href="page_styles/widget_studio.css" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
+    <style>
+      /* My Projects specific styles */
+      :root {
+        --projects-primary: #00f0ff;
+        --projects-secondary: #ff00ff;
+        --projects-accent: #ffff00;
+        --projects-bg: #0a0a0a;
+        --projects-surface: #1a1a1a;
+        --projects-border: #333;
+        --projects-text: #ffffff;
+        --projects-text-secondary: #a0a0a0;
+      }
+
+      body {
+        background: var(--projects-bg);
+        color: var(--projects-text);
+        font-family:
+          "Inter",
+          -apple-system,
+          BlinkMacSystemFont,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+      }
+
+      .projects-header {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          var(--projects-bg) 100%
+        );
+        border-bottom: 2px solid var(--projects-primary);
+        box-shadow: 0 4px 20px rgba(0, 240, 255, 0.1);
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+      }
+
+      .header-content {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .header-left {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+      }
+
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 8px;
+        color: var(--projects-primary);
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .back-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+      }
+
+      .page-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin: 0;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+      }
+
+      .projects-main {
+        padding: 2rem;
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .projects-grid {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 2rem;
+      }
+
+      .projects-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .projects-content {
+        display: flex;
+        flex-direction: column;
+        gap: 1.5rem;
+      }
+
+      .projects-section {
+        background: var(--projects-surface);
+        border: 1px solid var(--projects-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+      }
+
+      .projects-section:hover {
+        border-color: var(--projects-primary);
+        box-shadow: 0 8px 32px rgba(0, 240, 255, 0.1);
+      }
+
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--projects-border);
+      }
+
+      .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--projects-primary);
+        margin: 0;
+      }
+
+      .section-actions {
+        display: flex;
+        gap: 0.5rem;
+      }
+
+      .quick-action-btn {
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 6px;
+        color: var(--projects-primary);
+        cursor: pointer;
+        font-size: 0.9rem;
+        transition: all 0.2s ease;
+      }
+
+      .quick-action-btn:hover {
+        background: rgba(0, 240, 255, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Profile Card */
+      .profile-card {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          rgba(0, 240, 255, 0.05) 100%
+        );
+        border: 2px solid var(--projects-primary);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        margin: 0 auto 1rem auto;
+        border: 4px solid var(--projects-primary);
+        box-shadow: 0 0 30px rgba(0, 240, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 3rem;
+      }
+
+      .profile-name {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--projects-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .profile-bio {
+        color: var(--projects-text-secondary);
+        margin-bottom: 1rem;
+        line-height: 1.5;
+      }
+
+      .profile-stats {
+        display: flex;
+        justify-content: center;
+        gap: 2rem;
+        margin-top: 1rem;
+      }
+
+      .stat-item {
+        text-align: center;
+      }
+
+      .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--projects-primary);
+      }
+
+      .stat-label {
+        font-size: 0.8rem;
+        color: var(--projects-text-secondary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      /* Timeline Section */
+      .timeline-section {
+        max-height: 600px;
+        overflow-y: auto;
+      }
+
+      .timeline-event {
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s ease;
+      }
+
+      .timeline-event:hover {
+        border-color: var(--projects-primary);
+        background: rgba(0, 240, 255, 0.05);
+      }
+
+      .timeline-event-title {
+        font-weight: 600;
+        color: var(--projects-primary);
+        margin-bottom: 0.5rem;
+      }
+
+      .timeline-event-content {
+        color: var(--projects-text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Quick Actions Grid */
+      .quick-actions-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+      }
+
+      .quick-action-card {
+        background: var(--projects-surface);
+        border: 1px solid var(--projects-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        color: var(--projects-text);
+      }
+
+      .quick-action-card:hover {
+        border-color: var(--projects-primary);
+        background: rgba(0, 240, 255, 0.05);
+        transform: translateY(-4px);
+        box-shadow: 0 8px 25px rgba(0, 240, 255, 0.2);
+      }
+
+      .quick-action-icon {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+        display: block;
+      }
+
+      .quick-action-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--projects-primary);
+      }
+
+      .quick-action-description {
+        font-size: 0.9rem;
+        color: var(--projects-text-secondary);
+        line-height: 1.4;
+      }
+
+      /* Auth Section */
+      .auth-section {
+        background: linear-gradient(
+          135deg,
+          var(--projects-surface) 0%,
+          rgba(255, 0, 255, 0.05) 100%
+        );
+        border: 2px solid var(--projects-secondary);
+      }
+
+      .auth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+
+      .auth-input {
+        padding: 0.75rem;
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 6px;
+        color: var(--projects-text);
+        font-size: 0.95rem;
+      }
+
+      .auth-input:focus {
+        outline: none;
+        border-color: var(--projects-primary);
+        box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+      }
+
+      .auth-button {
+        padding: 0.75rem 1.5rem;
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        border: none;
+        border-radius: 6px;
+        color: var(--projects-bg);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s ease;
+      }
+
+      .auth-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+      }
+
+      /* Toast Notifications */
+      .toast-container {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .toast {
+        background: var(--projects-bg);
+        border: 1px solid var(--projects-border);
+        border-radius: 8px;
+        padding: 15px 20px;
+        min-width: 300px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        animation: slideInRight 0.3s ease-out;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .toast.success {
+        border-color: #10b981;
+      }
+
+      .toast.success .toast-icon {
+        color: #10b981;
+      }
+
+      .toast.error {
+        border-color: #ef4444;
+      }
+
+      .toast.error .toast-icon {
+        color: #ef4444;
+      }
+
+      .toast.info {
+        border-color: #3b82f6;
+      }
+
+      .toast.info .toast-icon {
+        color: #3b82f6;
+      }
+
+      .toast.warning {
+        border-color: #f59e0b;
+      }
+
+      .toast.warning .toast-icon {
+        color: #f59e0b;
+      }
+
+      .toast-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+      }
+
+      .toast-content {
+        flex: 1;
+      }
+
+      .toast-message {
+        color: var(--projects-text);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      .toast-close {
+        background: none;
+        border: none;
+        color: var(--projects-text-secondary);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+        flex-shrink: 0;
+        font-size: 18px;
+      }
+
+      .toast-close:hover {
+        background: var(--projects-border);
+        color: var(--projects-text);
+      }
+
+      @keyframes slideInRight {
+        from {
+          transform: translateX(100%);
+          opacity: 0;
+        }
+
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      /* Chatbot Modal Styles */
+      .chatbot-modal-content {
+        background: var(--projects-surface);
+        border: 2px solid var(--projects-primary);
+        border-radius: 16px;
+        max-width: 500px;
+        width: 90%;
+        max-height: 80vh;
+        overflow: hidden;
+      }
+
+      .chatbot-container {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 1rem;
+        max-height: 300px;
+      }
+
+      .message {
+        display: flex;
+        margin-bottom: 1rem;
+        align-items: flex-start;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        background: var(--projects-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 0.5rem;
+        flex-shrink: 0;
+      }
+
+      .message-content {
+        flex: 1;
+      }
+
+      .message-content p {
+        margin: 0;
+        padding: 0.75rem;
+        border-radius: 12px;
+        line-height: 1.4;
+      }
+
+      .ai-message .message-content p {
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+      }
+
+      .user-message .message-content p {
+        background: rgba(255, 0, 255, 0.1);
+        border: 1px solid var(--projects-secondary);
+        margin-left: auto;
+      }
+
+      .chat-input-container {
+        display: flex;
+        gap: 0.5rem;
+        padding: 1rem;
+        border-top: 1px solid var(--projects-border);
+      }
+
+      .chat-input {
+        flex: 1;
+        padding: 0.75rem;
+        border: 1px solid var(--projects-border);
+        border-radius: 8px;
+        background: var(--projects-bg);
+        color: var(--projects-text);
+        font-size: 0.9rem;
+      }
+
+      .chat-input:focus {
+        outline: none;
+        border-color: var(--projects-primary);
+      }
+
+      .send-chat-btn {
+        padding: 0.75rem 1rem;
+        background: var(--projects-primary);
+        color: var(--projects-bg);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      .send-chat-btn:hover {
+        background: rgba(0, 240, 255, 0.8);
+      }
+
+      .chat-suggestions {
+        padding: 1rem;
+        border-top: 1px solid var(--projects-border);
+      }
+
+      .suggestions-title {
+        margin: 0 0 0.5rem 0;
+        font-size: 0.9rem;
+        color: var(--projects-text-secondary);
+      }
+
+      .suggestion-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+      }
+
+      .suggestion-chip {
+        padding: 0.5rem 1rem;
+        background: rgba(0, 240, 255, 0.1);
+        border: 1px solid var(--projects-primary);
+        border-radius: 20px;
+        color: var(--projects-primary);
+        cursor: pointer;
+        font-size: 0.8rem;
+        transition: all 0.2s ease;
+      }
+
+      .suggestion-chip:hover {
+        background: rgba(0, 240, 255, 0.2);
+      }
+
+      /* Modal Styles */
+      .modal {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        backdrop-filter: blur(5px);
+      }
+
+      .modal-content {
+        background: var(--projects-surface);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 240, 255, 0.3);
+        max-width: 90vw;
+        max-height: 90vh;
+        overflow: hidden;
+      }
+
+      .modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--projects-border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .modal-title {
+        margin: 0;
+        color: var(--projects-primary);
+        font-size: 1.25rem;
+      }
+
+      .close-button {
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: var(--projects-primary);
+        background: none;
+        border: none;
+        padding: 0.25rem;
+        border-radius: 50%;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s ease;
+      }
+
+      .close-button:hover {
+        background: rgba(0, 240, 255, 0.1);
+      }
+
+      .modal-body {
+        padding: 1.5rem;
+      }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .projects-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .header-content {
+          padding: 1rem;
+          flex-direction: column;
+          gap: 1rem;
+          text-align: center;
+        }
+
+        .page-title {
+          font-size: 1.5rem;
+        }
+
+        .projects-main {
+          padding: 1rem;
+        }
+
+        .profile-stats {
+          gap: 1rem;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .projects-main {
+          padding: 0.75rem;
+        }
+
+        .projects-section {
+          padding: 1rem;
+        }
+
+        .quick-actions-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Customer Service Button Styles */
+      .customer-service-button {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        z-index: 9999;
+        cursor: pointer;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+      }
+
+      .cs-button-main {
+        background: linear-gradient(
+          135deg,
+          var(--projects-primary),
+          var(--projects-secondary)
+        );
+        border: 3px solid var(--projects-primary);
+        border-radius: 50px;
+        padding: 16px 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--projects-bg);
+        font-family: "JetBrains Mono", monospace;
+        font-weight: 600;
+        font-size: 14px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        box-shadow:
+          0 8px 32px rgba(0, 240, 255, 0.4),
+          0 0 0 1px rgba(0, 240, 255, 0.2),
+          inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        position: relative;
+        overflow: hidden;
+        backdrop-filter: blur(10px);
+        min-width: 160px;
+        justify-content: center;
+      }
+
+      .cs-button-main:hover {
+        transform: translateY(-4px) scale(1.05);
+        box-shadow:
+          0 12px 48px rgba(0, 240, 255, 0.6),
+          0 0 0 2px rgba(0, 240, 255, 0.4),
+          inset 0 2px 0 rgba(255, 255, 255, 0.4);
+        background: linear-gradient(
+          135deg,
+          var(--projects-secondary),
+          var(--projects-accent)
+        );
+      }
+
+      .cs-button-main:active {
+        transform: translateY(-2px) scale(1.02);
+        transition: all 0.1s ease;
+      }
+
+      .cs-icon {
+        font-size: 20px;
+        animation: csIconBounce 2s ease-in-out infinite;
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+      }
+
+      .cs-text {
+        white-space: nowrap;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      .cs-pulse-ring {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 100%;
+        height: 100%;
+        border: 2px solid var(--projects-primary);
+        border-radius: 50px;
+        opacity: 0;
+        animation: csPulseRing 3s ease-out infinite;
+        pointer-events: none;
+      }
+
+      .cs-notification-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #ff4757;
+        color: var(--projects-bg);
+        border: 2px solid var(--projects-bg);
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+        font-family: "JetBrains Mono", monospace;
+        box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        animation: csBadgePulse 1.5s ease-in-out infinite;
+      }
+
+      /* Animations */
+      @keyframes csIconBounce {
+        0%,
+        100% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-2px);
+        }
+      }
+
+      @keyframes csPulseRing {
+        0% {
+          transform: translate(-50%, -50%) scale(1);
+          opacity: 1;
+        }
+        100% {
+          transform: translate(-50%, -50%) scale(1.4);
+          opacity: 0;
+        }
+      }
+
+      @keyframes csBadgePulse {
+        0%,
+        100% {
+          transform: scale(1);
+          box-shadow: 0 2px 8px rgba(255, 71, 87, 0.4);
+        }
+        50% {
+          transform: scale(1.1);
+          box-shadow: 0 4px 16px rgba(255, 71, 87, 0.6);
+        }
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 768px) {
+        .customer-service-button {
+          bottom: 20px;
+          right: 20px;
+        }
+
+        .cs-button-main {
+          padding: 12px 20px;
+          font-size: 12px;
+          min-width: 140px;
+        }
+
+        .cs-icon {
+          font-size: 18px;
+        }
+
+        .cs-notification-badge {
+          width: 20px;
+          height: 20px;
+          font-size: 10px;
+          top: -6px;
+          right: -6px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .customer-service-button {
+          bottom: 15px;
+          right: 15px;
+        }
+
+        .cs-button-main {
+          padding: 10px 16px;
+          font-size: 11px;
+          min-width: 120px;
+          gap: 8px;
+        }
+
+        .cs-icon {
+          font-size: 16px;
+        }
+      }
+
+      /* Hide on very small screens */
+      @media (max-width: 360px) {
+        .customer-service-button {
+          bottom: 10px;
+          right: 10px;
+        }
+
+        .cs-button-main {
+          padding: 8px 12px;
+          font-size: 10px;
+          min-width: 100px;
+        }
+
+        .cs-text {
+          display: none;
+        }
+      }
+
+      /* Animation for first appearance */
+      .customer-service-button {
+        animation: csSlideIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        opacity: 0;
+        transform: translateX(100px);
+      }
+
+      @keyframes csSlideIn {
+        0% {
+          opacity: 0;
+          transform: translateX(100px);
+        }
+        100% {
+          opacity: 1;
+          transform: translateX(0);
+        }
+      }
+
+      /* Chatbot Card Styles */
+      .chatbot-card {
+        position: fixed;
+        bottom: 30px;
+        right: 30px;
+        width: min(450px, 35vw);
+        height: min(600px, 70vh);
+        background: var(--bg-secondary);
+        border: 3px solid var(--primary-neon);
+        border-radius: 16px;
+        box-shadow:
+          0 20px 60px rgba(0, 255, 255, 0.3),
+          0 0 0 1px rgba(0, 255, 255, 0.2),
+          inset 0 2px 0 rgba(255, 255, 255, 0.1);
+        display: flex;
+        flex-direction: column;
+        transform: translateX(100%) translateY(20px);
+        opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 9999;
+        backdrop-filter: blur(15px);
+        overflow: hidden;
+      }
+
+      .chatbot-card.open {
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+
+      .chatbot-card.minimized {
+        height: 70px;
+        width: min(350px, 28vw);
+        transform: translateX(0) translateY(0);
+        opacity: 1;
+      }
+
+      .chatbot-card.minimized .chatbot-card-body {
+        display: none;
+      }
+
+      .chatbot-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        background: linear-gradient(
+          135deg,
+          var(--bg-tertiary),
+          var(--bg-secondary)
+        );
+        border-bottom: 2px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .chatbot-header-info {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .chatbot-avatar {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-neon),
+          var(--secondary-neon)
+        );
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        color: var(--bg-primary);
+        border: 2px solid var(--primary-neon);
+        box-shadow: 0 4px 12px rgba(0, 255, 255, 0.4);
+      }
+
+      .chatbot-title h3 {
+        margin: 0;
+        color: var(--text-primary);
+        font-size: 16px;
+        font-weight: 600;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .chatbot-status {
+        color: var(--success-neon);
+        font-size: 12px;
+        font-family: "JetBrains Mono", monospace;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .chatbot-status::before {
+        content: "●";
+        animation: statusPulse 2s ease-in-out infinite;
+      }
+
+      @keyframes statusPulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .chatbot-controls {
+        display: flex;
+        gap: 8px;
+      }
+
+      .chatbot-minimize-btn,
+      .chatbot-close-btn {
+        width: 28px;
+        height: 28px;
+        border-radius: 50%;
+        border: 2px solid var(--primary-neon);
+        background: var(--bg-primary);
+        color: var(--primary-neon);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        font-family: "JetBrains Mono", monospace;
+        user-select: none;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        position: relative;
+        z-index: 10;
+      }
+
+      .chatbot-minimize-btn:hover {
+        background: var(--warning-neon);
+        border-color: var(--warning-neon);
+        color: var(--bg-primary);
+        transform: scale(1.1);
+      }
+
+      .chatbot-close-btn:hover {
+        background: var(--error-neon);
+        border-color: var(--error-neon);
+        color: var(--bg-primary);
+        transform: scale(1.1);
+      }
+
+      .chatbot-card-body {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .chatbot-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: var(--bg-primary);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .message {
+        display: flex;
+        gap: 12px;
+        align-items: flex-start;
+      }
+
+      .message-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+        flex-shrink: 0;
+        background: var(--bg-tertiary);
+        border: 2px solid var(--primary-neon);
+      }
+
+      .user-message .message-avatar {
+        background: var(--primary-neon);
+        color: var(--bg-primary);
+      }
+
+      .ai-message .message-avatar {
+        background: var(--secondary-neon);
+        color: var(--bg-primary);
+      }
+
+      .message-content {
+        flex: 1;
+        background: var(--bg-secondary);
+        padding: 12px 16px;
+        border-radius: 12px;
+        border: 1px solid var(--primary-neon);
+        box-shadow: 0 2px 8px rgba(0, 255, 255, 0.1);
+        position: relative;
+      }
+
+      .user-message .message-content {
+        background: rgba(0, 255, 255, 0.1);
+        border-color: var(--primary-neon);
+      }
+
+      .ai-message .message-content {
+        background: rgba(255, 0, 255, 0.1);
+        border-color: var(--secondary-neon);
+      }
+
+      .message-content p {
+        margin: 0;
+        color: var(--text-primary);
+        line-height: 1.5;
+        font-size: 14px;
+      }
+
+      .chatbot-input-container {
+        display: flex;
+        padding: 16px;
+        gap: 12px;
+        background: var(--bg-secondary);
+        border-top: 2px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .chatbot-input {
+        flex: 1;
+        background: var(--bg-primary);
+        border: 2px solid var(--primary-neon);
+        color: var(--text-primary);
+        padding: 12px 16px;
+        border-radius: 12px;
+        font-family: "JetBrains Mono", monospace;
+        font-size: 14px;
+        outline: none;
+        transition: all 0.3s ease;
+      }
+
+      .chatbot-input:focus {
+        border-color: var(--secondary-neon);
+        box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+      }
+
+      .chatbot-send-btn {
+        width: 44px;
+        height: 44px;
+        background: linear-gradient(
+          135deg,
+          var(--primary-neon),
+          var(--secondary-neon)
+        );
+        border: 2px solid var(--primary-neon);
+        border-radius: 12px;
+        color: var(--bg-primary);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+      }
+
+      .chatbot-send-btn:hover {
+        transform: translateY(-2px) scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 255, 255, 0.4);
+      }
+
+      .chatbot-send-btn:active {
+        transform: translateY(0) scale(1);
+      }
+
+      .chatbot-suggestions {
+        padding: 16px;
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--primary-neon);
+        flex-shrink: 0;
+      }
+
+      .suggestions-title {
+        color: var(--text-secondary);
+        font-size: 11px;
+        margin: 0 0 12px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-family: "JetBrains Mono", monospace;
+      }
+
+      .suggestion-chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+      }
+
+      .suggestion-chip {
+        background: rgba(0, 255, 255, 0.1);
+        border: 1px solid var(--primary-neon);
+        color: var(--primary-neon);
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 11px;
+        font-family: "JetBrains Mono", monospace;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .suggestion-chip:hover {
+        background: rgba(0, 255, 255, 0.2);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 8px rgba(0, 255, 255, 0.3);
+      }
+
+      .typing {
+        opacity: 0.7;
+      }
+
+      .typing .message-content p::after {
+        content: "...";
+        animation: typingDots 1.5s infinite;
+      }
+
+      @keyframes typingDots {
+        0%,
+        20% {
+          content: "...";
+        }
+        40% {
+          content: "....";
+        }
+        60% {
+          content: ".....";
+        }
+        80%,
+        100% {
+          content: "......";
+        }
+      }
+
+      /* Responsive breakpoints for chatbot card */
+      @media (max-width: 1200px) {
+        .chatbot-card {
+          width: min(400px, 40vw);
+          height: min(550px, 65vh);
+        }
+
+        .chatbot-card.minimized {
+          width: min(320px, 32vw);
+          height: 65px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .chatbot-card {
+          width: calc(100vw - 40px);
+          height: min(500px, 60vh);
+          bottom: 20px;
+          right: 20px;
+          left: 20px;
+        }
+
+        .chatbot-card.minimized {
+          width: calc(100vw - 40px);
+          height: 60px;
+        }
+
+        .chatbot-messages {
+          padding: 16px;
+        }
+
+        .message-avatar {
+          width: 28px;
+          height: 28px;
+          font-size: 12px;
+        }
+
+        .message-content {
+          padding: 10px 12px;
+        }
+
+        .message-content p {
+          font-size: 13px;
+        }
+
+        .chatbot-input-container {
+          padding: 12px;
+        }
+
+        .chatbot-input {
+          font-size: 13px;
+          padding: 10px 12px;
+        }
+
+        .chatbot-send-btn {
+          width: 40px;
+          height: 40px;
+          font-size: 14px;
+        }
+
+        .suggestion-chips {
+          gap: 4px;
+        }
+
+        .suggestion-chip {
+          padding: 4px 8px;
+          font-size: 10px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .chatbot-card {
+          width: calc(100vw - 20px);
+          bottom: 15px;
+          right: 10px;
+          left: 10px;
+          height: min(450px, 55vh);
+        }
+
+        .chatbot-card.minimized {
+          width: calc(100vw - 20px);
+          height: 55px;
+        }
+
+        .chatbot-header-info {
+          gap: 8px;
+        }
+
+        .chatbot-avatar {
+          width: 32px;
+          height: 32px;
+          font-size: 16px;
+        }
+
+        .chatbot-title h3 {
+          font-size: 14px;
+        }
+
+        .chatbot-status {
+          font-size: 10px;
+        }
+
+        .chatbot-minimize-btn,
+        .chatbot-close-btn {
+          width: 24px;
+          height: 24px;
+          font-size: 12px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Header -->
+    <header class="projects-header">
+      <div class="header-content">
+        <div class="header-left">
+          <a href="../index.html" class="back-btn">
+            <span>←</span>
+            <span>Back to Home</span>
+          </a>
+          <h1 class="page-title">My Projects</h1>
+        </div>
+        <div class="user-info">
+          <div class="user-avatar" id="userAvatar">👤</div>
+          <span id="userName">Loading...</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="projects-main">
+      <!-- Hidden elements for main.js compatibility -->
+      <div style="display: none">
+        <button id="profileLoginBtn">Login</button>
+        <div id="sidebar-nav" style="display: none"></div>
+        <div id="notificationCount" style="display: none">0</div>
+        <div id="notificationList" style="display: none"></div>
+        <div id="markAllReadBtn" style="display: none">Mark All Read</div>
+        <div id="toast-container" style="display: none"></div>
+      </div>
+
+      <div class="projects-grid">
+        <!-- Sidebar -->
+        <div class="projects-sidebar">
+          <!-- Profile Card -->
+          <div class="projects-section profile-card" id="profileSection">
+            <div class="profile-avatar" id="profileAvatar">👤</div>
+            <h2 class="profile-name" id="profileName">Loading...</h2>
+            <p class="profile-bio" id="profileBio">
+              Welcome to your personal project dashboard
+            </p>
+            <div class="profile-stats">
+              <div class="stat-item">
+                <div class="stat-number" id="widgetsCount">0</div>
+                <div class="stat-label">Widgets</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="followersCount">0</div>
+                <div class="stat-label">Followers</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-number" id="viewsCount">0</div>
+                <div class="stat-label">Views</div>
+              </div>
+            </div>
+
+            <!-- Profile Social Stats for main.js compatibility -->
+            <div id="profileSocialStats" style="display: none">
+              <div class="social-stat">
+                <span class="stat-label">Followers:</span>
+                <span class="stat-value" id="profileFollowers">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Following:</span>
+                <span class="stat-value" id="profileFollowing">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Widgets:</span>
+                <span class="stat-value" id="profileWidgets">0</span>
+              </div>
+              <div class="social-stat">
+                <span class="stat-label">Likes:</span>
+                <span class="stat-value" id="profileLikes">0</span>
+              </div>
+            </div>
+
+            <!-- Profile Social Actions for main.js compatibility -->
+            <div id="profileSocialActions" style="display: none">
+              <button id="editProfileSocialBtn">Edit Profile</button>
+              <button id="shareProfileBtn">Share Profile</button>
+              <button id="viewActivityBtn">View Activity</button>
+            </div>
+          </div>
+
+          <!-- Quick Actions -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">Quick Actions</h3>
+            </div>
+            <div class="quick-actions-grid">
+              <a href="widget_studio.html" class="quick-action-card">
+                <span class="quick-action-icon">🎨</span>
+                <div class="quick-action-title">Widget Studio</div>
+                <div class="quick-action-description">
+                  Create and upload new widgets
+                </div>
+              </a>
+              <a href="explore.html" class="quick-action-card">
+                <span class="quick-action-icon">🔍</span>
+                <div class="quick-action-title">Explore</div>
+                <div class="quick-action-description">
+                  Discover widgets from other creators
+                </div>
+              </a>
+              <a href="users.html" class="quick-action-card">
+                <span class="quick-action-icon">👥</span>
+                <div class="quick-action-title">Community</div>
+                <div class="quick-action-description">
+                  Connect with other developers
+                </div>
+              </a>
+              <a href="inventory.html" class="quick-action-card">
+                <span class="quick-action-icon">📦</span>
+                <div class="quick-action-title">Inventory</div>
+                <div class="quick-action-description">
+                  Manage your widget collection
+                </div>
+              </a>
+              <div
+                class="quick-action-card"
+                id="aiAssistantBtn"
+                data-action="openChatbot"
+              >
+                <span class="quick-action-icon">🤖</span>
+                <div class="quick-action-title">AI Assistant</div>
+                <div class="quick-action-description">Get help and answers</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Auth Section (shown when not logged in) -->
+          <div
+            class="projects-section auth-section"
+            id="authSection"
+            style="display: none"
+          >
+            <div class="section-header">
+              <h3 class="section-title">Welcome to inQ</h3>
+            </div>
+
+            <!-- Login Form -->
+            <div id="loginFormContainer">
+              <h4 style="color: var(--projects-primary); margin-bottom: 1rem">
+                Sign In
+              </h4>
+              <form class="auth-form" id="loginForm">
+                <input
+                  type="email"
+                  class="auth-input"
+                  id="loginEmail"
+                  placeholder="Email"
+                  required
+                />
+                <input
+                  type="password"
+                  class="auth-input"
+                  id="loginPassword"
+                  placeholder="Password"
+                  required
+                />
+                <button type="submit" class="auth-button" id="loginBtn">
+                  Sign In
+                </button>
+              </form>
+            </div>
+
+            <!-- Registration Form -->
+            <div id="signupFormContainer" style="display: none">
+              <h4 style="color: var(--projects-primary); margin-bottom: 1rem">
+                Create Account
+              </h4>
+              <form class="auth-form" id="signupForm">
+                <input
+                  type="email"
+                  class="auth-input"
+                  id="signupEmail"
+                  placeholder="Email"
+                  required
+                />
+                <input
+                  type="password"
+                  class="auth-input"
+                  id="signupPassword"
+                  placeholder="Password (min 6 characters)"
+                  minlength="6"
+                  required
+                />
+                <input
+                  type="text"
+                  class="auth-input"
+                  id="signupDisplayName"
+                  placeholder="Display Name (optional)"
+                />
+                <button type="submit" class="auth-button" id="signupBtn">
+                  Create Account
+                </button>
+              </form>
+            </div>
+
+            <!-- Toggle between forms -->
+            <div style="text-align: center; margin-top: 1rem">
+              <div id="loginFormContainer">
+                <span style="color: var(--projects-text-secondary)"
+                  >Don't have an account?
+                </span>
+                <button
+                  class="quick-action-btn"
+                  id="showSignupBtn"
+                  style="
+                    background: none;
+                    border: none;
+                    color: var(--projects-primary);
+                    text-decoration: underline;
+                    padding: 0;
+                    margin-left: 0.5rem;
+                  "
+                >
+                  Sign Up
+                </button>
+              </div>
+              <div id="signupFormContainer" style="display: none">
+                <span style="color: var(--projects-text-secondary)"
+                  >Already have an account?
+                </span>
+                <button
+                  class="quick-action-btn"
+                  id="showLoginBtn"
+                  style="
+                    background: none;
+                    border: none;
+                    color: var(--projects-primary);
+                    text-decoration: underline;
+                    padding: 0;
+                    margin-left: 0.5rem;
+                  "
+                >
+                  Sign In
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="projects-content">
+          <!-- Timeline/Projects Feed -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">Recent Activity</h3>
+              <div class="section-actions">
+                <button class="quick-action-btn" id="refreshTimelineBtn">
+                  🔄 Refresh
+                </button>
+              </div>
+            </div>
+            <div class="timeline-section" id="timelineSection">
+              <!-- Timeline events will be populated here -->
+              <div class="timeline-event" id="timeline-3channel">
+                <div class="timeline-event-title">Welcome to My Projects!</div>
+                <div class="timeline-event-content">
+                  This is your central hub for managing widgets, connecting with
+                  the community, and tracking your creative journey.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- My Widgets Grid -->
+          <div class="projects-section">
+            <div class="section-header">
+              <h3 class="section-title">My Widgets</h3>
+              <div class="section-actions">
+                <a href="widget_studio.html" class="quick-action-btn"
+                  >+ Create New</a
+                >
+              </div>
+            </div>
+            <div id="widgetsGrid" class="neo-grid">
+              <!-- Widgets will be loaded here -->
+              <div
+                class="neo-card"
+                style="
+                  text-align: center;
+                  color: var(--projects-text-secondary);
+                "
+              >
+                <div style="font-size: 3rem; margin-bottom: 1rem">🎨</div>
+                <h3>No widgets yet</h3>
+                <p>Create your first widget in the Widget Studio</p>
+                <a
+                  href="widget_studio.html"
+                  class="quick-action-btn"
+                  style="margin-top: 1rem; display: inline-block"
+                  >Get Started</a
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- AI Chatbot Modal for main.js compatibility -->
+    <div id="chatbotModal" class="modal" style="display: none">
+      <div class="modal-content chatbot-modal-content">
+        <div class="modal-header">
+          <h2 class="modal-title">🤖 AI Assistant</h2>
+          <span class="close-button chatbot-close-button">&times;</span>
+        </div>
+        <div class="modal-body">
+          <div class="chatbot-container">
+            <div class="chat-messages" id="chatMessages">
+              <div class="message ai-message">
+                <div class="message-avatar">🤖</div>
+                <div class="message-content">
+                  <p>
+                    Hello! I'm your AI assistant. I can help you understand the
+                    features of this application, answer questions about
+                    widgets, and guide you through the platform. What would you
+                    like to know?
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div class="chat-input-container">
+              <input
+                type="text"
+                id="chatInput"
+                class="chat-input"
+                placeholder="Ask me anything about the application..."
+                maxlength="500"
+              />
+              <button id="sendChatBtn" class="send-chat-btn">
+                <span class="btn-icon">📤</span>
+                Send
+              </button>
+            </div>
+
+            <div class="chat-suggestions">
+              <p class="suggestions-title">Quick questions you can ask:</p>
+              <div class="suggestion-chips">
+                <button
+                  class="suggestion-chip"
+                  data-question="What is this application about?"
+                >
+                  What is this application about?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="How do I upload a widget?"
+                >
+                  How do I upload a widget?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="What are the main features?"
+                >
+                  What are the main features?
+                </button>
+                <button
+                  class="suggestion-chip"
+                  data-question="How do I edit my profile?"
+                >
+                  How do I edit my profile?
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Floating Customer Service Button -->
+    <div id="customerServiceButton" class="customer-service-button">
+      <div class="cs-button-main" onclick="openChatbot()">
+        <div class="cs-icon">🤖</div>
+        <div class="cs-text">AI Assistant</div>
+      </div>
+      <div class="cs-pulse-ring"></div>
+      <div
+        class="cs-notification-badge"
+        id="csNotificationBadge"
+        style="display: none"
+      >
+        1
+      </div>
+    </div>
+
+    <!-- AI Chatbot Card -->
+    <div id="chatbotCard" class="chatbot-card">
+      <div class="chatbot-card-header">
+        <div class="chatbot-header-info">
+          <div class="chatbot-avatar">🤖</div>
+          <div class="chatbot-title">
+            <h3>AI Assistant</h3>
+            <span class="chatbot-status">Online</span>
+          </div>
+        </div>
+        <div class="chatbot-controls">
+          <button
+            class="chatbot-minimize-btn"
+            id="chatbotMinimizeBtn"
+            title="Minimize"
+          >
+            <span>−</span>
+          </button>
+          <button class="chatbot-close-btn" id="chatbotCloseBtn" title="Close">
+            <span>×</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="chatbot-card-body">
+        <div class="chatbot-messages" id="chatMessages">
+          <div class="message ai-message">
+            <div class="message-avatar">🤖</div>
+            <div class="message-content">
+              <p>
+                Hello! I'm your AI assistant. I can help you understand the
+                features of this application, answer questions about widgets,
+                and guide you through the platform. What would you like to know?
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div class="chatbot-input-container">
+          <input
+            type="text"
+            id="chatInput"
+            class="chatbot-input"
+            placeholder="Ask me anything..."
+            maxlength="500"
+          />
+          <button id="sendChatBtn" class="chatbot-send-btn">
+            <span class="send-icon">📤</span>
+          </button>
+        </div>
+
+        <div class="chatbot-suggestions">
+          <p class="suggestions-title">Quick questions:</p>
+          <div class="suggestion-chips">
+            <button
+              class="suggestion-chip"
+              data-question="What is this application about?"
+            >
+              What is this app about?
+            </button>
+            <button
+              class="suggestion-chip"
+              data-question="How do I upload a widget?"
+            >
+              How do I upload widgets?
+            </button>
+            <button
+              class="suggestion-chip"
+              data-question="What are the main features?"
+            >
+              What are the main features?
+            </button>
+            <button
+              class="suggestion-chip"
+              data-question="How do I edit my profile?"
+            >
+              How do I edit my profile?
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRUD Modals -->
+    <div id="editWidgetModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 520px; width: 92%">
+        <div class="modal-header">
+          <h2 class="modal-title">✏️ Edit Widget</h2>
+          <button class="close-button" id="editWidgetClose">×</button>
+        </div>
+        <div class="modal-body">
+          <form id="editWidgetForm" class="auth-form">
+            <input
+              type="text"
+              id="editWidgetTitle"
+              class="auth-input"
+              placeholder="Title"
+            />
+            <textarea
+              id="editWidgetDescription"
+              class="auth-input"
+              rows="4"
+              placeholder="Description"
+            ></textarea>
+            <input
+              type="text"
+              id="editWidgetTags"
+              class="auth-input"
+              placeholder="Tags (comma separated)"
+            />
+            <button type="submit" class="auth-button" id="saveEditWidgetBtn">
+              Save Changes
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <div id="reuploadModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 560px; width: 92%">
+        <div class="modal-header">
+          <h2 class="modal-title">🔁 Reupload Files</h2>
+          <button class="close-button" id="reuploadClose">×</button>
+        </div>
+        <div class="modal-body">
+          <div
+            style="margin-bottom: 12px; color: var(--projects-text-secondary)"
+          >
+            Select new files to replace the current widget content. We will
+            upload to the same slot and keep your metadata.
+          </div>
+          <input
+            type="file"
+            id="reuploadFileInput"
+            multiple
+            accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+            class="auth-input"
+          />
+          <div id="reuploadProgress" style="display: none; margin-top: 12px">
+            <div
+              style="
+                height: 8px;
+                background: var(--projects-border);
+                border-radius: 6px;
+                overflow: hidden;
+              "
+            >
+              <div
+                id="reuploadProgressFill"
+                style="
+                  height: 8px;
+                  width: 0;
+                  background: linear-gradient(
+                    90deg,
+                    var(--projects-primary),
+                    var(--projects-secondary)
+                  );
+                "
+              ></div>
+            </div>
+            <div
+              id="reuploadProgressText"
+              style="
+                font-size: 0.85rem;
+                margin-top: 6px;
+                color: var(--projects-text-secondary);
+              "
+            >
+              0%
+            </div>
+          </div>
+          <button
+            class="auth-button"
+            id="confirmReuploadBtn"
+            style="margin-top: 12px"
+          >
+            Upload
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="moveModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 420px; width: 92%">
+        <div class="modal-header">
+          <h2 class="modal-title">📦 Move to Slot</h2>
+          <button class="close-button" id="moveClose">×</button>
+        </div>
+        <div class="modal-body">
+          <label
+            style="
+              display: block;
+              margin-bottom: 6px;
+              color: var(--projects-text-secondary);
+            "
+            >Choose destination slot</label
+          >
+          <select id="moveSlotSelect" class="auth-input">
+            <option value="1">Slot 1</option>
+            <option value="2">Slot 2</option>
+            <option value="3">Slot 3</option>
+          </select>
+          <button
+            class="auth-button"
+            id="confirmMoveBtn"
+            style="margin-top: 12px"
+          >
+            Move
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="deleteModal" class="modal" style="display: none">
+      <div class="modal-content neo-card" style="max-width: 420px; width: 92%">
+        <div class="modal-header">
+          <h2 class="modal-title">🗑️ Delete Widget</h2>
+          <button class="close-button" id="deleteClose">×</button>
+        </div>
+        <div class="modal-body">
+          <p style="color: var(--projects-text-secondary); margin-top: 0">
+            This will permanently remove the widget and its files. Continue?
+          </p>
+          <div style="display: flex; gap: 8px; margin-top: 12px">
+            <button
+              class="quick-action-btn"
+              id="cancelDeleteBtn"
+              style="flex: 1"
+            >
+              Cancel
+            </button>
+            <button
+              class="auth-button"
+              id="confirmDeleteBtn"
+              style="
+                flex: 1;
+                background: linear-gradient(135deg, #ef4444, #f59e0b);
+              "
+            >
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Banner Integration -->
+    <div id="profileBannerContainer"></div>
+
+    <!-- Scripts -->
+    <script type="module" src="page_scripts/my-projects.js"></script>
+    <script type="module" src="../scripts/auth/auth.js"></script>
+    <script type="module" src="../scripts/timeline-manager.js"></script>
+    <script type="module" src="../scripts/ui/profile_banner.js"></script>
+    <script type="module" src="page_modals/modal_scripts/chatbot.js"></script>
+  </body>
+</html>

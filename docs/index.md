@@ -169,7 +169,7 @@ firebase deploy
 - `main.js` - Application initialization
 - `core/firebase-core.js` - Firebase configuration
 - `scripts/auth/auth.js` - Authentication system
-- `pages/profile_ dashboard/pd_scripts/widgets/widget-upload.js` - Widget management
+- `scripts/widgets/widget-upload.js` - Widget management
 
 ### Important URLs
 

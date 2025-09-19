@@ -46,7 +46,6 @@ class SocialAuthManager {
     this.authStateListeners = [];
     this.debugMode = true;
     this.hasShownWelcomeThisSession = false;
-    this.authListenerSetUp = false;
 
     // Cache DOM elements
     this.domElements = {};
@@ -127,29 +126,23 @@ class SocialAuthManager {
   async init() {
     this.log("Initializing Social Auth Manager");
 
-    // Only set up auth state listener if not already set up
-    if (!this.authListenerSetUp) {
-      onAuthStateChanged(auth, async (user) => {
-        this.currentUser = user;
-        this.log("Auth state changed", { userId: user?.uid });
+    // Set up auth state listener
+    onAuthStateChanged(auth, async (user) => {
+      this.currentUser = user;
+      this.log("Auth state changed", { userId: user?.uid });
 
-        if (user) {
-          await this.handleUserLogin(user);
-        } else {
-          await this.handleUserLogout();
-        }
+      if (user) {
+        await this.handleUserLogin(user);
+      } else {
+        await this.handleUserLogout();
+      }
 
-        // Notify listeners
-        this.authStateListeners.forEach((listener) => listener(user));
+      // Notify listeners
+      this.authStateListeners.forEach((listener) => listener(user));
 
-        // Dispatch custom event for main.js to listen to
-        this.dispatchAuthStateEvent(user);
-      });
-      this.authListenerSetUp = true;
-      this.log("Auth state listener set up");
-    } else {
-      this.log("Auth state listener already set up, skipping");
-    }
+      // Dispatch custom event for main.js to listen to
+      this.dispatchAuthStateEvent(user);
+    });
 
     // Set up DOM event listeners
     this.setupEventListeners();
@@ -163,7 +156,6 @@ class SocialAuthManager {
         userProfile: this.userProfile,
         isLoading: this.isLoading,
         hasShownWelcome: this.hasShownWelcomeThisSession,
-        authListenerSetUp: this.authListenerSetUp,
       });
     };
   }
@@ -366,7 +358,7 @@ class SocialAuthManager {
     // Import the upload manager if not already available
     if (!window.widgetUploadManager) {
       const { default: widgetUploadManager } = await import(
-        "../../pages/profile_dashboard/pd_scripts/widgets/widget-upload.js"
+        "../widgets/widget-upload.js"
       );
       window.widgetUploadManager = widgetUploadManager;
     }
@@ -1235,8 +1227,95 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Toast notifications - now handled by SocialAuthManager class
 
-  // Note: Auth state changes are now handled by the SocialAuthManager class
-  // The duplicate listener has been removed to prevent conflicts
+  // Handle Auth State Changes with better error handling
+  onAuthStateChanged(auth, async (user) => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const profileUserId = urlParams.get("user");
+
+    if (user) {
+      try {
+        console.log("User authenticated:", user.uid);
+
+        // Only show welcome toast if this is a new login (not page refresh)
+        if (!window.authState || !window.authState.isInitialized) {
+          socialAuth.showToast(
+            `Welcome back, ${user.displayName || user.email}! 🎉`,
+            "success",
+            4000
+          );
+        }
+
+        // Close the auth modal if it's open
+        const authModal = document.getElementById("authModal");
+        if (authModal && authModal.style.display === "block") {
+          authModal.style.display = "none";
+          document.body.style.overflow = "";
+        }
+
+        // Get user profile from Firestore
+        console.log("Fetching user profile from Firestore...");
+        const userDoc = await getDoc(doc(db, "users", user.uid));
+
+        if (userDoc.exists()) {
+          console.log("User profile found:", userDoc.data());
+          const sidebarProfile = userDoc.data();
+          socialAuth.updateSidebarUserInfo(sidebarProfile, true, user.email);
+
+          // Show profile banner for viewed profile (could be self or other)
+          if (profileUserId) {
+            // For now, just show the current user's profile
+            // TODO: Implement fetchAndDisplayProfile for viewing other users
+            socialAuth.updateProfileBanner(sidebarProfile, true);
+          } else {
+            socialAuth.updateProfileBanner(sidebarProfile, true);
+          }
+
+          // Set up notifications for this user
+          socialAuth.setupNotificationListener(user.uid);
+        } else {
+          console.warn(
+            "User profile not found in Firestore, creating default profile"
+          );
+          // Create a default profile if it doesn't exist
+          const defaultUserProfile = {
+            name: user.displayName || user.email.split("@")[0],
+            bio: "A new user ready to create amazing things.",
+            lvl: "LVL • 1",
+            type: "TYPE • NEWB",
+            role: "ROLE • USER",
+            photoURL: defaultProfile.photoURL,
+            email: user.email,
+            createdAt: serverTimestamp(),
+            lastLogin: serverTimestamp(),
+          };
+
+          await setDoc(doc(db, "users", user.uid), defaultUserProfile);
+          socialAuth.updateSidebarUserInfo(
+            defaultUserProfile,
+            true,
+            user.email
+          );
+          socialAuth.updateProfileBanner(defaultUserProfile, true);
+        }
+      } catch (error) {
+        console.error("Error handling auth state change:", error);
+        socialAuth.showToast(
+          "Error loading profile. Please refresh the page.",
+          "error"
+        );
+      }
+    } else {
+      // Not logged in
+      console.log("User not authenticated");
+      socialAuth.updateSidebarUserInfo(defaultProfile, false);
+      socialAuth.updateProfileBanner(defaultProfile, false);
+
+      // Clean up notification listener
+      if (notificationUnsubscribe) {
+        notificationUnsubscribe();
+      }
+    }
+  });
 
   // Social Provider Login
   const handleProviderLogin = async (provider) => {

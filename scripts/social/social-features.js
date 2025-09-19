@@ -34,15 +34,16 @@ class SocialFeaturesManager {
   async setupAuthListener() {
     try {
       this.log("Setting up auth state listener");
+      const { auth, onAuthStateChanged } = await import(
+        "../../core/firebase-core.js"
+      );
+      this.log("Firebase imports successful", {
+        auth: !!auth,
+        onAuthStateChanged: !!onAuthStateChanged,
+      });
 
-      // Listen for auth state changes from the main auth system instead of setting up our own listener
-      window.addEventListener("auth-state-changed", async (e) => {
-        const { user } = e.detail;
+      onAuthStateChanged(auth, async (user) => {
         this.currentUser = user;
-        this.log("Social features received auth state change", {
-          userId: user?.uid,
-        });
-
         if (user) {
           await this.loadUserSocialData(user.uid);
         } else {
@@ -50,8 +51,6 @@ class SocialFeaturesManager {
           this.followers.clear();
         }
       });
-
-      this.log("Social features auth listener set up via main auth system");
     } catch (error) {
       this.error("Failed to setup auth listener", error);
     }
