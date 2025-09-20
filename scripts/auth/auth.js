@@ -1044,6 +1044,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const authModalTitle = document.getElementById("authModalTitle");
   const googleLoginBtn = document.getElementById("googleLoginBtn");
   const githubLoginBtn = document.getElementById("githubLoginBtn");
+  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
 
   // DOM Elements for Profile Banner & Edit
   const profilePicContainer = document.querySelector(".profile-pic-container");
@@ -1266,17 +1267,18 @@ document.addEventListener("DOMContentLoaded", () => {
   // The same buttons handle both cases automatically
 
   // Forgot Password
-  const forgotPasswordForm = document.getElementById("forgotPasswordForm");
   if (forgotPasswordForm) {
     forgotPasswordForm.addEventListener("submit", async (e) => {
       e.preventDefault();
 
       const email = document.getElementById("forgotPasswordEmail").value;
 
+      // Prepare loading state elements before try/finally scope
+      const submitBtn = forgotPasswordForm.querySelector(".auth-submit-btn");
+      const originalText = submitBtn ? submitBtn.textContent : "RESET PASSWORD";
+
       try {
         // Show loading state
-        const submitBtn = forgotPasswordForm.querySelector(".auth-submit-btn");
-        const originalText = submitBtn.textContent;
         submitBtn.textContent = "Sending...";
         submitBtn.disabled = true;
 
@@ -1300,9 +1302,10 @@ document.addEventListener("DOMContentLoaded", () => {
         socialAuth.showToast(errorMessage, "error");
       } finally {
         // Reset button state
-        const submitBtn = forgotPasswordForm.querySelector(".auth-submit-btn");
-        submitBtn.textContent = originalText;
-        submitBtn.disabled = false;
+        if (submitBtn) {
+          submitBtn.textContent = originalText;
+          submitBtn.disabled = false;
+        }
       }
     });
   }
@@ -1315,10 +1318,12 @@ document.addEventListener("DOMContentLoaded", () => {
       const email = document.getElementById("signUpEmail").value;
       const password = document.getElementById("signUpPassword").value;
 
+      // Prepare loading state elements before try/finally scope
+      const submitBtn = signUpForm.querySelector(".auth-submit-btn");
+      const originalText = submitBtn ? submitBtn.textContent : "Create Account";
+
       try {
         // Show loading state
-        const submitBtn = signUpForm.querySelector(".auth-submit-btn");
-        const originalText = submitBtn.textContent;
         submitBtn.textContent = "Creating Account...";
         submitBtn.disabled = true;
 
@@ -1453,9 +1458,10 @@ document.addEventListener("DOMContentLoaded", () => {
         socialAuth.showToast(errorMessage, "error", 5000);
       } finally {
         // Reset button state
-        const submitBtn = signUpForm.querySelector(".auth-submit-btn");
-        submitBtn.textContent = "Create Account";
-        submitBtn.disabled = false;
+        if (submitBtn) {
+          submitBtn.textContent = "Create Account";
+          submitBtn.disabled = false;
+        }
       }
     });
   }

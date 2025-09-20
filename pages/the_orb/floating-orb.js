@@ -870,6 +870,9 @@ class FloatingOrbManager {
           input.value = "";
           // Open chat dock to show the message
           this.openChatDock();
+          if (/Mobi|Android/i.test(navigator.userAgent)) {
+            setTimeout(() => input.blur(), 50);
+          }
         }
       };
 
@@ -926,75 +929,49 @@ class FloatingOrbManager {
   openChatDock() {
     if (!this.chatDock) return;
 
-    // Store current scroll position
+    // Store current scroll position and lock background scroll
     this.scrollPosition = window.pageYOffset;
-
-    // Lock scroll and add smooth behavior
     document.body.style.position = "fixed";
     document.body.style.top = `-${this.scrollPosition}px`;
     document.body.style.width = "100%";
     document.body.style.overflow = "hidden";
 
+    // Pause 3D tilt so it doesn't override positioning
+    if (window.orb3dPauseTilt) window.orb3dPauseTilt();
+
+    // Open dock and UI affordances first so sizes are correct
     this.chatDock.classList.add("open");
-
-    // Add body class to push content down
     document.body.classList.add("chat-dock-open");
-
-    // Update input bar placeholder to show current tab
+    this.inputBar.classList.add("dock-triggered");
     this.updateInputBarPlaceholder();
 
-    // Add visual feedback to input bar
-    this.inputBar.classList.add("dock-triggered");
+    // Compute initial positions after opening to avoid 0-size measurements
+    const setPositions = () => this._centerDockAndOrb();
+    setPositions();
 
     // Move the external input bar into the dock's slot
     try {
       const slot = this.chatDock.querySelector("#dock-input-slot");
-      console.log("[ORB DEBUG] Moving input to dock:", {
-        slot: !!slot,
-        inputBar: !!this.inputBar,
-        slotElement: slot,
-        inputBarElement: this.inputBar,
-      });
-
       if (slot && this.inputBar) {
         this.inputBar.classList.add("inside-dock");
         if (this.inputBar.parentElement !== slot) {
           slot.appendChild(this.inputBar);
-          console.log("[ORB DEBUG] Input moved to dock successfully");
-        } else {
-          console.log("[ORB DEBUG] Input already in dock");
         }
-
-        // Check final state
-        console.log("[ORB DEBUG] Final input state:", {
-          parentElement: this.inputBar.parentElement,
-          classes: this.inputBar.className,
-          computedStyle: window.getComputedStyle(this.inputBar).display,
-          visibility: window.getComputedStyle(this.inputBar).visibility,
-          height: window.getComputedStyle(this.inputBar).height,
-        });
-      } else {
-        console.log("[ORB DEBUG] Missing slot or inputBar:", {
-          slot: !!slot,
-          inputBar: !!this.inputBar,
-        });
       }
     } catch (err) {
       console.error("[ORB DEBUG] Error moving input to dock:", err);
     }
 
-    // Add dim overlay and enhance orb glow
+    // Dim overlay + enhanced glow (visuals only)
     document.body.classList.add("dim-overlay");
     this.orb.classList.add("orb-chat-active");
 
-    // Position orb above the chat dock
-    setTimeout(() => {
-      const dockRect = this.chatDock.getBoundingClientRect();
-      const orbTop = dockRect.top - 100; // Position orb 100px above dock
-      this.orb.style.top = `${orbTop}px`;
-      this.orb.style.left = "50%";
-      this.orb.style.transform = "translateX(-50%) translateY(-50%)";
-    }, 50);
+    // Bind viewport handlers to keep dock/orb visible above mobile keyboard
+    this._bindViewportHandlers();
+
+    // Final nudges after layout settles
+    requestAnimationFrame(() => setPositions());
+    setTimeout(() => setPositions(), 60);
 
     ORB_DEBUG.log("Chat dock opened smoothly");
   }
@@ -1028,6 +1005,7 @@ class FloatingOrbManager {
     this.orb.style.top = "";
     this.orb.style.left = "";
     this.orb.style.transform = "";
+    this.orb.style.position = "";
 
     // Return the input bar to body (under the orb wrapper)
     try {
@@ -1041,7 +1019,57 @@ class FloatingOrbManager {
       }
     } catch {}
 
+    // Unbind viewport handlers and resume tilt
+    this._unbindViewportHandlers();
+    if (window.orb3dResumeTilt) window.orb3dResumeTilt();
+
     ORB_DEBUG.log("Chat dock closed smoothly");
+  }
+
+  _bindViewportHandlers() {
+    if (!window.visualViewport) return;
+    this._vvHandler = () => this._centerDockAndOrb();
+    window.visualViewport.addEventListener("resize", this._vvHandler);
+    window.visualViewport.addEventListener("scroll", this._vvHandler);
+  }
+
+  _unbindViewportHandlers() {
+    if (!window.visualViewport || !this._vvHandler) return;
+    window.visualViewport.removeEventListener("resize", this._vvHandler);
+    window.visualViewport.removeEventListener("scroll", this._vvHandler);
+    this._vvHandler = null;
+  }
+
+  _centerDockAndOrb() {
+    try {
+      if (!this.chatDock || !this.orb) return;
+      const vv = window.visualViewport;
+      const vw = vv ? vv.width : window.innerWidth;
+      const vh = vv ? vv.height : window.innerHeight;
+      const vx = vv ? vv.offsetLeft : 0;
+      const vy = vv ? vv.offsetTop : 0;
+
+      // Measure dock size
+      const rect = this.chatDock.getBoundingClientRect();
+      const w = rect.width || this.chatDock.offsetWidth || 520;
+      const h = rect.height || this.chatDock.offsetHeight || 520;
+
+      const left = vx + (vw - w) / 2;
+      const top = vy + (vh - h) / 2;
+
+      this.chatDock.style.left = `${Math.max(0, left)}px`;
+      this.chatDock.style.top = `${Math.max(0, top)}px`;
+      this.chatDock.style.transform = "none"; // ensure no matrix() remains
+
+      // Orb above dock
+      const orbH = this.orb.getBoundingClientRect().height || 80;
+      const orbCenterX = left + w / 2;
+      const orbTop = Math.max(12, top - orbH - 16);
+      this.orb.style.position = "fixed";
+      this.orb.style.left = `${orbCenterX}px`;
+      this.orb.style.top = `${orbTop}px`;
+      this.orb.style.transform = "translate(-50%, 0)";
+    } catch {}
   }
 
   updateInputBarPlaceholder() {
@@ -1793,7 +1821,12 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // RAF loop for smooth damping
+    let paused = false;
     const tick = () => {
+      if (paused) {
+        requestAnimationFrame(tick);
+        return;
+      }
       const k = 0.12; // stiffness
       const dRX = targetRX - curRX;
       const dRY = targetRY - curRY;
@@ -1828,6 +1861,15 @@ document.addEventListener("DOMContentLoaded", () => {
     setIdle(true);
     requestAnimationFrame(tick);
     ORB3D_LOG("3D tilt engaged. Try moving your pointer around.");
+
+    // Expose pause/resume so manager can lock orb when dock is open
+    window.orb3dPauseTilt = () => {
+      paused = true;
+      orb.style.transform = "translate(-50%,-50%)"; // clear rotations
+    };
+    window.orb3dResumeTilt = () => {
+      paused = false;
+    };
   };
 
   // If orb already exists, init immediately when script runs late

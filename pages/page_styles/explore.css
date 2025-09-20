@@ -419,115 +419,228 @@ main {
 /* === MOBILE OPTIMIZATION === */
 @media (max-width: 768px) {
     .explore-header {
-        padding: 12px 16px;
-    }
-
-    .explore-header h1 {
-        font-size: 1.5rem;
-    }
-
-    .nav-breadcrumb {
-        font-size: 12px;
-        gap: 6px;
-    }
-
-    .breadcrumb-link {
-        padding: 4px 8px;
-        font-size: 12px;
-    }
-
-    .header-actions {
-        gap: 8px;
-    }
-
-    .action-btn {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    main {
-        margin-top: 120px;
-        padding: 16px;
-    }
-
-    .explore-widget-list {
-        grid-template-columns: 1fr;
-        gap: 16px;
-    }
-
-    .explore-widget-card {
-        padding: 20px;
-    }
-
-    .explore-widget-title {
-        font-size: 1.2rem;
-    }
-
-    .explore-widget-preview {
-        height: 160px;
-    }
-}
-
-@media (max-width: 480px) {
-    .explore-header {
-        padding: 10px 12px;
+        padding: 8px 12px;
+        /* Reduced padding */
+        min-height: auto;
     }
 
     .explore-header h1 {
         font-size: 1.3rem;
+        /* Slightly smaller */
+        margin: 0.25rem 0;
+        /* Reduced margin */
     }
 
     .nav-breadcrumb {
-        flex-direction: column;
+        font-size: 11px;
+        /* Smaller font */
         gap: 4px;
+        /* Reduced gap */
+        margin-bottom: 0.25rem;
+        /* Reduced margin */
+    }
+
+    .breadcrumb-link {
+        padding: 3px 6px;
+        /* Reduced padding */
+        font-size: 11px;
+        /* Smaller font */
+        min-height: 32px;
+        /* Touch-friendly */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .header-actions {
-        flex-direction: column;
-        align-items: center;
+        gap: 6px;
+        /* Reduced gap */
+        margin-bottom: 0.25rem;
+        /* Reduced margin */
     }
 
     .action-btn {
-        width: 100%;
-        max-width: 200px;
-        text-align: center;
+        padding: 4px 8px;
+        /* Reduced padding */
+        font-size: 11px;
+        /* Smaller font */
+        min-height: 32px;
+        /* Touch-friendly */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     main {
-        margin-top: 140px;
+        margin-top: 100px;
+        /* Significantly reduced */
         padding: 12px;
+        /* Reduced padding */
+    }
+
+    .explore-widget-list {
+        grid-template-columns: 1fr;
+        /* Single column */
+        gap: 12px;
+        /* Reduced gap */
     }
 
     .explore-widget-card {
-        padding: 16px;
+        padding: 15px;
+        /* Reduced padding */
+        min-height: auto;
+        /* Remove fixed height */
+    }
+
+    .explore-widget-title {
+        font-size: 1.1rem;
+        /* Smaller font */
     }
 
     .explore-widget-preview {
         height: 140px;
-    }
-
-    .widget-actions {
-        flex-direction: column;
-        width: 100%;
-    }
-
-    .widget-action-btn {
-        width: 100%;
-        text-align: center;
+        /* Reduced height */
     }
 
     .explore-widget-actions {
         flex-direction: column;
+        /* Stack buttons vertically */
         gap: 8px;
+        width: 100%;
     }
 
     .explore-profile-link,
     .explore-follow-btn,
     .explore-message-btn {
         width: 100%;
+        /* Full width buttons */
+        padding: 10px 12px;
+        /* Increased padding for touch */
+        font-size: 13px;
+        /* Larger font */
         justify-content: center;
+        min-height: 44px;
+        /* iOS recommended touch target */
+    }
+}
+
+@media (max-width: 480px) {
+    .explore-header {
+        padding: 6px 10px;
+        /* Further reduced */
+        position: relative;
+    }
+
+    .explore-header h1 {
+        font-size: 1.1rem;
+        /* Smaller title */
+        margin: 0.2rem 0;
+    }
+
+    /* Mobile menu toggle button */
+    .mobile-menu-toggle {
+        display: block;
+        background: var(--primary-neon);
+        color: var(--bg-primary);
+        border: var(--border-width) solid var(--primary-neon);
+        border-radius: var(--border-radius);
+        padding: 8px;
+        cursor: pointer;
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 16px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .mobile-menu-toggle:hover {
+        background: var(--bg-primary);
+        color: var(--primary-neon);
+        transform: scale(1.05);
+    }
+
+    .nav-breadcrumb {
+        flex-direction: column;
+        gap: 3px;
+        margin-bottom: 0.2rem;
+        font-size: 10px;
+    }
+
+    .breadcrumb-link {
+        padding: 2px 5px;
+        font-size: 10px;
+        min-height: 28px;
+    }
+
+    .header-actions {
+        display: none;
+        /* Hidden by default */
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        border-top: var(--border-width) solid var(--primary-neon);
+        padding: 8px;
+        box-shadow: var(--shadow-glow);
+        z-index: 999;
+    }
+
+    .header-actions.show {
+        display: flex;
+        /* Show when toggled */
+    }
+
+    .action-btn {
+        width: 100%;
+        max-width: 180px;
+        text-align: center;
+        padding: 6px 10px;
         font-size: 11px;
-        padding: 6px 12px;
+        min-height: 36px;
+    }
+
+    main {
+        margin-top: 80px;
+        /* Much smaller margin */
+        padding: 10px;
+    }
+
+    .explore-widget-list {
+        gap: 10px;
+    }
+
+    .explore-widget-card {
+        padding: 12px;
+    }
+
+    .explore-widget-title {
+        font-size: 1rem;
+    }
+
+    .explore-widget-preview {
+        height: 120px;
+    }
+
+    .explore-widget-actions {
+        gap: 6px;
+    }
+
+    .explore-profile-link,
+    .explore-follow-btn,
+    .explore-message-btn {
+        font-size: 12px;
+        padding: 8px 10px;
+        min-height: 40px;
     }
 
     .message-modal-content {

@@ -242,6 +242,29 @@ class ProfileHubManager {
       this.handleResize();
     });
 
+    // Admin controls (if present)
+    const adminUsersBtn = document.getElementById("adminOpenUsers");
+    const adminRulesBtn = document.getElementById("adminOpenRules");
+    if (adminUsersBtn) {
+      this.addEventListener(adminUsersBtn, "click", () => {
+        console.log("[PROFILE HUB][ADMIN] Opening Users page");
+        window.location.href = "pages/users.html";
+      });
+    }
+    if (adminRulesBtn) {
+      this.addEventListener(adminRulesBtn, "click", () => {
+        console.log("[PROFILE HUB][ADMIN] Attempting to open Firestore rules");
+        try {
+          window.open("/firestore.rules", "_blank");
+        } catch (e) {
+          console.warn(
+            "[PROFILE HUB][ADMIN] Could not open rules in new tab",
+            e
+          );
+        }
+      });
+    }
+
     console.log("[PROFILE HUB] Event listeners set up successfully");
   }
 
@@ -684,6 +707,18 @@ class ProfileHubManager {
       this.dom.userStats.style.display = user.isAuthenticated
         ? "block"
         : "none";
+    }
+
+    // Admin settings visibility
+    const adminSection = document.getElementById("hubAdminSettings");
+    if (adminSection) {
+      const role = (user.profile?.role || "").toString().toUpperCase();
+      adminSection.style.display =
+        user.isAuthenticated && (role === "ADMIN" || role === "SUPERADMIN")
+          ? "block"
+          : "none";
+      const roleLabel = document.getElementById("adminRoleLabel");
+      if (roleLabel && role) roleLabel.textContent = role;
     }
 
     console.log("[PROFILE HUB] User info updated");
@@ -1658,6 +1693,52 @@ async function loadProfileHubHTML() {
   }
 }
 
+// Load and inject Auth Modal HTML once per page
+async function loadAuthModalHTML() {
+  try {
+    if (document.getElementById("authModal")) {
+      return; // Already present
+    }
+
+    const possiblePaths = [
+      "pages/page_modals/user_auth.html",
+      "./pages/page_modals/user_auth.html",
+      "/pages/page_modals/user_auth.html",
+    ];
+
+    let htmlContent = null;
+    let lastError = null;
+
+    for (const path of possiblePaths) {
+      try {
+        const response = await fetch(path);
+        if (response.ok) {
+          htmlContent = await response.text();
+          break;
+        } else {
+          lastError = new Error(
+            `Failed to load Auth Modal HTML from ${path}: ${response.status}`
+          );
+        }
+      } catch (error) {
+        lastError = error;
+      }
+    }
+
+    if (!htmlContent)
+      throw lastError || new Error("Auth Modal HTML load failed");
+
+    // Inject at end of body
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = htmlContent;
+    document.body.appendChild(wrapper);
+
+    console.log("[PROFILE HUB] Auth modal HTML injected");
+  } catch (error) {
+    console.warn("[PROFILE HUB] Could not inject Auth modal:", error);
+  }
+}
+
 // Add this function to create the container if it doesn't exist
 function createProfileHubContainer() {
   const container = document.createElement("div");
@@ -1861,6 +1942,9 @@ async function initializeProfileHubSystem() {
 
     // Load and inject ProfileHub HTML content
     await loadProfileHubHTML();
+
+    // Ensure Auth modal is available on every page
+    await loadAuthModalHTML();
 
     // Wait a bit for DOM to be fully ready
     await new Promise((resolve) => setTimeout(resolve, 200));

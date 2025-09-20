@@ -441,6 +441,106 @@ async function renderWidgets(widgets) {
   }
 }
 
+// Mobile menu functionality
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[EXPLORE DEBUG] Initializing mobile menu functionality");
+
+  // Create mobile menu toggle button
+  const createMobileMenuToggle = () => {
+    if (window.innerWidth <= 480) {
+      const header = document.querySelector(".explore-header");
+      const headerActions = document.querySelector(".header-actions");
+
+      if (
+        header &&
+        headerActions &&
+        !document.querySelector(".mobile-menu-toggle")
+      ) {
+        const mobileToggle = document.createElement("button");
+        mobileToggle.className = "mobile-menu-toggle";
+        mobileToggle.innerHTML = "☰";
+        mobileToggle.setAttribute("aria-label", "Toggle navigation menu");
+
+        header.appendChild(mobileToggle);
+
+        mobileToggle.addEventListener("click", () => {
+          console.log("[EXPLORE DEBUG] Mobile menu toggled");
+          headerActions.classList.toggle("show");
+
+          // Update button icon
+          mobileToggle.innerHTML = headerActions.classList.contains("show")
+            ? "✕"
+            : "☰";
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener("click", (e) => {
+          if (
+            !header.contains(e.target) &&
+            headerActions.classList.contains("show")
+          ) {
+            headerActions.classList.remove("show");
+            mobileToggle.innerHTML = "☰";
+          }
+        });
+      }
+    }
+  };
+
+  // Initialize mobile menu on load
+  createMobileMenuToggle();
+
+  // Re-initialize on resize
+  window.addEventListener("resize", () => {
+    const mobileToggle = document.querySelector(".mobile-menu-toggle");
+    if (mobileToggle && window.innerWidth > 480) {
+      mobileToggle.remove();
+      document.querySelector(".header-actions").classList.remove("show");
+    } else if (window.innerWidth <= 480) {
+      createMobileMenuToggle();
+    }
+  });
+
+  // Initialize lazy loading for better mobile performance
+  initializeLazyLoading();
+});
+
+// Lazy loading functionality for better mobile performance
+function initializeLazyLoading() {
+  console.log(
+    "[EXPLORE DEBUG] Initializing lazy loading for mobile performance"
+  );
+
+  const observerOptions = {
+    root: null,
+    rootMargin: "50px",
+    threshold: 0.1,
+  };
+
+  const imageObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        const iframe = entry.target;
+        if (iframe.dataset.src) {
+          iframe.src = iframe.dataset.src;
+          iframe.removeAttribute("data-src");
+          imageObserver.unobserve(iframe);
+        }
+      }
+    });
+  }, observerOptions);
+
+  // Apply lazy loading to widget previews
+  document.querySelectorAll(".explore-widget-preview").forEach((iframe) => {
+    if (iframe.src) {
+      iframe.dataset.src = iframe.src;
+      iframe.src =
+        'data:text/html,<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#111;color:#888;">Loading...</div>';
+      imageObserver.observe(iframe);
+    }
+  });
+}
+
 document.querySelectorAll(".quick-action-btn").forEach((btn) => {
   if (
     btn

@@ -42,6 +42,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize the app
   initializeApp();
 
+  // Initialize mobile menu functionality
+  initializeMobileMenu();
+
   function initializeApp() {
     console.log(
       "🔧 [USERS PAGE] Setting up modular components and event listeners"
@@ -226,6 +229,66 @@ document.addEventListener("DOMContentLoaded", () => {
 
     themeToggle.addEventListener("click", toggleTheme);
     header.appendChild(themeToggle);
+  }
+
+  function initializeMobileMenu() {
+    console.log("📱 [USERS PAGE] Initializing mobile menu functionality");
+
+    // Create mobile menu toggle button
+    const createMobileMenuToggle = () => {
+      if (window.innerWidth <= 480) {
+        const header = document.querySelector(".page-header");
+        const headerActions = document.querySelector(".header-actions");
+
+        if (
+          header &&
+          headerActions &&
+          !document.querySelector(".mobile-menu-toggle")
+        ) {
+          const mobileToggle = document.createElement("button");
+          mobileToggle.className = "mobile-menu-toggle";
+          mobileToggle.innerHTML = "☰";
+          mobileToggle.setAttribute("aria-label", "Toggle navigation menu");
+
+          header.appendChild(mobileToggle);
+
+          mobileToggle.addEventListener("click", () => {
+            console.log("📱 [USERS PAGE] Mobile menu toggled");
+            headerActions.classList.toggle("show");
+
+            // Update button icon
+            mobileToggle.innerHTML = headerActions.classList.contains("show")
+              ? "✕"
+              : "☰";
+          });
+
+          // Close menu when clicking outside
+          document.addEventListener("click", (e) => {
+            if (
+              !header.contains(e.target) &&
+              headerActions.classList.contains("show")
+            ) {
+              headerActions.classList.remove("show");
+              mobileToggle.innerHTML = "☰";
+            }
+          });
+        }
+      }
+    };
+
+    // Initialize mobile menu on load
+    createMobileMenuToggle();
+
+    // Re-initialize on resize
+    window.addEventListener("resize", () => {
+      const mobileToggle = document.querySelector(".mobile-menu-toggle");
+      if (mobileToggle && window.innerWidth > 480) {
+        mobileToggle.remove();
+        document.querySelector(".header-actions").classList.remove("show");
+      } else if (window.innerWidth <= 480) {
+        createMobileMenuToggle();
+      }
+    });
   }
 
   function handleSearch(e) {

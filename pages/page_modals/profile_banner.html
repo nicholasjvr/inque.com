@@ -39,7 +39,7 @@
         <span class="btn-pulse" id="chatbotPulse"></span>
       </button>
 
-      <button id="hubCustomizeToggle" class="hub-control-btn" title="Explore">
+      <button class="hub-control-btn" title="Explore">
         <span class="btn-icon">explore</span>
       </button>
 
@@ -258,9 +258,47 @@
         <button id="saveCustomization" class="save-btn">Save Changes</button>
         <button id="resetCustomization" class="reset-btn">Reset</button>
       </div>
+
+      <!-- Admin Settings (shown only for ADMIN users) -->
+      <<<<<<< Current (Your changes)
+      <div
+        class="customization-section"
+        id="hubAdminSettings"
+        style="display: none; margin-top: 24px"
+      >
+        <label class="section-label">Admin Controls</label>
+        <div style="display: grid; gap: 10px">
+          <button id="adminOpenUsers" class="neo-button">
+            Open Users Page
+          </button>
+          <button id="adminOpenRules" class="neo-button">
+            View Firestore Rules
+          </button>
+          =======
+          <div
+            class="customization-section"
+            id="hubAdminSettings"
+            style="display: none; margin-top: 24px"
+          >
+            <label class="section-label">Admin Controls</label>
+            <div style="display: grid; gap: 10px">
+              <button id="adminOpenUsers" class="neo-button">
+                Open Users Page
+              </button>
+              <button id="adminOpenRules" class="neo-button">
+                View Firestore Rules
+              </button>
+              >>>>>>> Incoming (Background Agent changes)
+              <div style="font-size: 0.9rem; color: var(--text-secondary)">
+                You are signed in as <span id="adminRoleLabel">ADMIN</span>.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
+
+    <!-- ProfileHub Overlay -->
+    <div id="profileHubOverlay" class="profile-hub-overlay"></div>
   </div>
 </div>
-
-<!-- ProfileHub Overlay -->
-<div id="profileHubOverlay" class="profile-hub-overlay"></div>

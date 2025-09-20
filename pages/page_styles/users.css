@@ -1084,38 +1084,64 @@ body {
 /* === MOBILE OPTIMIZATION === */
 @media (max-width: 768px) {
     .page-header {
-        padding: 12px 16px;
+        padding: 8px 12px;
+        /* Reduced padding */
+        min-height: auto;
     }
 
     .page-header h1 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        /* Smaller title */
+        margin: 0.25rem 0;
     }
 
     .nav-breadcrumb {
-        font-size: 12px;
-        gap: 6px;
+        font-size: 11px;
+        /* Smaller font */
+        gap: 4px;
+        /* Reduced gap */
+        margin-bottom: 0.25rem;
     }
 
     .breadcrumb-link {
-        padding: 4px 8px;
-        font-size: 12px;
+        padding: 3px 6px;
+        /* Reduced padding */
+        font-size: 11px;
+        /* Smaller font */
+        min-height: 32px;
+        /* Touch-friendly */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .header-actions {
-        gap: 8px;
+        gap: 6px;
+        /* Reduced gap */
+        margin-bottom: 0.25rem;
     }
 
     .action-btn {
-        padding: 6px 12px;
-        font-size: 12px;
+        padding: 4px 8px;
+        /* Reduced padding */
+        font-size: 11px;
+        /* Smaller font */
+        min-height: 32px;
+        /* Touch-friendly */
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
 
     /* Enhanced Components Mobile */
     .search-filter-bar {
         flex-direction: column;
-        gap: 15px;
-        margin: 15px 0;
-        padding: 12px;
+        gap: 12px;
+        /* Reduced gap */
+        margin: 10px 0;
+        /* Reduced margin */
+        padding: 10px;
+        /* Reduced padding */
     }
 
     .search-container {
@@ -1127,99 +1153,137 @@ body {
         width: 100%;
         font-size: 16px;
         /* Prevents zoom on iOS */
+        padding: 10px 12px;
+        /* Increased padding for touch */
+        min-height: 44px;
+        /* Touch-friendly */
     }
 
     .filter-container {
         width: 100%;
         justify-content: center;
         flex-wrap: wrap;
+        gap: 8px;
     }
 
     .filter-select,
     .sort-select {
         flex: 1;
         min-width: 120px;
+        padding: 10px 12px;
+        /* Increased padding */
+        min-height: 44px;
+        /* Touch-friendly */
+        font-size: 14px;
+        /* Larger font */
     }
 
     .user-stats-bar {
-        gap: 15px;
-        padding: 15px;
-        margin: 15px 0;
+        gap: 12px;
+        /* Reduced gap */
+        padding: 12px;
+        /* Reduced padding */
+        margin: 10px 0;
+        /* Reduced margin */
     }
 
     .stat-item {
-        min-width: 100px;
-        padding: 12px;
+        min-width: 90px;
+        /* Slightly smaller */
+        padding: 10px;
+        /* Reduced padding */
     }
 
     .stat-number {
-        font-size: 1.5rem;
+        font-size: 1.3rem;
+        /* Smaller */
     }
 
     .theme-toggle-btn {
-        width: 40px;
-        height: 40px;
-        font-size: 16px;
-        top: 15px;
-        right: 15px;
+        width: 36px;
+        /* Smaller */
+        height: 36px;
+        font-size: 14px;
+        top: 8px;
+        /* Adjusted position */
+        right: 8px;
     }
 
     #users-container {
         grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 20px;
-        padding: 20px;
-        margin-top: 160px;
-        /* Reduced for smaller header */
+        gap: 15px;
+        /* Reduced gap */
+        padding: 15px;
+        /* Reduced padding */
+        margin-top: 120px;
+        /* Significantly reduced */
     }
 
     .user-card {
-        min-height: 350px;
+        min-height: auto;
+        /* Remove fixed height */
+        padding: 15px;
+        /* Reduced padding */
     }
 
     .user-card-header {
-        padding: 20px 20px 12px;
+        padding: 15px 15px 10px;
+        /* Reduced padding */
     }
 
     .user-card-pic {
-        width: 80px;
-        height: 80px;
+        width: 70px;
+        /* Smaller */
+        height: 70px;
     }
 
     .user-card-content {
-        padding: 15px;
-        gap: 12px;
+        padding: 12px;
+        /* Reduced padding */
+        gap: 10px;
+        /* Reduced gap */
     }
 
     .user-card-name {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
+        /* Smaller */
     }
 
     .user-card-bio {
-        font-size: 13px;
+        font-size: 12px;
+        /* Smaller */
     }
 
     .user-card-stats {
-        gap: 10px;
+        gap: 8px;
+        /* Reduced gap */
     }
 
     .user-card-stats .stat {
-        padding: 8px;
+        padding: 6px;
+        /* Reduced padding */
     }
 
     .stat-value {
-        font-size: 12px;
+        font-size: 11px;
+        /* Smaller */
     }
 
     .skill-badge {
-        font-size: 10px;
-        padding: 3px 6px;
+        font-size: 9px;
+        /* Smaller */
+        padding: 2px 5px;
+        /* Reduced padding */
     }
 
     .user-card-hover .chat-btn,
     .user-card-hover .view-profile-btn,
     .user-card-hover .follow-btn {
         padding: 10px 16px;
-        font-size: 11px;
+        font-size: 12px;
+        /* Larger font */
+        min-height: 44px;
+        /* Touch-friendly */
     }
 
     .btn-icon {
@@ -1227,11 +1291,13 @@ body {
     }
 
     .btn-text {
-        font-size: 11px;
+        font-size: 12px;
+        /* Larger font */
     }
 
     .notification {
-        top: 80px;
+        top: 60px;
+        /* Adjusted position */
         right: 10px;
         left: 10px;
         max-width: none;
@@ -1256,47 +1322,207 @@ body {
 
 @media (max-width: 480px) {
     .page-header {
-        padding: 10px 12px;
+        padding: 6px 10px;
+        /* Further reduced */
+        position: relative;
     }
 
     .page-header h1 {
-        font-size: 1.1rem;
+        font-size: 1rem;
+        /* Smaller title */
+        margin: 0.2rem 0;
+    }
+
+    /* Mobile menu toggle button */
+    .mobile-menu-toggle {
+        display: block;
+        background: var(--primary-neon);
+        color: var(--bg-primary);
+        border: var(--border-width) solid var(--primary-neon);
+        border-radius: var(--border-radius);
+        padding: 8px;
+        cursor: pointer;
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 16px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        box-shadow: var(--shadow-glow);
+    }
+
+    .mobile-menu-toggle:hover {
+        background: var(--bg-primary);
+        color: var(--primary-neon);
+        transform: scale(1.05);
     }
 
     .nav-breadcrumb {
         flex-direction: column;
-        gap: 4px;
+        gap: 3px;
+        margin-bottom: 0.2rem;
+        font-size: 10px;
+    }
+
+    .breadcrumb-link {
+        padding: 2px 5px;
+        font-size: 10px;
+        min-height: 28px;
     }
 
     .header-actions {
+        display: none;
+        /* Hidden by default */
         flex-direction: column;
         align-items: center;
+        gap: 4px;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: var(--bg-secondary);
+        border-top: var(--border-width) solid var(--primary-neon);
+        padding: 8px;
+        box-shadow: var(--shadow-glow);
+        z-index: 999;
+    }
+
+    .header-actions.show {
+        display: flex;
+        /* Show when toggled */
     }
 
     .action-btn {
         width: 100%;
-        max-width: 200px;
+        max-width: 180px;
         text-align: center;
+        padding: 6px 10px;
+        font-size: 11px;
+        min-height: 36px;
+    }
+
+    /* Enhanced Components Mobile */
+    .search-filter-bar {
+        margin: 8px 0;
+        padding: 8px;
+        gap: 10px;
+    }
+
+    .search-input {
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+        padding: 12px;
+        min-height: 48px;
+    }
+
+    .filter-select,
+    .sort-select {
+        padding: 12px;
+        min-height: 48px;
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+    }
+
+    .user-stats-bar {
+        gap: 8px;
+        padding: 8px;
+        margin: 8px 0;
+    }
+
+    .stat-item {
+        min-width: 80px;
+        padding: 8px;
+    }
+
+    .stat-number {
+        font-size: 1.2rem;
+    }
+
+    .theme-toggle-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+        top: 6px;
+        right: 50px;
+        /* Move left to avoid mobile menu toggle */
     }
 
     #users-container {
         grid-template-columns: 1fr;
-        gap: 15px;
-        padding: 15px;
-        margin-top: 140px;
+        /* Single column */
+        gap: 12px;
+        /* Reduced gap */
+        padding: 12px;
+        /* Reduced padding */
+        margin-top: 100px;
+        /* Much smaller margin */
     }
 
     .user-card {
-        padding: 16px;
+        padding: 12px;
+        /* Reduced padding */
+    }
+
+    .user-card-header {
+        padding: 12px 12px 8px;
     }
 
     .user-card-pic {
-        width: 80px;
-        height: 80px;
+        width: 60px;
+        /* Smaller */
+        height: 60px;
+    }
+
+    .user-card-content {
+        padding: 10px;
+        gap: 8px;
     }
 
     .user-card-name {
-        font-size: 1.2rem;
+        font-size: 1rem;
+        /* Smaller */
+    }
+
+    .user-card-bio {
+        font-size: 11px;
+        /* Smaller */
+    }
+
+    .user-card-stats {
+        gap: 6px;
+    }
+
+    .user-card-stats .stat {
+        padding: 4px;
+    }
+
+    .stat-value {
+        font-size: 10px;
+    }
+
+    .skill-badge {
+        font-size: 8px;
+        padding: 2px 4px;
+    }
+
+    .user-card-hover .chat-btn,
+    .user-card-hover .view-profile-btn,
+    .user-card-hover .follow-btn {
+        padding: 8px 12px;
+        font-size: 11px;
+        min-height: 40px;
+    }
+
+    .btn-icon {
+        font-size: 12px;
+    }
+
+    .btn-text {
+        font-size: 11px;
     }
 
     .error-modal-content {
@@ -1324,6 +1550,8 @@ body {
     #chat-message-input {
         font-size: 16px;
         /* Prevents zoom on iOS */
+        padding: 12px;
+        min-height: 48px;
     }
 }
 
