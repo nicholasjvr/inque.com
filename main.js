@@ -199,10 +199,6 @@ class ModuleOrchestrator {
       ["firebase-core", () => import("./core/firebase-core.js")],
       ["auth", () => import("./scripts/auth/auth.js")],
       ["social", () => import("./scripts/social/social-features.js")],
-      [
-        "profile-hub",
-        () => import("./pages/page_modals/modal_scripts/profile_banner.js"),
-      ],
       ["navigation", () => import("./scripts/ui/navigation.js")],
     ];
 
@@ -428,11 +424,7 @@ class ApplicationInitializer {
       this.handleSocialAction(e.detail);
     });
 
-    // Listen for ProfileHub events
-    window.addEventListener("profilehub-state-changed", (e) => {
-      this.log("ProfileHub state change received:", e.detail);
-      this.handleProfileHubStateChange(e.detail);
-    });
+    // ProfileHub removed: skip profilehub events
 
     this.log("Global event handlers set up");
   }
@@ -470,20 +462,6 @@ class ApplicationInitializer {
   }
 
   // Handle ProfileHub state changes
-  handleProfileHubStateChange(hubState) {
-    this.log("Handling ProfileHub state change:", hubState);
-
-    // Update app state with ProfileHub state
-    this.appState.setState(
-      {
-        ui: {
-          modals: {
-            profile: hubState.state?.ui?.hubState === "expanded",
-          },
-        },
-      },
-      "profile-hub"
-    );
   }
 
   // Update auth UI elements
@@ -519,6 +497,9 @@ class ApplicationInitializer {
       await window.navigationManager.init();
     }
 
+    // Ensure Auth modal is present globally
+    await this.ensureAuthModalInjected();
+
     // Set up mobile optimizations
     this.setupMobileOptimizations();
 
@@ -526,6 +507,35 @@ class ApplicationInitializer {
     this.setupThemeHandling();
 
     this.log("UI components initialized");
+  }
+
+  // Inject auth modal HTML if missing
+  async ensureAuthModalInjected() {
+    try {
+      if (document.getElementById("authModal")) return;
+      const paths = [
+        "pages/page_modals/user_auth.html",
+        "./pages/page_modals/user_auth.html",
+        "/pages/page_modals/user_auth.html",
+      ];
+      let html = null;
+      for (const p of paths) {
+        try {
+          const res = await fetch(p);
+          if (res.ok) {
+            html = await res.text();
+            break;
+          }
+        } catch (_) {}
+      }
+      if (!html) return;
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = html;
+      document.body.appendChild(wrapper);
+      this.log("Auth modal injected globally");
+    } catch (e) {
+      this.log("Auth modal injection failed", e);
+    }
   }
 
   // Set up mobile optimizations
