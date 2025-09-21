@@ -1885,7 +1885,7 @@ function createFallbackProfileHub() {
             <span class="btn-pulse" id="chatbotPulse"></span>
           </button>
           <button id="hubCustomizeToggle" class="hub-control-btn" title="Explore">
-            <span class="btn-icon">⚙️</span>
+            <span class="btn-icon">🔍</span>
           </button>
           <button id="hubAuthToggle" class="hub-control-btn hub-auth-btn" title="Login / Profile">
             <span class="btn-icon">🔐</span>
