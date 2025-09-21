@@ -720,12 +720,10 @@ class ProfileHubManager {
       const roleLabel = document.getElementById("adminRoleLabel");
       if (roleLabel && role) roleLabel.textContent = role;
     }
-
     // Admin settings visibility
-    const adminSection = document.getElementById("hubAdminSettings");
-    if (adminSection) {
+    if (this.dom.adminSection) {
       const role = (user.profile?.role || "").toString().toUpperCase();
-      adminSection.style.display =
+      this.dom.adminSection.style.display =
         user.isAuthenticated && (role === "ADMIN" || role === "SUPERADMIN")
           ? "block"
           : "none";

@@ -3,11 +3,15 @@
 
 import cloudUploadManager from "../../../../scripts/upload/cloud-upload.js";
 import widgetPreviewManager from "./widget-preview.js";
+import CSSAnalyzer from "../../../../scripts/ai-agents/css-analyzer.js";
 
 class WidgetUploadManager {
   constructor() {
     this.uploadingSlots = new Set(); // Track active uploads per slot
-    this.log("Widget Upload Manager initialized with Cloud Functions");
+    this.cssAnalyzer = new CSSAnalyzer(); // CSS analysis and processing
+    this.log(
+      "Widget Upload Manager initialized with Cloud Functions and CSS Analyzer"
+    );
   }
 
   log(message, data = null) {
@@ -114,11 +118,14 @@ class WidgetUploadManager {
     });
   }
 
-  handleFileInputChange(fileInput) {
+  async handleFileInputChange(fileInput) {
     const files = fileInput.files;
     if (files.length > 0) {
       this.log("Files selected", { count: files.length });
       this.updateFileList(fileInput, files);
+
+      // Analyze CSS dependencies and issues
+      await this.analyzeWidgetFiles(files, fileInput);
 
       // Show preview of selected files
       widgetPreviewManager.handleFiles(files);
@@ -147,9 +154,57 @@ class WidgetUploadManager {
         fileItem.innerHTML = `
           <span class="file-name">${file.name}</span>
           <span class="file-size">${this.formatFileSize(file.size)}</span>
+          <span class="file-type ${this.getFileTypeClass(file.name)}">${this.getFileTypeLabel(file.name)}</span>
         `;
         fileList.appendChild(fileItem);
       });
+
+      // Add CSS analysis indicator if CSS files are present
+      this.addCSSAnalysisIndicator(uploadArea, files);
+    }
+  }
+
+  getFileTypeClass(fileName) {
+    if (fileName.match(/\.css$/i)) return "css-file";
+    if (fileName.match(/\.html?$/i)) return "html-file";
+    if (fileName.match(/\.js$/i)) return "js-file";
+    if (fileName.match(/\.(png|jpg|jpeg|gif|svg)$/i)) return "image-file";
+    return "other-file";
+  }
+
+  getFileTypeLabel(fileName) {
+    if (fileName.match(/\.css$/i)) return "CSS";
+    if (fileName.match(/\.html?$/i)) return "HTML";
+    if (fileName.match(/\.js$/i)) return "JS";
+    if (fileName.match(/\.(png|jpg|jpeg|gif|svg)$/i)) return "IMG";
+    return "FILE";
+  }
+
+  addCSSAnalysisIndicator(uploadArea, files) {
+    const cssFiles = Array.from(files).filter((f) => f.name.match(/\.css$/i));
+    const htmlFiles = Array.from(files).filter((f) =>
+      f.name.match(/\.html?$/i)
+    );
+
+    if (cssFiles.length > 0 || htmlFiles.length > 0) {
+      let analysisIndicator = uploadArea.querySelector(
+        ".css-analysis-indicator"
+      );
+      if (!analysisIndicator) {
+        analysisIndicator = document.createElement("div");
+        analysisIndicator.className = "css-analysis-indicator";
+        analysisIndicator.innerHTML = `
+          <div class="analysis-status" id="analysisStatus">
+            <span class="analysis-icon">🔍</span>
+            <span class="analysis-text">Analyzing CSS...</span>
+          </div>
+          <div class="analysis-results" id="analysisResults" style="display: none;">
+            <div class="css-issues" id="cssIssues"></div>
+            <div class="css-recommendations" id="cssRecommendations"></div>
+          </div>
+        `;
+        uploadArea.appendChild(analysisIndicator);
+      }
     }
   }
 
@@ -221,11 +276,38 @@ class WidgetUploadManager {
         fileCount: fileInput.files.length,
       });
 
+      // Process CSS files for optimization
+      let filesToUpload = fileInput.files;
+      const cssProcessingResult = await this.processCSSForUpload(filesToUpload);
+
+      // Show CSS processing feedback
+      if (cssProcessingResult.issues.length > 0) {
+        const highPriorityIssues = cssProcessingResult.issues.filter(
+          (i) => i.severity === "high"
+        ).length;
+        if (highPriorityIssues > 0) {
+          this.showToast(
+            `CSS processing found ${highPriorityIssues} issues. Consider reviewing before upload.`,
+            "warning"
+          );
+        }
+      }
+
+      // Use processed files for upload
+      if (cssProcessingResult.processedFiles.length > 0) {
+        filesToUpload = cssProcessingResult.processedFiles;
+      }
+
       // Use Cloud Functions for upload
       const result = await cloudUploadManager.uploadWithProgress(
-        fileInput.files,
+        filesToUpload,
         slot,
-        { title, description: desc },
+        {
+          title,
+          description: desc,
+          cssAnalysis: cssProcessingResult,
+          originalFileCount: fileInput.files.length,
+        },
         (progress, message) => {
           button.textContent = `${message} (${progress}%)`;
         }
@@ -284,6 +366,160 @@ class WidgetUploadManager {
     }
   }
 
+  async analyzeWidgetFiles(files, fileInput) {
+    try {
+      const uploadArea = fileInput.closest(".widget-upload-area");
+      const analysisStatus = uploadArea.querySelector("#analysisStatus");
+      const analysisResults = uploadArea.querySelector("#analysisResults");
+
+      if (analysisStatus) {
+        analysisStatus.style.display = "block";
+        analysisResults.style.display = "none";
+      }
+
+      // Find HTML file for analysis
+      const htmlFiles = Array.from(files).filter((f) =>
+        f.name.match(/\.html?$/i)
+      );
+      const htmlFile = htmlFiles.length > 0 ? htmlFiles[0] : null;
+
+      // Analyze CSS dependencies and issues
+      const analysis = await this.cssAnalyzer.analyzeWidgetFiles(
+        files,
+        htmlFile
+      );
+
+      // Display results
+      this.displayCSSAnalysisResults(analysis, uploadArea);
+
+      // Show toast with summary
+      const highPriorityIssues = analysis.issues.filter(
+        (i) => i.severity === "high"
+      ).length;
+      const mediumPriorityIssues = analysis.issues.filter(
+        (i) => i.severity === "medium"
+      ).length;
+
+      if (highPriorityIssues > 0) {
+        this.showToast(
+          `Found ${highPriorityIssues} high-priority CSS issues. Please review before uploading.`,
+          "warning"
+        );
+      } else if (mediumPriorityIssues > 0) {
+        this.showToast(
+          `Found ${mediumPriorityIssues} CSS issues. Consider reviewing for optimal styling.`,
+          "info"
+        );
+      } else {
+        this.showToast(
+          "CSS analysis complete! Your styles look good.",
+          "success"
+        );
+      }
+    } catch (error) {
+      this.error("CSS analysis failed", error);
+      this.showToast(
+        "CSS analysis failed. Upload will still work but optimization may be limited.",
+        "warning"
+      );
+    }
+  }
+
+  displayCSSAnalysisResults(analysis, uploadArea) {
+    const analysisStatus = uploadArea.querySelector("#analysisStatus");
+    const analysisResults = uploadArea.querySelector("#analysisResults");
+    const cssIssues = uploadArea.querySelector("#cssIssues");
+    const cssRecommendations = uploadArea.querySelector("#cssRecommendations");
+
+    // Hide status, show results
+    if (analysisStatus) analysisStatus.style.display = "none";
+    if (analysisResults) analysisResults.style.display = "block";
+
+    // Display issues
+    if (cssIssues) {
+      if (analysis.issues.length > 0) {
+        cssIssues.innerHTML = `
+          <h4>CSS Issues (${analysis.issues.length})</h4>
+          ${analysis.issues
+            .map(
+              (issue) => `
+            <div class="css-issue ${issue.severity}">
+              <span class="issue-severity ${issue.severity}">${issue.severity.toUpperCase()}</span>
+              <span class="issue-message">${issue.message}</span>
+              ${issue.suggestion ? `<div class="issue-suggestion">💡 ${issue.suggestion}</div>` : ""}
+            </div>
+          `
+            )
+            .join("")}
+        `;
+      } else {
+        cssIssues.innerHTML = `
+          <h4>CSS Issues</h4>
+          <div class="css-issue-success">✅ No CSS issues found!</div>
+        `;
+      }
+    }
+
+    // Display recommendations
+    if (cssRecommendations) {
+      if (analysis.recommendations.length > 0) {
+        cssRecommendations.innerHTML = `
+          <h4>Recommendations</h4>
+          ${analysis.recommendations
+            .map(
+              (rec) => `
+            <div class="css-recommendation ${rec.priority}">
+              <span class="rec-priority ${rec.priority}">${rec.priority.toUpperCase()}</span>
+              <span class="rec-message">${rec.message}</span>
+              ${rec.details ? `<div class="rec-details">${rec.details}</div>` : ""}
+            </div>
+          `
+            )
+            .join("")}
+        `;
+      } else {
+        cssRecommendations.innerHTML = `
+          <h4>Recommendations</h4>
+          <div class="css-recommendation-success">✨ Your CSS is well-optimized!</div>
+        `;
+      }
+    }
+
+    // Add expand/collapse functionality
+    this.addAnalysisToggleFunctionality(uploadArea);
+  }
+
+  addAnalysisToggleFunctionality(uploadArea) {
+    const analysisResults = uploadArea.querySelector("#analysisResults");
+    const analysisStatus = uploadArea.querySelector("#analysisStatus");
+
+    if (analysisResults && analysisStatus) {
+      // Make status clickable to show/hide results
+      analysisStatus.style.cursor = "pointer";
+      analysisStatus.title = "Click to view CSS analysis results";
+
+      let isExpanded = false;
+
+      analysisStatus.addEventListener("click", () => {
+        isExpanded = !isExpanded;
+
+        if (isExpanded) {
+          analysisResults.style.display = "block";
+          analysisStatus.innerHTML = `
+            <span class="analysis-icon">📊</span>
+            <span class="analysis-text">Hide Analysis</span>
+          `;
+        } else {
+          analysisResults.style.display = "none";
+          analysisStatus.innerHTML = `
+            <span class="analysis-icon">🔍</span>
+            <span class="analysis-text">Show Analysis</span>
+          `;
+        }
+      });
+    }
+  }
+
   showToast(message, type = "info") {
     // Use existing toast system if available
     if (window.showToast) {
@@ -319,6 +555,33 @@ class WidgetUploadManager {
     }
   }
 
+  async processCSSForUpload(files) {
+    try {
+      this.log("Processing CSS files for upload", { fileCount: files.length });
+
+      // Use CSS analyzer to process files
+      const result = await this.cssAnalyzer.processCSSForUpload(files, {
+        inlineCSS: false, // Keep CSS files separate for now
+        optimize: true,
+      });
+
+      this.log("CSS processing completed", {
+        originalFiles: files.length,
+        processedFiles: result.processedFiles.length,
+      });
+
+      return result;
+    } catch (error) {
+      this.error("CSS processing failed", error);
+      return {
+        processedFiles: files, // Fallback to original files
+        inlinedCSS: "",
+        issues: [],
+        recommendations: [],
+      };
+    }
+  }
+
   // Handle widget upload from other modules (for backward compatibility)
   async handleWidgetUpload(widgetData) {
     try {
@@ -326,9 +589,19 @@ class WidgetUploadManager {
         title: widgetData.title,
       });
 
+      // Process CSS if files are provided
+      let filesToUpload = widgetData.files;
+      if (filesToUpload) {
+        const cssProcessingResult =
+          await this.processCSSForUpload(filesToUpload);
+        if (cssProcessingResult.processedFiles.length > 0) {
+          filesToUpload = cssProcessingResult.processedFiles;
+        }
+      }
+
       // Use Cloud Functions for upload
       const result = await cloudUploadManager.uploadWidgetFiles(
-        widgetData.files,
+        filesToUpload,
         "slot-upload", // Generic slot for programmatic uploads
         {
           title: widgetData.title,
