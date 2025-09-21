@@ -33,6 +33,7 @@
             class="neo-input"
             style="width: 100%; margin-bottom: 12px"
             id="loginEmail"
+            id="loginEmail"
             required
           />
           <input
@@ -41,11 +42,13 @@
             class="neo-input"
             style="width: 100%; margin-bottom: 12px"
             id="loginPassword"
+            id="loginPassword"
             required
           />
         </div>
         <button
           type="submit"
+          class="neo-button auth-submit-btn"
           class="neo-button auth-submit-btn"
           style="width: 100%; margin-bottom: 16px"
         >
@@ -90,6 +93,61 @@
         </div>
       </form>
 
+      <!-- Sign Up Form -->
+      <form id="signUpForm" class="auth-form" style="display: none">
+        <div style="margin-bottom: 16px">
+          <input
+            type="text"
+            placeholder="Username"
+            class="neo-input"
+            style="width: 100%; margin-bottom: 12px"
+            id="signUpUsername"
+            required
+          />
+          <input
+            type="email"
+            placeholder="Email"
+            class="neo-input"
+            style="width: 100%; margin-bottom: 12px"
+            id="signUpEmail"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            class="neo-input"
+            style="width: 100%; margin-bottom: 12px"
+            id="signUpPassword"
+            required
+          />
+          <input
+            type="password"
+            placeholder="Confirm Password"
+            class="neo-input"
+            style="width: 100%; margin-bottom: 12px"
+            id="signUpPasswordConfirm"
+            required
+          />
+        </div>
+        <button
+          type="submit"
+          class="neo-button auth-submit-btn"
+          style="width: 100%; margin-bottom: 16px"
+        >
+          SIGN UP
+        </button>
+        <div style="text-align: center; margin-top: 16px">
+          <span style="color: var(--text-secondary)"
+            >Already have an account?
+          </span>
+          <a
+            href="#"
+            id="showLogin"
+            style="color: var(--primary-neon); text-decoration: none"
+            >Login</a
+          >
+        </div>
+      </form>
       <!-- Sign Up Form -->
       <form id="signUpForm" class="auth-form" style="display: none">
         <div style="margin-bottom: 16px">

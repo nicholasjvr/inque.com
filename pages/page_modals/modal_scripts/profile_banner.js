@@ -721,6 +721,18 @@ class ProfileHubManager {
       if (roleLabel && role) roleLabel.textContent = role;
     }
 
+    // Admin settings visibility
+    const adminSection = document.getElementById("hubAdminSettings");
+    if (adminSection) {
+      const role = (user.profile?.role || "").toString().toUpperCase();
+      adminSection.style.display =
+        user.isAuthenticated && (role === "ADMIN" || role === "SUPERADMIN")
+          ? "block"
+          : "none";
+      const roleLabel = document.getElementById("adminRoleLabel");
+      if (roleLabel && role) roleLabel.textContent = role;
+    }
+
     console.log("[PROFILE HUB] User info updated");
   }
 
@@ -1942,6 +1954,9 @@ async function initializeProfileHubSystem() {
 
     // Load and inject ProfileHub HTML content
     await loadProfileHubHTML();
+
+    // Ensure Auth modal is available on every page
+    await loadAuthModalHTML();
 
     // Ensure Auth modal is available on every page
     await loadAuthModalHTML();
