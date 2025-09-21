@@ -150,49 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
     `;
   }
 
-  // === MODULAR COMPONENTS ===
-
-  function initializeSearchAndFilters() {
-    console.log("🔍 [USERS PAGE] Initializing search and filters component");
-
-    // Create search and filter bar
-    const header = document.querySelector(".page-header");
-    const searchFilterBar = document.createElement("div");
-    searchFilterBar.className = "search-filter-bar";
-    searchFilterBar.innerHTML = `
-      <div class="search-container">
-        <input type="text" id="user-search" placeholder="🔍 Search users..." class="search-input">
-        <button id="clear-search" class="clear-search-btn">✕</button>
-      </div>
-      <div class="filter-container">
-        <select id="user-filter" class="filter-select">
-          <option value="all">👥 All Users</option>
-          <option value="online">🟢 Online Now</option>
-          <option value="recent">🕐 Recently Active</option>
-          <option value="creators">🎨 Content Creators</option>
-        </select>
-        <select id="user-sort" class="sort-select">
-          <option value="name">📝 Name (A-Z)</option>
-          <option value="recent">⏰ Recent Activity</option>
-          <option value="projects">📊 Most Projects</option>
-          <option value="random">🎲 Random</option>
-        </select>
-      </div>
-    `;
-
-    header.appendChild(searchFilterBar);
-
-    // Add event listeners
-    const searchInput = document.getElementById("user-search");
-    const clearSearchBtn = document.getElementById("clear-search");
-    const filterSelect = document.getElementById("user-filter");
-    const sortSelect = document.getElementById("user-sort");
-
-    searchInput.addEventListener("input", handleSearch);
-    clearSearchBtn.addEventListener("click", clearSearch);
-    filterSelect.addEventListener("change", handleFilter);
-    sortSelect.addEventListener("change", handleSort);
-  }
 
   function initializeUserStats() {
     console.log("📊 [USERS PAGE] Initializing user stats component");

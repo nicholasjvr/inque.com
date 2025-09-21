@@ -39,10 +39,6 @@
         <span class="btn-pulse" id="chatbotPulse"></span>
       </button>
 
-      <button id="hubCustomizeToggle" class="hub-control-btn" title="Explore">
-        <span class="btn-icon">⚙️</span>
-      </button>
-
       <button
         id="hubAuthToggle"
         class="hub-control-btn hub-auth-btn"
@@ -228,18 +224,6 @@
           value="#00f0ff"
         />
       </div>
-
-      <!-- Position Settings -->
-      <div class="customization-section">
-        <label class="section-label">Hub Position</label>
-        <select id="hubPosition" class="position-selector">
-          <option value="top-right" selected>Top Right</option>
-          <option value="top-left">Top Left</option>
-          <option value="bottom-left">Bottom Left</option>
-          <option value="bottom-right">Bottom Right</option>
-        </select>
-      </div>
-
       <!-- Hub Size -->
       <div class="customization-section">
         <label class="section-label">Hub Size</label>
@@ -286,7 +270,6 @@
               <button id="adminOpenRules" class="neo-button">
                 View Firestore Rules
               </button>
-              >>>>>>> Incoming (Background Agent changes)
               <div style="font-size: 0.9rem; color: var(--text-secondary)">
                 You are signed in as <span id="adminRoleLabel">ADMIN</span>.
               </div>
@@ -295,8 +278,5 @@
         </div>
       </div>
     </div>
-
-    <!-- ProfileHub Overlay -->
-    <div id="profileHubOverlay" class="profile-hub-overlay"></div>
   </div>
 </div>

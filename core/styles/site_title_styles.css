@@ -151,15 +151,6 @@
     }
 }
 
-/* Subtle hover effects */
-.title-3d:hover .title-line-1 {
-    animation-duration: 1.5s;
-}
-
-.title-3d:hover .title-line-2 {
-    animation-duration: 1.5s;
-}
-
 /* Professional subtitle styling */
 #home-subtitle {
     font-size: clamp(1.2rem, 3vw, 1.6rem) !important;

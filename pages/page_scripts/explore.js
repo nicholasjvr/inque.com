@@ -8,6 +8,10 @@ import {
   updateDoc,
   arrayUnion,
   arrayRemove,
+  query,
+  orderBy,
+  limit,
+  where,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import {
   getAuth,
@@ -23,26 +27,40 @@ const firebaseConfig = {
   appId: "1:338722493567:web:4c46ecdfe92ddf2a5d5b4a",
   measurementId: "G-KQT58LWVSK",
 };
+
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth();
 
+// DOM Elements
 const listDiv = document.getElementById("exploreWidgetList");
-listDiv.innerHTML = '<div style="color:#fff">Loading widgets...</div>';
+const searchInput = document.getElementById("widgetSearch");
+const sortSelect = document.getElementById("sortSelect");
+const categorySelect = document.getElementById("categorySelect");
+const refreshBtn = document.getElementById("refreshBtn");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const loadMoreContainer = document.getElementById("loadMoreContainer");
+const emptyState = document.getElementById("emptyState");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
 // Global state
 let currentUser = null;
 let followingUsers = new Set();
+let allWidgets = [];
+let filteredWidgets = [];
+let displayedWidgets = [];
+let currentPage = 0;
+const WIDGETS_PER_PAGE = 12;
 
 async function fetchAllWidgets() {
   try {
-    console.log("[EXPLORE DEBUG] Fetching widgets from widgets collection");
+    console.log("[EXPLORE] Fetching widgets from database");
     const widgetsSnapshot = await getDocs(collection(db, "widgets"));
     const widgets = [];
 
     widgetsSnapshot.forEach((doc) => {
       const widget = doc.data();
-      console.log("[EXPLORE DEBUG] Processing widget", {
+      console.log("[EXPLORE] Processing widget", {
         id: doc.id,
         title: widget.title,
         userId: widget.userId,
@@ -57,10 +75,11 @@ async function fetchAllWidgets() {
       });
     });
 
-    console.log("[EXPLORE DEBUG] Total widgets found:", widgets.length);
+    console.log("[EXPLORE] Total widgets found:", widgets.length);
     return widgets;
   } catch (error) {
-    console.error("[EXPLORE DEBUG] Error fetching widgets:", error);
+    console.error("[EXPLORE] Error fetching widgets:", error);
+    showToast("Failed to load widgets", "error");
     return [];
   }
 }
@@ -71,6 +90,60 @@ function shuffle(arr) {
     [arr[i], arr[j]] = [arr[j], arr[i]];
   }
   return arr;
+}
+
+// Filter and sort functions
+function filterWidgets(widgets, searchTerm, category) {
+  let filtered = [...widgets];
+
+  // Search filter
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = filtered.filter(
+      (widget) =>
+        widget.title?.toLowerCase().includes(term) ||
+        widget.description?.toLowerCase().includes(term) ||
+        widget.userName?.toLowerCase().includes(term)
+    );
+  }
+
+  // Category filter
+  if (category && category !== "all") {
+    filtered = filtered.filter((widget) => {
+      // This would need to be implemented based on your widget data structure
+      // For now, we'll use a simple category matching
+      return widget.category === category || widget.tags?.includes(category);
+    });
+  }
+
+  return filtered;
+}
+
+function sortWidgets(widgets, sortBy) {
+  const sorted = [...widgets];
+
+  switch (sortBy) {
+    case "recent":
+      return sorted.sort(
+        (a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0)
+      );
+    case "popular":
+      return sorted.sort((a, b) => (b.likes || 0) - (a.likes || 0));
+    case "name":
+      return sorted.sort((a, b) =>
+        (a.title || "").localeCompare(b.title || "")
+      );
+    case "random":
+      return shuffle(sorted);
+    default:
+      return sorted;
+  }
+}
+
+function getWidgetsForPage(widgets, page) {
+  const start = page * WIDGETS_PER_PAGE;
+  const end = start + WIDGETS_PER_PAGE;
+  return widgets.slice(start, end);
 }
 
 // Helper function to find HTML file in widget files array
@@ -250,127 +323,266 @@ function showToast(message, type = "info") {
   toast.className = `explore-toast explore-toast-${type}`;
   toast.textContent = message;
 
-  document.body.appendChild(toast);
+  const toastContainer = document.getElementById("toastContainer");
+  if (toastContainer) {
+    toastContainer.appendChild(toast);
+  } else {
+    document.body.appendChild(toast);
+  }
 
-  // Auto remove after 3 seconds
+  // Add fade-in animation
+  toast.classList.add("fade-in");
+
+  // Auto remove after 4 seconds
   setTimeout(() => {
     if (toast.parentNode) {
-      toast.parentNode.removeChild(toast);
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(100%)";
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, 300);
     }
-  }, 3000);
+  }, 4000);
 }
 
-(async function showWidgets() {
+// Main initialization function
+async function initializeExplorePage() {
   try {
-    let widgets = await fetchAllWidgets();
-    if (!widgets.length) {
-      listDiv.innerHTML = '<div style="color:#fff">No widgets found yet.</div>';
+    console.log("[EXPLORE] Initializing explore page");
+
+    // Load widgets
+    allWidgets = await fetchAllWidgets();
+
+    if (!allWidgets.length) {
+      showEmptyState("No widgets found yet. Check back later!");
       return;
     }
 
-    // Filter out widgets without HTML files
-    const validWidgets = widgets.filter((widget) => {
+    // Filter valid widgets
+    allWidgets = allWidgets.filter((widget) => {
       const htmlFile = findHtmlFile(widget.files);
       return htmlFile && htmlFile.downloadURL;
     });
 
-    if (!validWidgets.length) {
-      listDiv.innerHTML =
-        '<div style="color:#fff">No widgets with HTML files found.</div>';
+    if (!allWidgets.length) {
+      showEmptyState("No widgets with previews available yet.");
       return;
     }
 
-    widgets = shuffle(validWidgets).slice(0, 12); // Show up to 12 random widgets
-    listDiv.innerHTML = "";
+    // Apply initial filters and sorting
+    applyFiltersAndRender();
 
-    for (const widget of widgets) {
-      const htmlFile = findHtmlFile(widget.files);
-      console.log("[EXPLORE DEBUG] Rendering widget", {
-        id: widget.id,
-        title: widget.title,
-        htmlFile: htmlFile?.fileName,
-        downloadURL: htmlFile?.downloadURL,
-      });
+    // Setup event listeners
+    setupEventListeners();
 
-      const card = document.createElement("div");
-      card.className = "explore-widget-card";
-
-      // Check if user is following this widget's creator
-      const isFollowing = followingUsers.has(widget.userId);
-      const isOwnWidget = currentUser && currentUser.uid === widget.userId;
-
-      card.innerHTML = `
-        <div class="explore-widget-title">${
-          widget.title || "Untitled Widget"
-        }</div>
-        <div class="explore-widget-user">by ${widget.userName || "Unknown User"}</div>
-        ${
-          htmlFile && htmlFile.downloadURL
-            ? `<iframe class='explore-widget-preview' src='${htmlFile.downloadURL}' sandbox='allow-scripts allow-same-origin'></iframe>`
-            : `<div style='height:200px;display:flex;align-items:center;justify-content:center;background:#111;border-radius:6px;color:#888;'>No Preview</div>`
-        }
-        <div class="explore-widget-actions">
-          <a href='/?user=${
-            widget.userId
-          }' class="explore-profile-link">👤 View Profile</a>
-          ${
-            !isOwnWidget
-              ? `
-            <button class="explore-follow-btn ${isFollowing ? "following" : ""}" 
-                    data-user-id="${widget.userId}">
-              ${isFollowing ? "✓ Following" : "+ Follow"}
-            </button>
-            <button class="explore-message-btn" 
-                    data-user-id="${widget.userId}" 
-                    data-user-name="${widget.userName || "Unknown User"}">
-              💬 Message
-            </button>
-          `
-              : ""
-          }
-        </div>
-      `;
-      listDiv.appendChild(card);
-    }
-  } catch (e) {
-    console.error("[EXPLORE DEBUG] Error loading widgets:", e);
-    listDiv.innerHTML = `<div style='color:#f66'>Error loading widgets: ${e.message}</div>`;
+    console.log("[EXPLORE] Explore page initialized successfully");
+  } catch (error) {
+    console.error("[EXPLORE] Error initializing explore page:", error);
+    showEmptyState("Failed to load widgets. Please refresh the page.");
   }
-})();
+}
+
+function applyFiltersAndRender() {
+  const searchTerm = searchInput?.value || "";
+  const category = categorySelect?.value || "all";
+  const sortBy = sortSelect?.value || "recent";
+
+  // Filter widgets
+  filteredWidgets = filterWidgets(allWidgets, searchTerm, category);
+
+  // Sort widgets
+  filteredWidgets = sortWidgets(filteredWidgets, sortBy);
+
+  // Reset pagination
+  currentPage = 0;
+  displayedWidgets = [];
+
+  // Render first page
+  renderWidgets();
+}
+
+function renderWidgets() {
+  if (!filteredWidgets.length) {
+    showEmptyState("No widgets match your current filters.");
+    return;
+  }
+
+  // Get widgets for current page
+  const pageWidgets = getWidgetsForPage(filteredWidgets, currentPage);
+
+  if (currentPage === 0) {
+    listDiv.innerHTML = "";
+  }
+
+  // Render widgets
+  pageWidgets.forEach((widget) => {
+    const card = createWidgetCard(widget);
+    listDiv.appendChild(card);
+  });
+
+  displayedWidgets = [...displayedWidgets, ...pageWidgets];
+
+  // Show/hide load more button
+  const hasMoreWidgets = displayedWidgets.length < filteredWidgets.length;
+  loadMoreContainer.style.display = hasMoreWidgets ? "flex" : "none";
+
+  // Show/hide empty state
+  emptyState.style.display = filteredWidgets.length === 0 ? "flex" : "none";
+}
+
+function createWidgetCard(widget) {
+  const htmlFile = findHtmlFile(widget.files);
+  const isFollowing = followingUsers.has(widget.userId);
+  const isOwnWidget = currentUser && currentUser.uid === widget.userId;
+
+  const card = document.createElement("div");
+  card.className = "explore-widget-card";
+
+  card.innerHTML = `
+    <div class="explore-widget-header">
+      <h3 class="explore-widget-title">${widget.title || "Untitled Widget"}</h3>
+      <div class="explore-widget-user">by ${widget.userName || "Unknown User"}</div>
+    </div>
+
+    <div class="explore-widget-preview">
+      ${
+        htmlFile && htmlFile.downloadURL
+          ? `<iframe src="${htmlFile.downloadURL}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>`
+          : `<div class="no-preview">📦 No Preview Available</div>`
+      }
+    </div>
+
+    <div class="explore-widget-actions">
+      <a href="/?user=${widget.userId}" class="explore-profile-link" title="View ${widget.userName || "User"}'s profile">👤 Profile</a>
+      ${
+        !isOwnWidget
+          ? `
+        <button class="explore-follow-btn ${isFollowing ? "following" : ""}"
+                data-user-id="${widget.userId}"
+                title="${isFollowing ? "Unfollow user" : "Follow user"}">
+          ${isFollowing ? "✓ Following" : "+ Follow"}
+        </button>
+        <button class="explore-message-btn"
+                data-user-id="${widget.userId}"
+                data-user-name="${widget.userName || "Unknown User"}"
+                title="Send message">
+          💬 Message
+        </button>
+      `
+          : ""
+      }
+    </div>
+  `;
+
+  return card;
+}
+
+function showEmptyState(message) {
+  listDiv.innerHTML = "";
+  loadMoreContainer.style.display = "none";
+  emptyState.style.display = "flex";
+
+  const emptyMessage = emptyState.querySelector("p");
+  if (emptyMessage) {
+    emptyMessage.textContent = message;
+  }
+}
+
+function setupEventListeners() {
+  // Search input
+  if (searchInput) {
+    let searchTimeout;
+    searchInput.addEventListener("input", (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        applyFiltersAndRender();
+      }, 300);
+    });
+  }
+
+  // Sort and category filters
+  if (sortSelect) {
+    sortSelect.addEventListener("change", applyFiltersAndRender);
+  }
+
+  if (categorySelect) {
+    categorySelect.addEventListener("change", applyFiltersAndRender);
+  }
+
+  // Refresh button
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML =
+        '<span>🔄</span><span class="btn-text">Loading...</span>';
+
+      try {
+        allWidgets = await fetchAllWidgets();
+        applyFiltersAndRender();
+        showToast("Widgets refreshed!", "success");
+      } catch (error) {
+        showToast("Failed to refresh widgets", "error");
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML =
+          '<span>🔄</span><span class="btn-text">Refresh</span>';
+      }
+    });
+  }
+
+  // Load more button
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener("click", () => {
+      currentPage++;
+      renderWidgets();
+
+      // Smooth scroll to show new content
+      if (displayedWidgets.length > WIDGETS_PER_PAGE) {
+        listDiv.lastElementChild.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }
+    });
+  }
+
+  // Clear filters button
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener("click", () => {
+      if (searchInput) searchInput.value = "";
+      if (sortSelect) sortSelect.value = "recent";
+      if (categorySelect) categorySelect.value = "all";
+      applyFiltersAndRender();
+    });
+  }
+}
+
+// Initialize the page
+initializeExplorePage();
 
 // Initialize authentication and social features
 onAuthStateChanged(auth, async (user) => {
-  console.log("[EXPLORE DEBUG] Auth state changed", { userId: user?.uid });
+  console.log("[EXPLORE] Auth state changed", { userId: user?.uid });
   currentUser = user;
 
   if (user) {
     await loadUserFollowing();
-    // Re-render widgets to update follow buttons
-    const widgets = await fetchAllWidgets();
-    if (widgets.length > 0) {
-      const validWidgets = widgets.filter((widget) => {
-        const htmlFile = findHtmlFile(widget.files);
-        return htmlFile && htmlFile.downloadURL;
-      });
-      const shuffledWidgets = shuffle(validWidgets).slice(0, 12);
-      renderWidgets(shuffledWidgets);
+    // Re-apply filters to update UI with follow buttons
+    if (allWidgets.length > 0) {
+      applyFiltersAndRender();
     }
   } else {
     followingUsers.clear();
-    // Re-render widgets to remove follow buttons
-    const widgets = await fetchAllWidgets();
-    if (widgets.length > 0) {
-      const validWidgets = widgets.filter((widget) => {
-        const htmlFile = findHtmlFile(widget.files);
-        return htmlFile && htmlFile.downloadURL;
-      });
-      const shuffledWidgets = shuffle(validWidgets).slice(0, 12);
-      renderWidgets(shuffledWidgets);
+    // Re-apply filters to update UI without follow buttons
+    if (allWidgets.length > 0) {
+      applyFiltersAndRender();
     }
   }
 });
 
-// Event delegation for social buttons
+// Event delegation for social buttons and other interactions
 document.addEventListener("click", (e) => {
   if (e.target.matches(".explore-follow-btn")) {
     e.preventDefault();
@@ -384,180 +596,84 @@ document.addEventListener("click", (e) => {
     const userName = e.target.dataset.userName;
     openMessageModal(userId, userName);
   }
+
+  // Handle fullscreen preview (if needed)
+  if (e.target.matches(".explore-widget-preview iframe")) {
+    e.preventDefault();
+    // Could implement fullscreen preview here
+  }
+});
+// Enhanced user experience features
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("[EXPLORE] Initializing enhanced features");
+
+  // Initialize enhanced features
+  initializeEnhancedFeatures();
 });
 
-// Helper function to render widgets (extracted from showWidgets)
-async function renderWidgets(widgets) {
-  listDiv.innerHTML = "";
+// Enhanced features for better UX
+function initializeEnhancedFeatures() {
+  // Add smooth scrolling for better navigation
+  document.documentElement.style.scrollBehavior = "smooth";
 
-  for (const widget of widgets) {
-    const htmlFile = findHtmlFile(widget.files);
-    console.log("[EXPLORE DEBUG] Rendering widget", {
-      id: widget.id,
-      title: widget.title,
-      htmlFile: htmlFile?.fileName,
-      downloadURL: htmlFile?.downloadURL,
-    });
+  // Initialize keyboard shortcuts
+  document.addEventListener("keydown", handleKeyboardShortcuts);
 
-    const card = document.createElement("div");
-    card.className = "explore-widget-card";
+  // Add focus management for accessibility
+  initializeFocusManagement();
 
-    // Check if user is following this widget's creator
-    const isFollowing = followingUsers.has(widget.userId);
-    const isOwnWidget = currentUser && currentUser.uid === widget.userId;
+  // Initialize intersection observer for animations
+  initializeScrollAnimations();
+}
 
-    card.innerHTML = `
-      <div class="explore-widget-title">${
-        widget.title || "Untitled Widget"
-      }</div>
-      <div class="explore-widget-user">by ${widget.userName || "Unknown User"}</div>
-      ${
-        htmlFile && htmlFile.downloadURL
-          ? `<iframe class='explore-widget-preview' src='${htmlFile.downloadURL}' sandbox='allow-scripts allow-same-origin'></iframe>`
-          : `<div style='height:200px;display:flex;align-items:center;justify-content:center;background:#111;border-radius:6px;color:#888;'>No Preview</div>`
-      }
-      <div class="explore-widget-actions">
-        <a href='/?user=${
-          widget.userId
-        }' class="explore-profile-link">👤 View Profile</a>
-        ${
-          !isOwnWidget
-            ? `
-          <button class="explore-follow-btn ${isFollowing ? "following" : ""}" 
-                  data-user-id="${widget.userId}">
-            ${isFollowing ? "✓ Following" : "+ Follow"}
-          </button>
-          <button class="explore-message-btn" 
-                  data-user-id="${widget.userId}" 
-                  data-user-name="${widget.userName || "Unknown User"}">
-            💬 Message
-          </button>
-        `
-            : ""
-        }
-      </div>
-    `;
-    listDiv.appendChild(card);
+function handleKeyboardShortcuts(e) {
+  // Ctrl/Cmd + K to focus search
+  if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+    e.preventDefault();
+    if (searchInput) {
+      searchInput.focus();
+      searchInput.select();
+    }
+  }
+
+  // Escape to clear search
+  if (e.key === "Escape" && document.activeElement === searchInput) {
+    searchInput.value = "";
+    applyFiltersAndRender();
   }
 }
 
-// Mobile menu functionality
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("[EXPLORE DEBUG] Initializing mobile menu functionality");
-
-  // Create mobile menu toggle button
-  const createMobileMenuToggle = () => {
-    if (window.innerWidth <= 480) {
-      const header = document.querySelector(".explore-header");
-      const headerActions = document.querySelector(".header-actions");
-
-      if (
-        header &&
-        headerActions &&
-        !document.querySelector(".mobile-menu-toggle")
-      ) {
-        const mobileToggle = document.createElement("button");
-        mobileToggle.className = "mobile-menu-toggle";
-        mobileToggle.innerHTML = "☰";
-        mobileToggle.setAttribute("aria-label", "Toggle navigation menu");
-
-        header.appendChild(mobileToggle);
-
-        mobileToggle.addEventListener("click", () => {
-          console.log("[EXPLORE DEBUG] Mobile menu toggled");
-          headerActions.classList.toggle("show");
-
-          // Update button icon
-          mobileToggle.innerHTML = headerActions.classList.contains("show")
-            ? "✕"
-            : "☰";
-        });
-
-        // Close menu when clicking outside
-        document.addEventListener("click", (e) => {
-          if (
-            !header.contains(e.target) &&
-            headerActions.classList.contains("show")
-          ) {
-            headerActions.classList.remove("show");
-            mobileToggle.innerHTML = "☰";
-          }
-        });
-      }
-    }
-  };
-
-  // Initialize mobile menu on load
-  createMobileMenuToggle();
-
-  // Re-initialize on resize
-  window.addEventListener("resize", () => {
-    const mobileToggle = document.querySelector(".mobile-menu-toggle");
-    if (mobileToggle && window.innerWidth > 480) {
-      mobileToggle.remove();
-      document.querySelector(".header-actions").classList.remove("show");
-    } else if (window.innerWidth <= 480) {
-      createMobileMenuToggle();
+function initializeFocusManagement() {
+  // Ensure focus is visible for keyboard navigation
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      document.body.classList.add("keyboard-navigation");
     }
   });
 
-  // Initialize lazy loading for better mobile performance
-  initializeLazyLoading();
-});
+  document.addEventListener("mousedown", () => {
+    document.body.classList.remove("keyboard-navigation");
+  });
+}
 
-// Lazy loading functionality for better mobile performance
-function initializeLazyLoading() {
-  console.log(
-    "[EXPLORE DEBUG] Initializing lazy loading for mobile performance"
-  );
-
+function initializeScrollAnimations() {
+  // Add fade-in animations for cards as they enter viewport
   const observerOptions = {
-    root: null,
-    rootMargin: "50px",
     threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px",
   };
 
-  const imageObserver = new IntersectionObserver((entries) => {
+  const animationObserver = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (entry.isIntersecting) {
-        const iframe = entry.target;
-        if (iframe.dataset.src) {
-          iframe.src = iframe.dataset.src;
-          iframe.removeAttribute("data-src");
-          imageObserver.unobserve(iframe);
-        }
+        entry.target.classList.add("fade-in");
+        animationObserver.unobserve(entry.target);
       }
     });
   }, observerOptions);
 
-  // Apply lazy loading to widget previews
-  document.querySelectorAll(".explore-widget-preview").forEach((iframe) => {
-    if (iframe.src) {
-      iframe.dataset.src = iframe.src;
-      iframe.src =
-        'data:text/html,<div style="display:flex;align-items:center;justify-content:center;height:100%;background:#111;color:#888;">Loading...</div>';
-      imageObserver.observe(iframe);
-    }
+  // Observe all widget cards for animation
+  document.querySelectorAll(".explore-widget-card").forEach((card) => {
+    animationObserver.observe(card);
   });
 }
-
-document.querySelectorAll(".quick-action-btn").forEach((btn) => {
-  if (
-    btn
-      .querySelector(".quick-action-text")
-      ?.textContent.includes("Add Project to Showcase")
-  ) {
-    btn.addEventListener("click", () => {
-      // Scroll to the upload widget section
-      const uploadSection = document.getElementById(
-        "widgetSlotUploadContainer"
-      );
-      if (uploadSection) {
-        uploadSection.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Optionally, highlight it for a moment
-        uploadSection.style.boxShadow = "0 0 16px 4px #4caf50";
-        setTimeout(() => (uploadSection.style.boxShadow = ""), 1200);
-      }
-    });
-  }
-});

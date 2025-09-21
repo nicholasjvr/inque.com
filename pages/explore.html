@@ -3,57 +3,144 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Explore Widgets</title>
-    <link rel="stylesheet" href="../core/styles.css" />
+    <title>Explore Widgets - inQ Platform</title>
+    <meta
+      name="description"
+      content="Discover and explore amazing widgets created by the inQ community"
+    />
+
+    <!-- Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Styles -->
     <link rel="stylesheet" href="page_styles/explore.css" />
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
       rel="stylesheet"
+      href="../pages/page_modals/modal_styles/profile_banner.css"
     />
+
+    <!-- Favicon -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
-      rel="stylesheet"
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔍</text></svg>"
     />
+
+    <!-- reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-    <div id="profileHubContainer"></div>
   </head>
   <body>
+    <!-- Profile Hub Container -->
+    <div id="profileHubContainer"></div>
+
+    <!-- Header -->
     <header class="explore-header">
-      <div class="nav-breadcrumb">
-        <a href="../index.html" class="breadcrumb-link">&larr; Home</a>
-        <span class="breadcrumb-separator">/</span>
-        <a
-          href="../pages/profile_dashboard/my-projects.html"
-          class="breadcrumb-link"
-          >My Projects</a
-        >
-        <span class="breadcrumb-separator">/</span>
-        <span class="breadcrumb-current">Explore</span>
+      <div class="header-content">
+        <div class="header-title">
+          <span class="title-icon">🔍</span>
+          <h1>EXPLORE WIDGETS</h1>
+        </div>
+        <div class="header-actions">
+          <button
+            class="action-btn refresh-btn"
+            id="refreshBtn"
+            title="Refresh widgets"
+          >
+            <span>🔄</span>
+            <span class="btn-text">Refresh</span>
+          </button>
+        </div>
       </div>
-      <div class="header-actions">
-        <a href="../pages/profile_dashboard/my-projects.html" class="action-btn"
-          >📊 My Projects</a
-        >
-        <a
-          href="../pages/profile_dashboard/widget_studio.html"
-          class="action-btn"
-          >🎨 Create Widget</a
-        >
-        <a href="../pages/users.html" class="action-btn">👥 Community</a>
-      </div>
-      <h1>🔍 EXPLORE WIDGETS</h1>
     </header>
 
-    <main>
-      <div id="exploreWidgetList" class="explore-widget-list">
-        <!-- Loading state -->
-        <div class="loading-state">
-          <div class="loading-spinner"></div>
-          <div class="loading-text">Loading Widgets...</div>
+    <!-- Main Content -->
+    <main class="explore-main">
+      <!-- Search and Filter Section -->
+      <section class="explore-controls">
+        <div class="search-container">
+          <input
+            type="text"
+            id="widgetSearch"
+            class="search-input"
+            placeholder="Search widgets..."
+            autocomplete="off"
+          />
+          <div class="search-icon">🔍</div>
         </div>
+
+        <div class="filter-container">
+          <div class="filter-group">
+            <label for="sortSelect">Sort by:</label>
+            <select id="sortSelect" class="filter-select">
+              <option value="recent">Most Recent</option>
+              <option value="popular">Most Popular</option>
+              <option value="random">Random</option>
+              <option value="name">Name (A-Z)</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="categorySelect">Category:</label>
+            <select id="categorySelect" class="filter-select">
+              <option value="all">All Categories</option>
+              <option value="tools">Tools</option>
+              <option value="games">Games</option>
+              <option value="utilities">Utilities</option>
+              <option value="social">Social</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Widget Grid -->
+      <section class="explore-grid-container">
+        <div id="exploreWidgetList" class="explore-widget-grid">
+          <!-- Loading state will be replaced by JavaScript -->
+          <div class="loading-state">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Discovering amazing widgets...</div>
+            <div class="loading-subtitle">This may take a moment</div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState" style="display: none">
+          <div class="empty-icon">📦</div>
+          <h3>No widgets found</h3>
+          <p>
+            It looks like there are no widgets matching your criteria. Try
+            adjusting your filters or check back later!
+          </p>
+          <button class="empty-action-btn" id="clearFiltersBtn">
+            Clear Filters
+          </button>
+        </div>
+      </section>
+
+      <!-- Load More Button -->
+      <div
+        class="load-more-container"
+        id="loadMoreContainer"
+        style="display: none"
+      >
+        <button class="load-more-btn" id="loadMoreBtn">
+          <span class="btn-icon">⬇️</span>
+          <span>Load More Widgets</span>
+        </button>
       </div>
     </main>
 
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
     <script type="module" src="page_scripts/explore.js"></script>
     <script type="module" src="../scripts/auth/auth.js"></script>
     <script

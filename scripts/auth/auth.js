@@ -180,6 +180,7 @@ class SocialAuthManager {
       detail: {
         user,
         profile: profile || this.userProfile,
+        isAuthenticated: !!user,
         isNewLogin,
         timestamp: Date.now(),
       },
@@ -1198,8 +1199,11 @@ document.addEventListener("DOMContentLoaded", () => {
   if (authCloseBtn) {
     authCloseBtn.addEventListener("click", () => {
       console.log("Closing auth modal");
-      authModal.style.display = "none";
-      document.body.style.overflow = "";
+      authModal.classList.remove("show");
+      setTimeout(() => {
+        authModal.style.display = "none";
+        document.body.style.overflow = "";
+      }, 300);
     });
   }
 
@@ -1207,17 +1211,27 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("click", (e) => {
     if (e.target === authModal) {
       console.log("Closing auth modal via outside click");
-      authModal.style.display = "none";
-      document.body.style.overflow = "";
+      authModal.classList.remove("show");
+      setTimeout(() => {
+        authModal.style.display = "none";
+        document.body.style.overflow = "";
+      }, 300);
     }
   });
 
   // Close modal on escape key
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && authModal.style.display === "block") {
+    if (
+      e.key === "Escape" &&
+      (authModal.style.display === "block" ||
+        authModal.style.display === "flex")
+    ) {
       console.log("Closing auth modal via escape key");
-      authModal.style.display = "none";
-      document.body.style.overflow = "";
+      authModal.classList.remove("show");
+      setTimeout(() => {
+        authModal.style.display = "none";
+        document.body.style.overflow = "";
+      }, 300);
     }
   });
 
@@ -1427,8 +1441,11 @@ document.addEventListener("DOMContentLoaded", () => {
         // Close the auth modal
         const authModal = document.getElementById("authModal");
         if (authModal) {
-          authModal.style.display = "none";
-          document.body.style.overflow = "";
+          authModal.classList.remove("show");
+          setTimeout(() => {
+            authModal.style.display = "none";
+            document.body.style.overflow = "";
+          }, 300);
         }
 
         // Show success message

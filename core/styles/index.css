@@ -41,16 +41,6 @@ body {
     border-color: var(--accent-neon);
 }
 
-/* ProfileHub base styles */
-/* ProfileHub styles moved to dedicated CSS file to avoid conflicts
-.profile-hub {
-    position: fixed;
-    top: 12px;
-    right: 12px;
-    z-index: 10040;
-}
-*/
-
 /* Chat Drawer System - No overlay needed */
 .chat-drawer {
     position: fixed;
@@ -775,4 +765,235 @@ body {
 .profile-menu a:hover,
 .profile-menu .menu-action:hover {
     background: rgba(255, 255, 255, 0.06);
+}
+
+/* ===== AUTH MODAL STYLES ===== */
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.modal.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.modal-content {
+    background: var(--panel);
+    border: 2px solid var(--primary-neon);
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 400px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 60px rgba(0, 240, 255, 0.2);
+}
+
+.modal.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--primary-neon);
+}
+
+.modal-title {
+    color: var(--primary-neon);
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    font-family: 'Orbitron', monospace;
+}
+
+.auth-close-button {
+    background: none;
+    border: none;
+    color: var(--primary-neon);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-close-button:hover {
+    background: rgba(0, 240, 255, 0.1);
+    transform: scale(1.1);
+}
+
+.modal-body {
+    width: 100%;
+}
+
+.auth-form {
+    width: 100%;
+}
+
+.neo-input {
+    width: 100%;
+    padding: 12px 16px;
+    margin-bottom: 12px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: 1rem;
+    transition: all 0.2s ease;
+    box-sizing: border-box;
+}
+
+.neo-input:focus {
+    outline: none;
+    border-color: var(--primary-neon);
+    box-shadow: 0 0 0 2px rgba(0, 240, 255, 0.2);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.neo-input::placeholder {
+    color: var(--text-secondary);
+}
+
+.auth-submit-btn {
+    width: 100%;
+    margin-bottom: 16px;
+    background: var(--primary-neon);
+    color: var(--bg);
+    border: 2px solid var(--primary-neon);
+    font-weight: 600;
+    font-size: 1rem;
+    padding: 14px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.auth-submit-btn:hover {
+    background: transparent;
+    color: var(--primary-neon);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 240, 255, 0.3);
+}
+
+.auth-submit-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.auth-submit-btn:disabled:hover {
+    background: var(--primary-neon);
+    color: var(--bg);
+    box-shadow: none;
+}
+
+/* Social login buttons */
+.modal-body .neo-button {
+    width: 100%;
+    margin-bottom: 8px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: var(--text-primary);
+    padding: 12px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+
+.modal-body .neo-button:hover {
+    background: rgba(255, 255, 255, 0.08);
+    border-color: var(--primary-neon);
+    transform: translateY(-1px);
+}
+
+/* Links */
+.modal-body a {
+    color: var(--primary-neon);
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.modal-body a:hover {
+    color: var(--secondary-neon);
+    text-decoration: underline;
+}
+
+/* Form switching animations */
+.auth-form {
+    opacity: 1;
+    transform: translateX(0);
+    transition: all 0.3s ease;
+}
+
+.auth-form.hidden {
+    opacity: 0;
+    transform: translateX(-20px);
+    pointer-events: none;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+    .modal {
+        padding: 10px;
+    }
+
+    .modal-content {
+        padding: 24px;
+        max-width: 100%;
+        margin: 0;
+    }
+
+    .modal-title {
+        font-size: 1.3rem;
+    }
+
+    .neo-input {
+        padding: 14px 16px;
+        font-size: 16px;
+        /* Prevents zoom on iOS */
+    }
+}
+
+@media (max-width: 480px) {
+    .modal-content {
+        padding: 20px;
+        border-radius: 12px;
+    }
+
+    .modal-title {
+        font-size: 1.2rem;
+    }
+
+    .auth-submit-btn {
+        padding: 16px 20px;
+        font-size: 1.1rem;
+    }
 }
