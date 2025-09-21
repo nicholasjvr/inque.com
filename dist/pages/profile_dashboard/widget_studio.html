@@ -4,12 +4,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Widget Studio - Inque</title>
-    <script type="module" crossorigin src="../../assets/widgetStudio-D4IK7R-4.js"></script>
-    <link rel="modulepreload" crossorigin href="../../assets/modulepreload-polyfill-B5Qt9EMX.js">
-    <link rel="modulepreload" crossorigin href="../../assets/firebase-core-BO8UvLyb.js">
-    <link rel="modulepreload" crossorigin href="../../assets/cloud-upload-Bq9wGJN8.js">
-    <link rel="stylesheet" crossorigin href="../../assets/cloud-upload-CgVkHZIx.css">
-    <link rel="stylesheet" crossorigin href="../../assets/widget_studio-xPyVQT3-.css">
+    <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
+    <div id="profileHubContainer"></div>
+    <script type="module" crossorigin src="../../assets/widgetStudio-6vbvVcIb.js"></script>
+    <link rel="modulepreload" crossorigin href="../../assets/auth-BZnK8mjA.js">
+    <link rel="modulepreload" crossorigin href="../../assets/profile-dashboard-manager-BfqszSbI.js">
+    <link rel="modulepreload" crossorigin href="../../assets/cloud-upload-DXsF6I58.js">
+    <link rel="modulepreload" crossorigin href="../../assets/css-analyzer-dJ6kCf09.js">
+    <link rel="modulepreload" crossorigin href="../../assets/profile_banner-D4bpQstc.js">
+    <link rel="stylesheet" crossorigin href="../../assets/profile-dashboard-manager-BJI0Kdow.css">
+    <link rel="stylesheet" crossorigin href="../../assets/widget_studio-DgHL7wsB.css">
   </head>
   <body>
     <!-- Navigation Header -->
@@ -44,6 +48,10 @@
               Create, preview, and manage your interactive widgets. Each slot
               can hold a complete project with multiple files.
             </p>
+            <button class="onboarding-trigger-btn" id="showOnboardingBtn">
+              <span class="btn-icon">📚</span>
+              Widget Upload Guide
+            </button>
             <div class="studio-stats">
               <div class="stat-item">
                 <span class="stat-number" id="totalWidgets">0</span>
@@ -380,8 +388,279 @@
         </div>
       </div>
     </div>
+
+    <!-- Onboarding Modal -->
+    <div class="onboarding-modal" id="onboardingModal" style="display: none">
+      <div class="onboarding-modal-content">
+        <div class="onboarding-modal-header">
+          <h3>🎨 Widget Studio Guide</h3>
+          <button class="onboarding-modal-close" id="onboardingModalClose">
+            &times;
+          </button>
+        </div>
+        <div class="onboarding-modal-body">
+          <div class="onboarding-step active" data-step="1">
+            <h4>📁 File Structure</h4>
+            <p>Upload your widget files including:</p>
+            <ul>
+              <li><strong>HTML file</strong> (index.html or similar)</li>
+              <li><strong>CSS files</strong> (styles.css, theme.css, etc.)</li>
+              <li>
+                <strong>JavaScript files</strong> (script.js, app.js, etc.)
+              </li>
+              <li><strong>Images & Assets</strong> (png, jpg, svg, etc.)</li>
+            </ul>
+          </div>
+
+          <div class="onboarding-step" data-step="2">
+            <h4>🎨 CSS Best Practices</h4>
+            <p>For optimal styling results:</p>
+            <ul>
+              <li>
+                <strong>Link CSS files</strong> in your HTML &lt;head&gt;
+                section
+              </li>
+              <li>
+                <strong>Use relative paths</strong> for CSS file references
+              </li>
+              <li>
+                <strong>Include all dependencies</strong> (fonts, icons, etc.)
+              </li>
+              <li>
+                <strong>Organize stylesheets</strong> (main.css, components.css)
+              </li>
+            </ul>
+            <div class="code-example">
+              <pre><code>&lt;link rel="stylesheet" href="styles.css"&gt;
+&lt;link rel="stylesheet" href="components/button.css"&gt;</code></pre>
+            </div>
+          </div>
+
+          <div class="onboarding-step" data-step="3">
+            <h4>🔍 CSS Analysis</h4>
+            <p>Our AI system will:</p>
+            <ul>
+              <li><strong>Check CSS dependencies</strong> and missing files</li>
+              <li><strong>Detect unused styles</strong> for optimization</li>
+              <li>
+                <strong>Analyze code quality</strong> and suggest improvements
+              </li>
+              <li><strong>Optimize CSS</strong> for better performance</li>
+            </ul>
+          </div>
+
+          <div class="onboarding-step" data-step="4">
+            <h4>✅ Ready to Upload!</h4>
+            <p>Your widget will be analyzed and optimized automatically:</p>
+            <ul>
+              <li>✅ CSS files processed and optimized</li>
+              <li>✅ Dependencies resolved and validated</li>
+              <li>✅ Issues identified and suggestions provided</li>
+              <li>✅ Preview available before upload</li>
+            </ul>
+          </div>
+        </div>
+        <div class="onboarding-modal-footer">
+          <div class="onboarding-progress">
+            <span class="progress-dot active" data-step="1"></span>
+            <span class="progress-dot" data-step="2"></span>
+            <span class="progress-dot" data-step="3"></span>
+            <span class="progress-dot" data-step="4"></span>
+          </div>
+          <div class="onboarding-controls">
+            <button
+              class="onboarding-btn secondary"
+              id="onboardingPrev"
+              style="display: none"
+            >
+              Previous
+            </button>
+            <button class="onboarding-btn primary" id="onboardingNext">
+              Next
+            </button>
+            <button class="onboarding-btn success" id="onboardingSkip">
+              Skip Guide
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
-    <!-- Scripts -->
+
+    <!-- Scripts -->
+    <script>
+      // Onboarding Modal Functionality
+      class OnboardingManager {
+        constructor() {
+          this.currentStep = 1;
+          this.totalSteps = 4;
+          this.onboardingCompleted =
+            localStorage.getItem("widgetStudioOnboarding") === "completed";
+
+          this.init();
+        }
+
+        init() {
+          if (!this.onboardingCompleted) {
+            // Show onboarding after a short delay
+            setTimeout(() => {
+              this.showOnboarding();
+            }, 1000);
+          }
+
+          this.setupEventListeners();
+        }
+
+        setupEventListeners() {
+          // Trigger button
+          const showBtn = document.getElementById("showOnboardingBtn");
+          if (showBtn) {
+            showBtn.addEventListener("click", () => this.showOnboarding());
+          }
+
+          // Modal close button
+          const closeBtn = document.getElementById("onboardingModalClose");
+          if (closeBtn) {
+            closeBtn.addEventListener("click", () => this.hideOnboarding());
+          }
+
+          // Skip button
+          const skipBtn = document.getElementById("onboardingSkip");
+          if (skipBtn) {
+            skipBtn.addEventListener("click", () => this.completeOnboarding());
+          }
+
+          // Next/Previous buttons
+          const nextBtn = document.getElementById("onboardingNext");
+          const prevBtn = document.getElementById("onboardingPrev");
+
+          if (nextBtn) {
+            nextBtn.addEventListener("click", () => this.nextStep());
+          }
+
+          if (prevBtn) {
+            prevBtn.addEventListener("click", () => this.previousStep());
+          }
+
+          // Click outside modal to close
+          const modal = document.getElementById("onboardingModal");
+          if (modal) {
+            modal.addEventListener("click", (e) => {
+              if (e.target === modal) {
+                this.hideOnboarding();
+              }
+            });
+          }
+
+          // Keyboard navigation
+          document.addEventListener("keydown", (e) => {
+            if (e.key === "Escape" && modal && modal.style.display !== "none") {
+              this.hideOnboarding();
+            }
+          });
+        }
+
+        showOnboarding() {
+          const modal = document.getElementById("onboardingModal");
+          if (modal) {
+            modal.style.display = "flex";
+            document.body.style.overflow = "hidden";
+            this.currentStep = 1;
+            this.updateOnboardingDisplay();
+          }
+        }
+
+        hideOnboarding() {
+          const modal = document.getElementById("onboardingModal");
+          if (modal) {
+            modal.style.display = "none";
+            document.body.style.overflow = "";
+          }
+        }
+
+        completeOnboarding() {
+          localStorage.setItem("widgetStudioOnboarding", "completed");
+          this.hideOnboarding();
+
+          // Show welcome message
+          const toast = document.createElement("div");
+          toast.className = "toast success";
+          toast.innerHTML = `
+            <span class="toast-message">Welcome to Widget Studio! 🎨 Your CSS files will be analyzed automatically.</span>
+            <button class="toast-close">&times;</button>
+          `;
+          document.getElementById("toastContainer").appendChild(toast);
+
+          setTimeout(() => toast.remove(), 5000);
+        }
+
+        nextStep() {
+          if (this.currentStep < this.totalSteps) {
+            this.currentStep++;
+            this.updateOnboardingDisplay();
+
+            // Complete onboarding on last step
+            if (this.currentStep === this.totalSteps) {
+              setTimeout(() => this.completeOnboarding(), 500);
+            }
+          }
+        }
+
+        previousStep() {
+          if (this.currentStep > 1) {
+            this.currentStep--;
+            this.updateOnboardingDisplay();
+          }
+        }
+
+        updateOnboardingDisplay() {
+          // Update steps
+          const steps = document.querySelectorAll(".onboarding-step");
+          steps.forEach((step) => step.classList.remove("active"));
+          const currentStepEl = document.querySelector(
+            `[data-step="${this.currentStep}"]`
+          );
+          if (currentStepEl) {
+            currentStepEl.classList.add("active");
+          }
+
+          // Update progress dots
+          const dots = document.querySelectorAll(".progress-dot");
+          dots.forEach((dot) => dot.classList.remove("active"));
+          const currentDot = document.querySelector(
+            `.progress-dot[data-step="${this.currentStep}"]`
+          );
+          if (currentDot) {
+            currentDot.classList.add("active");
+          }
+
+          // Update buttons
+          const prevBtn = document.getElementById("onboardingPrev");
+          const nextBtn = document.getElementById("onboardingNext");
+          const skipBtn = document.getElementById("onboardingSkip");
+
+          if (prevBtn) {
+            prevBtn.style.display = this.currentStep > 1 ? "block" : "none";
+          }
+
+          if (nextBtn) {
+            nextBtn.textContent =
+              this.currentStep === this.totalSteps ? "Get Started!" : "Next";
+          }
+
+          if (skipBtn) {
+            skipBtn.style.display =
+              this.currentStep === this.totalSteps ? "none" : "block";
+          }
+        }
+      }
+
+      // Initialize onboarding when DOM is ready
+      document.addEventListener("DOMContentLoaded", () => {
+        new OnboardingManager();
+      });
+    </script>
   </body>
 </html>

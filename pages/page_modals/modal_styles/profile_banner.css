@@ -3,7 +3,8 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 150;
+    z-index: 100090;
+    /* Higher than ProfileHub */
     width: 50px;
     height: 50px;
     background: var(--hub-bg-primary, rgba(10, 10, 10, 0.95));
@@ -37,17 +38,37 @@
     position: fixed;
     top: 20px;
     right: 20px;
-    z-index: 100;
+    z-index: 100080;
+    /* Higher than all other elements */
     font-family: 'Inter', sans-serif;
     user-select: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     transform: translateX(0);
     opacity: 1;
 
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+        top: auto;
+        bottom: 10px;
+        right: 10px;
+        transform: scale(0.9);
+        transform-origin: bottom right;
+    }
+
+    @media (max-width: 480px) {
+        transform: scale(0.8);
+        bottom: 5px;
+        right: 5px;
+    }
+
     /* Custom Properties for theming */
     --hub-primary: #00f0ff;
     --hub-secondary: #ff00ff;
     --hub-accent: #ffff00;
+
+    /* Touch-friendly improvements */
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
     --hub-success: #00ff00;
     --hub-error: #ff4757;
     --hub-bg-primary: rgba(10, 10, 10, 0.95);
@@ -107,8 +128,10 @@
 }
 
 .profile-hub[data-state="expanded"] .hub-expanded-content {
-    display: block;
+    display: block !important;
     animation: slideDownEnhanced 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 .profile-hub[data-state="chatbot-active"] .hub-chatbot-container {
@@ -251,8 +274,8 @@
 
 .hub-control-btn {
     position: relative;
-    width: 36px;
-    height: 36px;
+    width: 48px;
+    height: 48px;
     background: var(--hub-bg-secondary);
     border: 1px solid var(--hub-border-color);
     border-radius: 10px;
@@ -265,18 +288,42 @@
     transition: all 0.3s ease;
     overflow: hidden;
     flex-shrink: 0;
+
+    /* Mobile touch improvements */
+    min-height: 48px;
+    min-width: 48px;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+
+    @media (max-width: 768px) {
+        width: 56px;
+        height: 56px;
+        font-size: 1.4rem;
+    }
 }
 
 .hub-control-btn:hover {
     background: var(--hub-primary);
     color: var(--hub-bg-primary);
-    transform: scale(1.1);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+
+.hub-control-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
 }
 
 .hub-control-btn.active {
     background: var(--hub-primary);
     color: var(--hub-bg-primary);
     box-shadow: 0 0 15px rgba(0, 240, 255, 0.4);
+}
+
+.hub-control-btn.touch-active {
+    background: var(--hub-primary);
+    color: var(--hub-bg-primary);
+    transform: scale(0.95);
 }
 
 .hub-auth-btn.logged-in {
@@ -306,8 +353,8 @@
 
 /* ===== HUB TOGGLE BUTTON ===== */
 .hub-toggle-btn {
-    width: 28px;
-    height: 36px;
+    width: 40px;
+    height: 48px;
     background: var(--hub-bg-secondary);
     border: 1px solid var(--hub-border-color);
     border-radius: 0 10px 10px 0;
@@ -325,6 +372,13 @@
 .hub-toggle-btn:hover {
     background: var(--hub-primary);
     color: var(--hub-bg-primary);
+    transform: scale(1.05);
+    box-shadow: 0 4px 12px rgba(0, 240, 255, 0.3);
+}
+
+.hub-toggle-btn:active {
+    transform: scale(0.95);
+    transition: transform 0.1s ease;
 }
 
 .hub-toggle-btn .toggle-icon {
@@ -354,6 +408,16 @@
     /* Sidebar polish */
     max-height: 70vh;
     overflow-y: auto;
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Force show expanded content when hub is expanded */
+.profile-hub[data-state="expanded"] .hub-expanded-content,
+.hub-expanded-content.show {
+    display: block !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Neon sidebar accent */
@@ -1198,13 +1262,15 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .profile-hub {
-        display: none;
-        /* Hide ProfileHub on mobile, use mobile drawer instead */
+        /* Keep ProfileHub visible on mobile with responsive positioning */
+        display: block;
+        transform: scale(0.9);
+        transform-origin: top right;
     }
 
     .profile-hub-drawer-toggle {
-        display: none !important;
-        /* Hide drawer toggle on mobile since ProfileHub is already hidden */
+        /* Keep drawer toggle visible on mobile */
+        display: block !important;
     }
 
     .mobile-menu-toggle {
@@ -1285,8 +1351,10 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 
 @media (max-width: 480px) {
     .profile-hub {
-        display: none;
-        /* Keep hidden on small mobile screens */
+        /* Keep ProfileHub visible on small mobile screens with smaller scale */
+        display: block;
+        transform: scale(0.8);
+        transform-origin: top right;
     }
 
     .mobile-menu-toggle {

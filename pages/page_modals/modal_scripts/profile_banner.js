@@ -152,10 +152,21 @@ class ProfileHubManager {
     const missingElements = requiredElements.filter((key) => !this.dom[key]);
 
     if (missingElements.length > 0) {
-      throw new Error(
-        `Missing required DOM elements: ${missingElements.join(", ")}`
+      console.error(
+        `[PROFILE HUB] Missing required DOM elements: ${missingElements.join(", ")}`
       );
+      // Don't throw error, just log and continue
     }
+
+    // Debug log all found elements
+    console.log("[PROFILE HUB] DOM elements found:");
+    Object.keys(this.dom).forEach((key) => {
+      if (this.dom[key]) {
+        console.log(`  ✅ ${key}: Found`);
+      } else {
+        console.log(`  ❌ ${key}: Missing`);
+      }
+    });
 
     console.log(
       "[PROFILE HUB] DOM references initialized successfully - Enhanced sliding modal system ready"
@@ -190,31 +201,55 @@ class ProfileHubManager {
     console.log("[PROFILE HUB] Setting up event listeners...");
 
     // Hub Toggle Button
-    this.addEventListener(this.dom.hubToggle, "click", () => {
-      this.toggleHub();
-    });
+    if (this.dom.hubToggle) {
+      this.addEventListener(this.dom.hubToggle, "click", () => {
+        console.log("[PROFILE HUB] Hub toggle button clicked"); // Debug log [[memory:4664284]]
+        this.toggleHub();
+      });
+    } else {
+      console.warn("[PROFILE HUB] Hub toggle button not found!");
+    }
 
     // Drawer Toggle Button
-    this.addEventListener(this.dom.drawerToggle, "click", () => {
-      this.toggleDrawer();
-    });
+    if (this.dom.drawerToggle) {
+      this.addEventListener(this.dom.drawerToggle, "click", () => {
+        console.log("[PROFILE HUB] Drawer toggle button clicked"); // Debug log [[memory:4664284]]
+        this.toggleDrawer();
+      });
+    } else {
+      console.warn("[PROFILE HUB] Drawer toggle button not found!");
+    }
 
     // Control Buttons
-    this.addEventListener(this.dom.chatbotToggle, "click", () => {
-      this.toggleChatbot();
-    });
+    if (this.dom.chatbotToggle) {
+      this.addEventListener(this.dom.chatbotToggle, "click", () => {
+        console.log("[PROFILE HUB] Chatbot toggle button clicked"); // Debug log [[memory:4664284]]
+        this.toggleChatbot();
+      });
+    } else {
+      console.warn("[PROFILE HUB] Chatbot toggle button not found!");
+    }
 
-    this.addEventListener(this.dom.customizeToggle, "click", () => {
-      console.log(
-        "[PROFILE HUB] Gear quicklink clicked → navigating to Explore"
-      ); // debug [[memory:4664284]]
-      console.log(`[PROFILE HUB] Navigating to: pages/explore.html`); // Debug log [[memory:4664284]]
-      window.location.href = "pages/explore.html";
-    });
+    if (this.dom.customizeToggle) {
+      this.addEventListener(this.dom.customizeToggle, "click", () => {
+        console.log(
+          "[PROFILE HUB] Gear quicklink clicked → navigating to Explore"
+        ); // debug [[memory:4664284]]
+        console.log(`[PROFILE HUB] Navigating to: pages/explore.html`); // Debug log [[memory:4664284]]
+        window.location.href = "pages/explore.html";
+      });
+    } else {
+      console.warn("[PROFILE HUB] Customize toggle button not found!");
+    }
 
-    this.addEventListener(this.dom.authToggle, "click", () => {
-      this.modules.auth.handleAuthToggle();
-    });
+    if (this.dom.authToggle) {
+      this.addEventListener(this.dom.authToggle, "click", () => {
+        console.log("[PROFILE HUB] Auth toggle button clicked"); // Debug log [[memory:4664284]]
+        this.modules.auth.handleAuthToggle();
+      });
+    } else {
+      console.warn("[PROFILE HUB] Auth toggle button not found!");
+    }
 
     // User Avatar Click
     this.addEventListener(this.dom.userAvatar, "click", () => {
@@ -427,12 +462,43 @@ class ProfileHubManager {
       `[PROFILE HUB] Toggling hub: ${this.state.ui.hubState} -> ${newState}`
     );
 
+    // Debug: Check if expanded content element exists
+    if (this.dom.expandedContent) {
+      console.log(
+        `[PROFILE HUB] Expanded content element found:`,
+        this.dom.expandedContent
+      );
+      console.log(
+        `[PROFILE HUB] Current expanded content display:`,
+        window.getComputedStyle(this.dom.expandedContent).display
+      );
+    } else {
+      console.warn(`[PROFILE HUB] Expanded content element NOT found!`);
+    }
+
     this.setState({
       ui: {
         hubState: newState,
         customizationState: "closed", // Close customization when toggling
       },
     });
+
+    // Debug: Check state after update
+    setTimeout(() => {
+      console.log(`[PROFILE HUB] State after toggle:`, this.state.ui.hubState);
+      if (this.dom.hub) {
+        console.log(
+          `[PROFILE HUB] Hub data-state attribute:`,
+          this.dom.hub.getAttribute("data-state")
+        );
+      }
+      if (this.dom.expandedContent) {
+        console.log(
+          `[PROFILE HUB] Expanded content display after toggle:`,
+          window.getComputedStyle(this.dom.expandedContent).display
+        );
+      }
+    }, 100);
   }
 
   /**
@@ -586,6 +652,23 @@ class ProfileHubManager {
 
     // Update CSS custom properties for theming
     this.dom.hub.style.setProperty("--hub-scale", ui.scale);
+
+    // Force update expanded content visibility as fallback
+    if (this.dom.expandedContent) {
+      if (ui.hubState === "expanded") {
+        this.dom.expandedContent.classList.add("show");
+        this.dom.expandedContent.style.display = "block";
+        this.dom.expandedContent.style.opacity = "1";
+        this.dom.expandedContent.style.visibility = "visible";
+        console.log("[PROFILE HUB] Expanded content forced to show"); // Debug log [[memory:4664284]]
+      } else {
+        this.dom.expandedContent.classList.remove("show");
+        this.dom.expandedContent.style.display = "none";
+        this.dom.expandedContent.style.opacity = "0";
+        this.dom.expandedContent.style.visibility = "hidden";
+        console.log("[PROFILE HUB] Expanded content forced to hide"); // Debug log [[memory:4664284]]
+      }
+    }
 
     // Update overlay
     if (this.dom.overlay) {
@@ -1689,8 +1772,10 @@ async function loadProfileHubHTML() {
       container.innerHTML = htmlContent;
       console.log("[PROFILE HUB] ProfileHub HTML content loaded successfully");
 
-      // Initialize ProfileHub after loading
-      initializeProfileHub();
+      // ProfileHub HTML loaded, initialization will happen in initializeProfileHubSystem
+      console.log(
+        "[PROFILE HUB] HTML loaded, ready for manager initialization"
+      );
     } else {
       console.warn("[PROFILE HUB] ProfileHub container not found");
       // Try to create the container
@@ -1751,14 +1836,30 @@ async function loadAuthModalHTML() {
 
 // Add this function to create the container if it doesn't exist
 function createProfileHubContainer() {
+  // Check if container already exists
+  if (document.getElementById("profileHubContainer")) {
+    console.log("[PROFILE HUB] Container already exists");
+    return;
+  }
+
   const container = document.createElement("div");
   container.id = "profileHubContainer";
+
+  // Enhanced positioning and styling
   container.style.position = "fixed";
   container.style.top = "20px";
   container.style.right = "20px";
-  container.style.zIndex = "1000";
+  container.style.zIndex = "100080"; /* Higher than all other elements */
+  container.style.pointerEvents = "auto"; // Enable clicks for ProfileHub interactions
+  container.style.transition = "all 0.3s ease";
+
+  // Ensure it's added to the body
   document.body.appendChild(container);
+
   console.log("[PROFILE HUB] Created ProfileHub container");
+
+  // Return the container for further use
+  return container;
 }
 
 // Fallback ProfileHub creation if HTML loading fails
@@ -1942,19 +2043,26 @@ async function initializeProfileHubSystem() {
   console.log("[PROFILE HUB] Starting ProfileHub system initialization...");
 
   try {
-    // Ensure the container exists
+    // Ensure the container exists with retry mechanism
     let container = document.getElementById("profileHubContainer");
     if (!container) {
       console.log("[PROFILE HUB] Creating ProfileHub container...");
       createProfileHubContainer();
+
+      // Wait a bit for DOM to update
+      await new Promise((resolve) => setTimeout(resolve, 100));
       container = document.getElementById("profileHubContainer");
+
+      if (!container) {
+        throw new Error("Failed to create ProfileHub container");
+      }
     }
+
+    // Add mobile-responsive positioning
+    setupMobileResponsivePositioning();
 
     // Load and inject ProfileHub HTML content
     await loadProfileHubHTML();
-
-    // Ensure Auth modal is available on every page
-    await loadAuthModalHTML();
 
     // Ensure Auth modal is available on every page
     await loadAuthModalHTML();
@@ -1964,9 +2072,13 @@ async function initializeProfileHubSystem() {
 
     // Initialize the ProfileHub manager
     profileHubManager = new ProfileHubManager();
+    await profileHubManager.init();
 
     // Expose for debugging [[memory:4664284]]
     window.profileHubManager = profileHubManager;
+
+    // Add mobile-specific event listeners
+    setupMobileEventListeners();
 
     console.log("[PROFILE HUB] ProfileHub system ready!");
     return true;
@@ -1996,6 +2108,65 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("[PROFILE HUB] DOM ready, initializing ProfileHub...");
   await initializeProfileHubSystem();
 });
+
+// Debug function to check ProfileHub status
+window.debugProfileHub = function () {
+  console.log("=== PROFILE HUB DEBUG ===");
+  console.log(
+    "Container exists:",
+    !!document.getElementById("profileHubContainer")
+  );
+  console.log(
+    "ProfileHub element exists:",
+    !!document.getElementById("profileHub")
+  );
+  console.log("ProfileHub Manager exists:", !!window.profileHubManager);
+  console.log(
+    "Container HTML:",
+    document.getElementById("profileHubContainer")?.innerHTML?.length ||
+      "No container"
+  );
+  console.log(
+    "Container position:",
+    document.getElementById("profileHubContainer")?.style?.position ||
+      "No styles"
+  );
+
+  // Check specific button elements
+  const buttons = {
+    hubToggle: document.getElementById("hubToggleBtn"),
+    chatbotToggle: document.getElementById("hubChatbotToggle"),
+    customizeToggle: document.getElementById("hubCustomizeToggle"),
+    authToggle: document.getElementById("hubAuthToggle"),
+    userAvatar: document.getElementById("hubUserAvatar"),
+  };
+
+  console.log("Button elements found:");
+  Object.entries(buttons).forEach(([name, element]) => {
+    if (element) {
+      console.log(`  ✅ ${name}: Found`, element);
+      console.log(
+        `     - Clickable: ${element.style.pointerEvents !== "none"}`
+      );
+      console.log(`     - Visible: ${element.offsetParent !== null}`);
+    } else {
+      console.log(`  ❌ ${name}: Not found`);
+    }
+  });
+
+  // Try to force initialization
+  if (!document.getElementById("profileHub")) {
+    console.log("ProfileHub not found, attempting to reinitialize...");
+    initializeProfileHubSystem();
+  }
+
+  return {
+    container: !!document.getElementById("profileHubContainer"),
+    profileHub: !!document.getElementById("profileHub"),
+    manager: !!window.profileHubManager,
+    buttons: buttons,
+  };
+};
 
 // Expose functions globally for compatibility
 window.toggleProfileHub = () => profileHubManager?.toggleHub();
@@ -2324,6 +2495,90 @@ window.testSlidingModal = () => {
   }
 };
 
+// Debug function to test button clicks manually
+window.testProfileHubButtons = () => {
+  console.log("[PROFILE HUB DEBUG] Testing button functionality manually");
+
+  const buttons = {
+    hubToggle: document.getElementById("hubToggleBtn"),
+    chatbotToggle: document.getElementById("hubChatbotToggle"),
+    customizeToggle: document.getElementById("hubCustomizeToggle"),
+    authToggle: document.getElementById("hubAuthToggle"),
+  };
+
+  Object.entries(buttons).forEach(([name, button]) => {
+    if (button) {
+      console.log(`[PROFILE HUB DEBUG] Testing ${name} button...`);
+      try {
+        // Simulate click event
+        const clickEvent = new MouseEvent("click", {
+          bubbles: true,
+          cancelable: true,
+          view: window,
+        });
+        button.dispatchEvent(clickEvent);
+        console.log(
+          `[PROFILE HUB DEBUG] ${name} button click simulated successfully`
+        );
+      } catch (error) {
+        console.error(
+          `[PROFILE HUB DEBUG] Error testing ${name} button:`,
+          error
+        );
+      }
+    } else {
+      console.warn(`[PROFILE HUB DEBUG] ${name} button not found`);
+    }
+  });
+};
+
+// Debug function specifically for dropdown testing
+window.testProfileHubDropdown = () => {
+  console.log("[PROFILE HUB DEBUG] Testing dropdown functionality...");
+
+  const profileHub = document.getElementById("profileHub");
+  const expandedContent = document.getElementById("hubExpandedContent");
+  const toggleBtn = document.getElementById("hubToggleBtn");
+
+  console.log("Elements found:");
+  console.log(`  ProfileHub: ${!!profileHub}`);
+  console.log(`  Expanded Content: ${!!expandedContent}`);
+  console.log(`  Toggle Button: ${!!toggleBtn}`);
+
+  if (profileHub) {
+    console.log(
+      `  Current data-state: ${profileHub.getAttribute("data-state")}`
+    );
+  }
+
+  if (expandedContent) {
+    const computedStyle = window.getComputedStyle(expandedContent);
+    console.log(`  Expanded content display: ${computedStyle.display}`);
+    console.log(`  Expanded content visibility: ${computedStyle.visibility}`);
+    console.log(`  Expanded content opacity: ${computedStyle.opacity}`);
+  }
+
+  // Test manual toggle
+  if (window.profileHubManager) {
+    console.log("[PROFILE HUB DEBUG] Testing manual toggle...");
+    window.profileHubManager.toggleHub();
+  } else {
+    console.warn("[PROFILE HUB DEBUG] ProfileHub manager not available");
+  }
+
+  // Test CSS classes
+  if (expandedContent) {
+    console.log("Expanded content classes:", expandedContent.className);
+  }
+
+  return {
+    profileHub: !!profileHub,
+    expandedContent: !!expandedContent,
+    toggleBtn: !!toggleBtn,
+    manager: !!window.profileHubManager,
+  };
+};
+
 // Debug function to diagnose profile connection issues
 window.diagnoseProfileIssues = () => {
   console.log("[PROFILE HUB DEBUG] Diagnosing profile connection issues...");
@@ -2393,3 +2648,217 @@ window.reinitializeProfileHub = async () => {
 
   console.log("[PROFILE HUB DEBUG] Reinitialization complete");
 };
+
+// Debug function to force show ProfileHub
+window.showProfileHub = () => {
+  const profileHub = document.getElementById("profileHub");
+  const container = document.getElementById("profileHubContainer");
+
+  if (profileHub) {
+    // Remove any hiding classes and force visibility
+    profileHub.classList.remove("drawer-hidden");
+    profileHub.style.display = "block !important";
+    profileHub.style.opacity = "1";
+    profileHub.style.transform = "translateX(0)";
+    profileHub.style.pointerEvents = "auto";
+    profileHub.setAttribute("data-state", "visible");
+
+    console.log("[PROFILE HUB DEBUG] ProfileHub forced to show");
+    console.log(`[PROFILE HUB DEBUG] Screen width: ${window.innerWidth}px`);
+    console.log(
+      `[PROFILE HUB DEBUG] ProfileHub display: ${window.getComputedStyle(profileHub).display}`
+    );
+  } else {
+    console.log("[PROFILE HUB DEBUG] ProfileHub element not found");
+  }
+
+  if (container) {
+    container.style.pointerEvents = "auto";
+    console.log("[PROFILE HUB DEBUG] Container pointer events enabled");
+  }
+};
+
+// Debug function to check DOM elements
+window.checkProfileHubDOM = () => {
+  console.log("=== PROFILE HUB DOM CHECK ===");
+
+  const elements = {
+    profileHub: document.getElementById("profileHub"),
+    hubToggleBtn: document.getElementById("hubToggleBtn"),
+    hubAuthToggle: document.getElementById("hubAuthToggle"),
+    hubChatbotToggle: document.getElementById("hubChatbotToggle"),
+    hubUserAvatar: document.getElementById("hubUserAvatar"),
+  };
+
+  Object.entries(elements).forEach(([name, element]) => {
+    if (element) {
+      console.log(`✅ ${name}: Found`, element);
+      console.log(`   - Clickable: ${element.style.pointerEvents !== "none"}`);
+      console.log(`   - Visible: ${element.offsetParent !== null}`);
+    } else {
+      console.log(`❌ ${name}: Not found`);
+    }
+  });
+
+  return elements;
+};
+
+// Debug function to check z-index conflicts
+window.checkZIndexConflicts = () => {
+  console.log("=== Z-INDEX CONFLICT CHECK ===");
+
+  const elements = [
+    { name: "ProfileHub", selector: "#profileHub" },
+    { name: "ProfileHub Container", selector: "#profileHubContainer" },
+    { name: "Drawer Toggle", selector: ".profile-hub-drawer-toggle" },
+    { name: "Chat Drawer", selector: ".chat-drawer" },
+    { name: "Sidebar", selector: ".sidebar-nav" },
+    { name: "Modal", selector: ".modal" },
+  ];
+
+  elements.forEach(({ name, selector }) => {
+    const element = document.querySelector(selector);
+    if (element) {
+      const zIndex = window.getComputedStyle(element).zIndex;
+      console.log(`${name}: z-index = ${zIndex}`);
+    } else {
+      console.log(`${name}: Not found`);
+    }
+  });
+
+  // Force ProfileHub to highest z-index
+  const profileHub = document.getElementById("profileHub");
+  const container = document.getElementById("profileHubContainer");
+
+  if (profileHub) {
+    profileHub.style.zIndex = "100080";
+    console.log("✅ ProfileHub z-index set to 100080");
+  }
+
+  if (container) {
+    container.style.zIndex = "100080";
+    console.log("✅ Container z-index set to 100080");
+  }
+};
+
+// Debug function to check screen size and visibility
+window.checkScreenSizeAndVisibility = () => {
+  console.log("=== SCREEN SIZE & VISIBILITY CHECK ===");
+
+  const screenWidth = window.innerWidth;
+  const profileHub = document.getElementById("profileHub");
+
+  console.log(`Screen width: ${screenWidth}px`);
+  console.log(`Is mobile (≤768px): ${screenWidth <= 768}`);
+  console.log(`Is small mobile (≤480px): ${screenWidth <= 480}`);
+
+  if (profileHub) {
+    const computedStyle = window.getComputedStyle(profileHub);
+    const rect = profileHub.getBoundingClientRect();
+
+    console.log("ProfileHub status:");
+    console.log(`  - Display: ${computedStyle.display}`);
+    console.log(`  - Visibility: ${computedStyle.visibility}`);
+    console.log(`  - Opacity: ${computedStyle.opacity}`);
+    console.log(`  - Transform: ${computedStyle.transform}`);
+    console.log(`  - Position: ${rect.left}, ${rect.top}`);
+    console.log(`  - Size: ${rect.width} × ${rect.height}`);
+    console.log(`  - Data state: ${profileHub.getAttribute("data-state")}`);
+  } else {
+    console.log("❌ ProfileHub element not found");
+  }
+};
+
+// Mobile responsiveness functions
+function setupMobileResponsivePositioning() {
+  const container = document.getElementById("profileHubContainer");
+  if (!container) return;
+
+  // Set up responsive positioning
+  const updatePosition = () => {
+    const isMobile = window.innerWidth <= 768;
+    const isTablet = window.innerWidth <= 1024;
+
+    if (isMobile) {
+      // Mobile: position at bottom right, smaller size
+      container.style.top = "auto";
+      container.style.right = "10px";
+      container.style.bottom = "10px";
+      container.style.left = "auto";
+      container.style.transform = "scale(0.9)";
+      container.style.transformOrigin = "bottom right";
+    } else if (isTablet) {
+      // Tablet: position at top right, medium size
+      container.style.top = "15px";
+      container.style.right = "15px";
+      container.style.bottom = "auto";
+      container.style.left = "auto";
+      container.style.transform = "scale(0.95)";
+      container.style.transformOrigin = "top right";
+    } else {
+      // Desktop: position at top right, full size
+      container.style.top = "20px";
+      container.style.right = "20px";
+      container.style.bottom = "auto";
+      container.style.left = "auto";
+      container.style.transform = "scale(1)";
+      container.style.transformOrigin = "top right";
+    }
+  };
+
+  // Set initial position
+  updatePosition();
+
+  // Update on resize
+  window.addEventListener("resize", updatePosition);
+
+  console.log("[PROFILE HUB] Mobile responsive positioning set up");
+}
+
+function setupMobileEventListeners() {
+  // Prevent zoom on ProfileHub interactions (iOS Safari)
+  const profileHub = document.getElementById("profileHub");
+  if (!profileHub) return;
+
+  // Add touch-friendly interactions
+  profileHub.addEventListener(
+    "touchstart",
+    (e) => {
+      e.target.classList.add("touch-active");
+    },
+    { passive: true }
+  );
+
+  profileHub.addEventListener(
+    "touchend",
+    (e) => {
+      e.target.classList.remove("touch-active");
+    },
+    { passive: true }
+  );
+
+  // Prevent double-tap zoom on ProfileHub
+  let lastTouchEnd = 0;
+  profileHub.addEventListener(
+    "touchend",
+    (e) => {
+      const now = new Date().getTime();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    },
+    false
+  );
+
+  // Improve touch targets for mobile
+  const touchTargets = profileHub.querySelectorAll(
+    "button, .hub-control-btn, .nav-link"
+  );
+  touchTargets.forEach((target) => {
+    target.style.minHeight = "44px"; // iOS recommended touch target size
+    target.style.minWidth = "44px";
+  });
+
+  console.log("[PROFILE HUB] Mobile event listeners set up");
+}

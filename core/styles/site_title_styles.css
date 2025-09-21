@@ -1,44 +1,207 @@
-/* Title header and 3D title styling */
-.title-header-section {
-    padding: 40px 16px 0 16px;
-}
-
-.title-header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    position: relative;
-}
+/* ===== SITE TITLE STYLES ===== */
+/* Professional 3D title styling for inQ platform */
 
 .title-main-container {
     text-align: center;
+    margin: 60px auto 40px auto;
+    padding: 0 20px;
+    max-width: 1200px;
     position: relative;
 }
 
 .title-3d {
-    font-family: "Orbitron", monospace;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 20px;
+    perspective: 1000px;
+}
+
+.title-line-1,
+.title-line-2 {
+    display: block;
+    font-family: 'Orbitron', 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: clamp(32px, 5vw, 64px);
-    color: var(--text-primary);
-    text-shadow: 0 2px 0 #0b1820, 0 0 10px rgba(0, 240, 255, 0.4);
-}
-
-.title-3d .title-line-1 {
-    display: block;
-    letter-spacing: 1px;
-}
-
-.title-3d .title-line-2 {
-    display: block;
-    color: var(--primary-neon);
+    text-transform: lowercase;
     letter-spacing: 2px;
+    position: relative;
+    margin: 0;
+    line-height: 1.1;
 }
 
-/* Responsive spacing to make room for the orb */
-.title-main-container {
-    padding-bottom: 24px;
+.title-line-1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    color: var(--primary-neon);
+    text-shadow:
+        0 0 10px rgba(0, 240, 255, 0.5),
+        0 0 20px rgba(0, 240, 255, 0.3),
+        0 0 30px rgba(0, 240, 255, 0.2);
+    transform: translateZ(20px);
+    animation: titleGlow 3s ease-in-out infinite alternate;
 }
 
-/* Live stats quick utility overrides */
-.live-stats-container .stat-title {
-    font-family: "Inter", sans-serif;
+.title-line-2 {
+    font-size: clamp(1.8rem, 6vw, 3.2rem);
+    color: var(--secondary-neon);
+    text-shadow:
+        0 0 10px rgba(180, 0, 255, 0.5),
+        0 0 20px rgba(180, 0, 255, 0.3),
+        0 0 30px rgba(180, 0, 255, 0.2);
+    transform: translateZ(10px);
+    animation: titleGlowSecondary 3s ease-in-out infinite alternate;
+    animation-delay: 1.5s;
+}
+
+/* Enhanced 3D effect */
+.title-3d::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(45deg,
+            transparent 30%,
+            rgba(0, 240, 255, 0.1) 50%,
+            transparent 70%);
+    transform: translateZ(-5px);
+    animation: shimmer 4s ease-in-out infinite;
+    pointer-events: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .title-main-container {
+        margin: 40px auto 30px auto;
+        padding: 0 15px;
+    }
+
+    .title-line-1 {
+        font-size: clamp(2rem, 10vw, 3.5rem);
+        letter-spacing: 1px;
+    }
+
+    .title-line-2 {
+        font-size: clamp(1.4rem, 8vw, 2.5rem);
+        letter-spacing: 1px;
+    }
+}
+
+@media (max-width: 480px) {
+    .title-main-container {
+        margin: 30px auto 20px auto;
+    }
+
+    .title-line-1 {
+        font-size: clamp(1.8rem, 12vw, 2.8rem);
+    }
+
+    .title-line-2 {
+        font-size: clamp(1.2rem, 10vw, 2rem);
+    }
+}
+
+/* Animations */
+@keyframes titleGlow {
+    0% {
+        text-shadow:
+            0 0 10px rgba(0, 240, 255, 0.5),
+            0 0 20px rgba(0, 240, 255, 0.3),
+            0 0 30px rgba(0, 240, 255, 0.2);
+        transform: translateZ(20px) scale(1);
+    }
+
+    100% {
+        text-shadow:
+            0 0 15px rgba(0, 240, 255, 0.8),
+            0 0 25px rgba(0, 240, 255, 0.5),
+            0 0 35px rgba(0, 240, 255, 0.3);
+        transform: translateZ(25px) scale(1.02);
+    }
+}
+
+@keyframes titleGlowSecondary {
+    0% {
+        text-shadow:
+            0 0 10px rgba(180, 0, 255, 0.5),
+            0 0 20px rgba(180, 0, 255, 0.3),
+            0 0 30px rgba(180, 0, 255, 0.2);
+        transform: translateZ(10px) scale(1);
+    }
+
+    100% {
+        text-shadow:
+            0 0 15px rgba(180, 0, 255, 0.8),
+            0 0 25px rgba(180, 0, 255, 0.5),
+            0 0 35px rgba(180, 0, 255, 0.3);
+        transform: translateZ(15px) scale(1.02);
+    }
+}
+
+@keyframes shimmer {
+
+    0%,
+    100% {
+        opacity: 0;
+        transform: translateZ(-5px) translateX(-100%);
+    }
+
+    50% {
+        opacity: 1;
+        transform: translateZ(-5px) translateX(100%);
+    }
+}
+
+/* Subtle hover effects */
+.title-3d:hover .title-line-1 {
+    animation-duration: 1.5s;
+}
+
+.title-3d:hover .title-line-2 {
+    animation-duration: 1.5s;
+}
+
+/* Professional subtitle styling */
+#home-subtitle {
+    font-size: clamp(1.2rem, 3vw, 1.6rem) !important;
+    color: var(--text-secondary) !important;
+    margin: 0 auto 50px auto !important;
+    max-width: 800px !important;
+    line-height: 1.5 !important;
+    font-weight: 300 !important;
+    opacity: 0.9 !important;
+    font-family: 'Inter', sans-serif !important;
+    text-align: center !important;
+    padding: 0 20px !important;
+}
+
+/* Enhanced subtitle with subtle animation */
+#home-subtitle {
+    position: relative;
+    overflow: hidden;
+}
+
+#home-subtitle::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(0, 240, 255, 0.1),
+            transparent);
+    animation: subtitleShimmer 6s ease-in-out infinite;
+}
+
+@keyframes subtitleShimmer {
+
+    0%,
+    100% {
+        left: -100%;
+    }
+
+    50% {
+        left: 100%;
+    }
 }

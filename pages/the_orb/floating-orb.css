@@ -1,4 +1,4 @@
-/* ========== Floating Orb: Minimal, 3D, Top-Left ========== */
+/* ========== Floating Orb: Simplified Positioning ========== */
 
 /* WebGL layer sits behind the CSS orb */
 .orb-3d-layer {
@@ -13,63 +13,49 @@
 }
 
 :root {
-    /* Zone sizing for orb container */
-    --zone-width: 360px;
-    --zone-height: 360px;
-
-    /* Orb sizing */
+    /* Simple orb sizing */
     --orb-size: 130px;
-    /* main orb diameter */
     --orbit-size: 280px;
-    /* ring around the orb */
-    --popup-offset: 16px;
-
-    /* Scroll properties */
-    --scroll-sensitivity: 0.5;
-    --scroll-line-width: 5px;
-    --lock-point-size: 12px;
 
     /* Colors */
-    --orb-core: #0b2a2f;
-    /* deep core */
     --orb-primary: #00e5ff;
-    /* cyan glow */
     --orb-secondary: #b400ff;
-    /* magenta rim */
     --orb-glow: rgba(0, 229, 255, .45);
-    /* outer glow */
 
     /* UI */
-    --popup-bg: rgba(12, 12, 16, .9);
-    --popup-border: rgba(255, 255, 255, .15);
-    --popup-radius: 14px;
-    --shadow-lg: 0 10px 30px rgba(0, 0, 0, .45);
     --z-orb: 100040;
 }
 
-/* Scale down on small screens */
-@media (max-width: 600px) {
+/* Simple responsive sizing */
+@media (max-width: 768px) {
     :root {
-        --zone-width: 300px;
-        --zone-height: 300px;
         --orb-size: 110px;
         --orbit-size: 240px;
-        --popup-offset: 12px;
     }
 }
 
 
-/* Wrapper sets the 3D stage */
+/* Wrapper sets the 3D stage - Fixed positioning */
 .floating-orb-wrapper {
     position: relative;
-    width: var(--zone-width);
-    height: var(--zone-height);
+    width: var(--orbit-size);
+    height: var(--orbit-size);
     z-index: var(--z-orb);
     pointer-events: none;
-    /* let inner parts manage interactions */
     perspective: 700px;
-    /* 3D perspective */
     transform-style: preserve-3d;
+    /* Fixed positioning - never moves with scroll */
+    margin: 0;
+    display: block;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* Ensure it stays put */
+    transform: none !important;
+    pointer-events: none;
+    overflow: visible;
 }
 
 /* =====================
@@ -80,35 +66,38 @@
     animation: none;
 }
 
-/* Scroll-based horizontal line around orb */
+/* Saturn-like equatorial ring */
 .orb-scroll-line {
     position: absolute;
     top: 50%;
     left: 50%;
-    width: calc(var(--orbit-size) + 100px);
-    height: calc(var(--orbit-size) + 100px);
-    transform: translate(-50%, -50%) scaleY(0.4) rotateZ(var(--scroll-rotation, 0deg));
-    border: var(--scroll-line-width) solid transparent;
+    width: calc(var(--orbit-size) + 80px);
+    height: calc(var(--orbit-size) + 80px);
+    transform: translate(-50%, -50%) scaleY(0.15) rotateZ(var(--scroll-rotation, 0deg));
+    border: 2px solid transparent;
     border-radius: 50%;
     pointer-events: none;
     z-index: 1;
     background: conic-gradient(from 0deg,
-            rgba(0, 240, 255, 0.8) 0deg,
-            rgba(0, 240, 255, 0.4) 90deg,
-            rgba(180, 0, 255, 0.6) 180deg,
-            rgba(255, 107, 53, 0.5) 270deg,
-            rgba(0, 240, 255, 0.8) 360deg);
+            rgba(0, 240, 255, 0.9) 0deg,
+            rgba(0, 240, 255, 0.6) 60deg,
+            rgba(180, 0, 255, 0.7) 120deg,
+            rgba(255, 107, 53, 0.6) 180deg,
+            rgba(180, 0, 255, 0.7) 240deg,
+            rgba(0, 240, 255, 0.6) 300deg,
+            rgba(0, 240, 255, 0.9) 360deg);
     -webkit-mask:
-        radial-gradient(ellipse at center, transparent calc(50% - var(--scroll-line-width)),
-            black calc(50% - var(--scroll-line-width)),
-            black calc(50% + var(--scroll-line-width)),
-            transparent calc(50% + var(--scroll-line-width)));
+        radial-gradient(ellipse at center, transparent calc(50% - 2px),
+            black calc(50% - 2px),
+            black calc(50% + 2px),
+            transparent calc(50% + 2px));
     mask:
-        radial-gradient(ellipse at center, transparent calc(50% - var(--scroll-line-width)),
-            black calc(50% - var(--scroll-line-width)),
-            black calc(50% + var(--scroll-line-width)),
-            transparent calc(50% + var(--scroll-line-width)));
+        radial-gradient(ellipse at center, transparent calc(50% - 2px),
+            black calc(50% - 2px),
+            black calc(50% + 2px),
+            transparent calc(50% + 2px));
     transition: opacity 0.3s ease;
+    box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
 }
 
 /* Lock points on the scroll line */
@@ -234,11 +223,80 @@
         height: 52px;
         touch-action: manipulation;
         -webkit-tap-highlight-color: rgba(0, 240, 255, 0.3);
+        /* Better mobile touch targets */
+        min-height: 44px;
+        min-width: 44px;
+        /* Ensure visibility on mobile */
+        opacity: 1;
+        z-index: 10;
+        /* Better touch interaction */
+        cursor: pointer;
+        transition: all 0.2s ease;
     }
 
     .orb-nav-container {
         /* slightly tighter orbit on mobile */
         --nav-radius: calc(var(--orbit-size) / 2.3);
+    }
+
+    /* Mobile-specific orb improvements */
+    .floating-orb {
+        /* Slightly smaller on mobile but still prominent */
+        width: calc(var(--orb-size) * 0.9);
+        height: calc(var(--orb-size) * 0.9);
+        /* Enhanced glow for mobile */
+        box-shadow:
+            0 0 20px rgba(0, 229, 255, 0.7),
+            0 0 40px rgba(0, 229, 255, 0.5),
+            0 0 60px rgba(0, 229, 255, 0.3),
+            inset 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+
+    .floating-orb:hover {
+        /* Reduced scale on mobile to prevent overflow */
+        transform: translate(-50%, -50%) scale(1.02) !important;
+    }
+
+    /* Mobile navigation enhancements */
+    .orb-nav-item:active {
+        transform: translate(-50%, -50%) translate(var(--x), var(--y)) scale(0.95);
+        background: rgba(0, 240, 255, 0.2);
+    }
+
+    /* Ensure navigation buttons are always accessible on mobile */
+    .orb-nav-item {
+        pointer-events: auto !important;
+        touch-action: manipulation;
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        /* Enhanced mobile interaction */
+        -webkit-tap-highlight-color: rgba(0, 240, 255, 0.4);
+        /* Prevent text selection */
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Mobile-specific orb enhancements */
+    .floating-orb {
+        /* Add touch-friendly interaction */
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Ensure proper mobile rendering */
+    .floating-orb-wrapper {
+        /* Prevent mobile browser interference */
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        -webkit-perspective: 1000;
+        perspective: 1000;
     }
 }
 
@@ -259,21 +317,111 @@
 
 
 
-/* idle breathing when there’s no user motion */
-@keyframes orb-breathe {
+/* Enhanced orb with beautiful gradients and glow */
+.floating-orb {
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    transform: translate(-50%, -50%);
+    /* Ensure orb never moves */
+    position: absolute !important;
+    top: 50% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    /* Beautiful orb styling with enhanced gradients */
+    background:
+        radial-gradient(circle at 25% 25%,
+            rgba(0, 255, 255, 1) 0%,
+            rgba(0, 229, 255, 0.95) 15%,
+            rgba(0, 195, 255, 0.85) 35%,
+            rgba(0, 150, 255, 0.75) 55%,
+            rgba(0, 120, 220, 0.65) 75%,
+            rgba(0, 100, 200, 0.55) 100%),
+        radial-gradient(circle at 75% 75%,
+            rgba(180, 0, 255, 0.3) 0%,
+            rgba(180, 0, 255, 0.1) 50%,
+            transparent 100%),
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.1) 0%,
+            transparent 50%,
+            rgba(0, 229, 255, 0.1) 100%);
+    box-shadow:
+        0 0 40px rgba(0, 229, 255, 0.8),
+        0 0 80px rgba(0, 229, 255, 0.6),
+        0 0 120px rgba(0, 229, 255, 0.4),
+        0 0 160px rgba(0, 229, 255, 0.2),
+        inset 0 0 40px rgba(255, 255, 255, 0.15),
+        inset 0 0 80px rgba(0, 229, 255, 0.25),
+        inset 0 0 120px rgba(0, 229, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    /* Add subtle animation */
+    animation: orb-pulse 4s ease-in-out infinite;
+}
+
+.floating-orb:hover {
+    transform: translate(-50%, -50%) scale(1.05) !important;
+    box-shadow:
+        0 0 50px rgba(0, 229, 255, 1.0),
+        0 0 100px rgba(0, 229, 255, 0.8),
+        0 0 150px rgba(0, 229, 255, 0.6),
+        0 0 200px rgba(0, 229, 255, 0.4),
+        inset 0 0 50px rgba(255, 255, 255, 0.2),
+        inset 0 0 100px rgba(0, 229, 255, 0.35),
+        inset 0 0 150px rgba(0, 229, 255, 0.15);
+    animation: orb-pulse-fast 2s ease-in-out infinite;
+    /* Enhanced hover effect */
+    background:
+        radial-gradient(circle at 20% 20%,
+            rgba(0, 255, 255, 1) 0%,
+            rgba(0, 229, 255, 0.98) 15%,
+            rgba(0, 195, 255, 0.9) 35%,
+            rgba(0, 150, 255, 0.8) 55%,
+            rgba(0, 120, 220, 0.7) 75%,
+            rgba(0, 100, 200, 0.6) 100%),
+        radial-gradient(circle at 80% 80%,
+            rgba(180, 0, 255, 0.4) 0%,
+            rgba(180, 0, 255, 0.15) 50%,
+            transparent 100%),
+        linear-gradient(135deg,
+            rgba(255, 255, 255, 0.15) 0%,
+            transparent 50%,
+            rgba(0, 229, 255, 0.15) 100%);
+}
+
+/* Subtle pulsing animation */
+@keyframes orb-pulse {
 
     0%,
     100% {
-        filter: brightness(1.0);
+        filter: brightness(1.0) saturate(1.0);
     }
 
     50% {
-        filter: brightness(1.08);
+        filter: brightness(1.1) saturate(1.1);
     }
 }
 
+@keyframes orb-pulse-fast {
+
+    0%,
+    100% {
+        filter: brightness(1.2) saturate(1.2);
+    }
+
+    50% {
+        filter: brightness(1.3) saturate(1.3);
+    }
+}
+
+/* Ensure orb container stays fixed */
+#orb-container {
+    position: relative !important;
+    overflow: visible !important;
+    transform: none !important;
+}
+
+/* Remove idle animation by default */
 .floating-orb.idle {
-    animation: orb-breathe 6s ease-in-out infinite;
+    animation: none;
+    filter: brightness(1.0);
 }
 
 
@@ -296,21 +444,16 @@
     box-shadow: 0 0 10px rgba(0, 229, 255, .45);
 }
 
-/* Universal input bar - positioned below chat dock when open */
+/* Universal input bar - simple positioning */
 .orb-input-wrap {
-    position: fixed !important;
-    left: 50% !important;
-    bottom: 20px !important;
-    transform: translateX(-50%) !important;
-    width: min(500px, 90vw) !important;
-    pointer-events: auto !important;
-    z-index: 10050 !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-    background: transparent !important;
-    box-shadow: none !important;
+    position: fixed;
+    left: 50%;
+    bottom: 20px;
+    transform: translateX(-50%);
+    width: min(500px, 90vw);
+    pointer-events: auto;
+    z-index: 10050;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .orb-input {
@@ -521,4 +664,19 @@
     background: inherit;
     border-left: 1px solid rgba(0, 240, 255, .25);
     border-bottom: 1px solid rgba(0, 240, 255, .25);
+}
+
+/* Saturn ring glow animation */
+@keyframes saturn-ring-glow {
+
+    0%,
+    100% {
+        box-shadow: 0 0 20px rgba(0, 240, 255, 0.3);
+        filter: brightness(1.0);
+    }
+
+    50% {
+        box-shadow: 0 0 30px rgba(0, 240, 255, 0.5), 0 0 60px rgba(180, 0, 255, 0.2);
+        filter: brightness(1.2);
+    }
 }

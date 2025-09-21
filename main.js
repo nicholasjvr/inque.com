@@ -461,9 +461,6 @@ class ApplicationInitializer {
     );
   }
 
-  // Handle ProfileHub state changes
-  }
-
   // Update auth UI elements
   updateAuthUI(isAuthenticated) {
     this.log("Updating auth UI:", isAuthenticated);
