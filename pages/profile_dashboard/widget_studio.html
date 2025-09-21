@@ -4,22 +4,17 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Widget Studio - Inque</title>
-    <link rel="stylesheet" href="../core/styles.css" />
+    <link rel="stylesheet" href="/core/styles/index.css" />
     <link rel="stylesheet" href="pd_styles/widget_studio.css" />
-    <link
-      rel="icon"
-      type="image/x-icon"
-      href="../assets/imgs/portal_placeholder.gif"
-    />
   </head>
   <body>
     <!-- Navigation Header -->
     <header class="widget-studio-header">
       <div class="header-content">
         <div class="header-left">
-          <a href="../index.html" class="back-btn">
+          <a href="../profile_dashboard/my-projects.html" class="back-btn">
             <span class="btn-icon">←</span>
-            Back to Home
+            Yor Profile
           </a>
           <h1 class="page-title">🎨 Widget Studio</h1>
         </div>
@@ -381,20 +376,11 @@
         </div>
       </div>
     </div>
-
     <!-- Toast Notifications -->
     <div class="toast-container" id="toastContainer"></div>
-
-    <!-- Profile Banner Integration -->
-    <div id="profileBannerContainer"></div>
-
     <!-- Scripts -->
     <script type="module" src="../../core/firebase-core.js"></script>
     <script type="module" src="../../scripts/upload/cloud-upload.js"></script>
-    <script
-      type="module"
-      src="../page_modals/modal_scripts/profile_banner.js"
-    ></script>
     <script type="module" src="../page_scripts/widget_studio.js"></script>
   </body>
 </html>

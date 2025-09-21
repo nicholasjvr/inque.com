@@ -39,7 +39,6 @@ class FloatingOrbManager {
 
     try {
       await this.createOrb();
-      this.setupEventListeners();
       this.adjustSidebarSpacing();
       this.bindProfileHubEvents();
       this.isInitialized = true;
@@ -224,6 +223,7 @@ class FloatingOrbManager {
     this.setupScrollSystem();
     this.createChatDock();
     this.createInputBar();
+    this.setupEventListeners(); // Set up event listeners after chat dock is created
 
     // Show tooltip briefly for first-time users
     try {
@@ -720,14 +720,18 @@ class FloatingOrbManager {
   }
 
   setupEventListeners() {
-    // Orb click handler - now opens chat dock
-    this.orb.addEventListener("click", (e) => {
-      e.preventDefault();
-      this.toggleChatDock();
-      ORB_DEBUG.log("Orb clicked - toggling chat dock");
+    ORB_DEBUG.log("Setting up orb event listeners", {
+      orb: !!this.orb,
+      chatDock: !!this.chatDock,
     });
 
-    // Keyboard accessibility
+    this.orb.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      ORB_DEBUG.log("Orb clicked - attempting to toggle chat dock");
+      this.toggleChatDock();
+    });
+
     this.orb.addEventListener("keydown", (e) => {
       if (e.key === "Enter" || e.key === " ") {
         e.preventDefault();
@@ -825,12 +829,6 @@ class FloatingOrbManager {
         });
       });
 
-      // Add hover effects and visual feedback
-      this.addInteractiveStyles();
-
-      // Input is embedded dynamically; handlers live on the external input bar
-
-      // Close dock when clicking outside
       document.addEventListener("click", (e) => {
         if (
           !this.chatDock.contains(e.target) &&
@@ -911,9 +909,15 @@ class FloatingOrbManager {
   }
 
   toggleChatDock() {
-    if (!this.chatDock) return;
+    ORB_DEBUG.log("toggleChatDock called", { chatDock: !!this.chatDock });
+
+    if (!this.chatDock) {
+      ORB_DEBUG.warn("No chat dock available to toggle");
+      return;
+    }
 
     const isOpen = this.chatDock.classList.contains("open");
+    ORB_DEBUG.log("Current dock state", { isOpen });
 
     if (isOpen) {
       this.closeChatDock();
@@ -1043,33 +1047,31 @@ class FloatingOrbManager {
   _centerDockAndOrb() {
     try {
       if (!this.chatDock || !this.orb) return;
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      const vh = vv ? vv.height : window.innerHeight;
-      const vx = vv ? vv.offsetLeft : 0;
-      const vy = vv ? vv.offsetTop : 0;
 
-      // Measure dock size
-      const rect = this.chatDock.getBoundingClientRect();
-      const w = rect.width || this.chatDock.offsetWidth || 520;
-      const h = rect.height || this.chatDock.offsetHeight || 520;
+      // Simple positioning: center the dock on screen, slightly down from center
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2 + 50; // Slightly below center
 
-      const left = vx + (vw - w) / 2;
-      const top = vy + (vh - h) / 2;
+      const dockWidth = 520;
+      const dockHeight = 520;
 
-      this.chatDock.style.left = `${Math.max(0, left)}px`;
-      this.chatDock.style.top = `${Math.max(0, top)}px`;
-      this.chatDock.style.transform = "none"; // ensure no matrix() remains
+      const left = centerX - dockWidth / 2;
+      const top = centerY - dockHeight / 2;
 
-      // Orb above dock
-      const orbH = this.orb.getBoundingClientRect().height || 80;
-      const orbCenterX = left + w / 2;
-      const orbTop = Math.max(12, top - orbH - 16);
-      this.orb.style.position = "fixed";
-      this.orb.style.left = `${orbCenterX}px`;
-      this.orb.style.top = `${orbTop}px`;
-      this.orb.style.transform = "translate(-50%, 0)";
-    } catch {}
+      // Apply simple positioning
+      this.chatDock.style.left = `${left}px`;
+      this.chatDock.style.top = `${top}px`;
+      this.chatDock.style.transform = "none";
+
+      ORB_DEBUG.log("Chat dock positioned at center", {
+        left: Math.round(left),
+        top: Math.round(top),
+        centerX: Math.round(centerX),
+        centerY: Math.round(centerY),
+      });
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to position dock", err);
+    }
   }
 
   updateInputBarPlaceholder() {
@@ -1082,6 +1084,74 @@ class FloatingOrbManager {
       space: "Post to Space...",
     };
     input.placeholder = placeholders[this.activeTab] || "Type a message...";
+  }
+
+  addInteractiveStyles() {
+    // Add CSS for interactive elements if not already present
+    const styleId = "orb-interactive-styles";
+    if (document.getElementById(styleId)) return;
+
+    const style = document.createElement("style");
+    style.id = styleId;
+    style.textContent = `
+      /* Enhanced interactive styles for chat dock */
+      .dock-tab {
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        user-select: none !important;
+      }
+      
+      .dock-tab:hover {
+        background: rgba(0, 240, 255, 0.1) !important;
+        transform: translateY(-1px) !important;
+      }
+      
+      .dock-tab.active {
+        background: rgba(0, 240, 255, 0.2) !important;
+        color: var(--primary-neon) !important;
+        box-shadow: 0 0 10px rgba(0, 240, 255, 0.3) !important;
+      }
+      
+      .conversation-item {
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        user-select: none !important;
+      }
+      
+      .conversation-item:hover {
+        background: rgba(255, 255, 255, 0.05) !important;
+        transform: translateX(2px) !important;
+      }
+      
+      .conversation-item.active {
+        background: rgba(0, 240, 255, 0.1) !important;
+        border-left: 2px solid var(--primary-neon) !important;
+      }
+      
+      .new-message-btn {
+        cursor: pointer !important;
+        transition: all 0.2s ease !important;
+        user-select: none !important;
+      }
+      
+      .new-message-btn:hover {
+        background: rgba(0, 240, 255, 0.1) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 240, 255, 0.2) !important;
+      }
+      
+      .new-message-btn:active {
+        transform: translateY(0) !important;
+      }
+      
+      /* Make sure all interactive elements are clickable */
+      .dock-tab, .conversation-item, .new-message-btn {
+        pointer-events: auto !important;
+      }
+    `;
+    document.head.appendChild(style);
+
+    ORB_DEBUG.log("Interactive styles added to chat dock");
   }
 
   switchTab(tabName) {
@@ -1676,36 +1746,8 @@ class FloatingOrbManager {
         getComputedStyle(document.documentElement).getPropertyValue(
           "--orbit-size"
         )
-      ) / 2.25
+      ) / 3.5
     );
-  }
-
-  // Demo/Testing Methods
-  addDemoFeatures() {
-    // Add some demo star notifications [[memory:4664284]]
-    setTimeout(() => {
-      this.createStarNotification("New message from Sarah", "dm");
-    }, 2000);
-
-    setTimeout(() => {
-      this.createStarNotification("AI response ready", "ai");
-    }, 4000);
-
-    setTimeout(() => {
-      this.createStarNotification("Space activity detected", "space");
-    }, 6000);
-
-    // Add some demo chat badges
-    setTimeout(() => {
-      this.updateChatBadges({ dms: 2, ai: 1, space: 3 });
-    }, 3000);
-  }
-
-  // Public API Methods
-  clear() {
-    // Clear chat badges
-    this.updateChatBadges({ dms: 0, ai: 0, space: 0 });
-    ORB_DEBUG.log("All chat badges cleared");
   }
 
   // Public API for external integration
@@ -1739,45 +1781,34 @@ class FloatingOrbManager {
     if (this.container && this.container.parentNode) {
       this.container.parentNode.removeChild(this.container);
     }
-
     if (this.chatDock && this.chatDock.parentNode) {
       this.chatDock.parentNode.removeChild(this.chatDock);
     }
-
-    // Reset sidebar spacing
     const sidebar = document.querySelector(".sidebar-nav");
     if (sidebar) {
       sidebar.style.paddingLeft = "";
     }
-
     this.isInitialized = false;
     ORB_DEBUG.log("Floating orb destroyed");
   }
 }
 
-// Auto-initialize when DOM is ready
 document.addEventListener("DOMContentLoaded", () => {
-  // Initialize the floating orb with debug mode for development
   window.floatingOrb = new FloatingOrbManager({
-    debugMode: true, // Set to false in production
+    debugMode: true,
   });
-
   window.floatingOrb.init();
-
   ORB_DEBUG.log("Floating orb system loaded and ready!");
 });
 
 // === Floating Orb 3D Controller ===
 (() => {
   const ORB3D_LOG = (...args) => console.debug("[Orb3D]", ...args);
-
   let initialized = false;
-
   const initTilt = () => {
     if (initialized) return; // guard
     const wrapper = document.querySelector(".floating-orb-wrapper");
     const orb = document.querySelector(".floating-orb");
-    const popup = document.querySelector(".notification-popup");
 
     if (!wrapper || !orb) {
       ORB3D_LOG("Orb not yet in DOM. Will wait for ready event/observer.");
@@ -1852,11 +1883,8 @@ document.addEventListener("DOMContentLoaded", () => {
     window.addEventListener("pointermove", onMove, { passive: true });
     window.addEventListener("touchmove", onMove, { passive: true });
 
-    // Toggle popup below the orb
-    orb.addEventListener("click", () => {
-      if (!popup) return;
-      popup.classList.toggle("show");
-    });
+    // Click handling is managed by the main FloatingOrbManager class
+    // No need for additional click handlers here
 
     setIdle(true);
     requestAnimationFrame(tick);
@@ -1877,12 +1905,6 @@ document.addEventListener("DOMContentLoaded", () => {
     initTilt();
   }
 
-  // Listen for explicit ready event from the manager
-  window.addEventListener("floating-orb:ready", () => {
-    ORB3D_LOG("Received floating-orb:ready");
-    initTilt();
-  });
-
   // MutationObserver fallback in case scripts load in odd orders
   const observer = new MutationObserver(() => {
     if (document.querySelector(".floating-orb")) {
@@ -1900,7 +1922,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 })();
 
-// Debug functions for testing orb functionality
 window.debugOrb = {
   checkStatus: () => {
     const orb = document.querySelector(".floating-orb");
@@ -1923,37 +1944,12 @@ window.debugOrb = {
     });
   },
 
-  testWebGL: () => {
-    const canvas = document.querySelector(".orb-3d-layer canvas");
-    if (canvas) {
-      const gl = canvas.getContext("webgl") || canvas.getContext("webgl2");
-      console.log("[ORB DEBUG] WebGL context:", !!gl);
-      if (gl) {
-        console.log("[ORB DEBUG] WebGL info:", {
-          vendor: gl.getParameter(gl.VENDOR),
-          renderer: gl.getParameter(gl.RENDERER),
-          version: gl.getParameter(gl.VERSION),
-        });
-      }
-    } else {
-      console.log("[ORB DEBUG] No WebGL canvas found");
-    }
-  },
-
   repositionTopLeft: () => {
     const wrapper = document.querySelector(".floating-orb-wrapper");
     if (wrapper) {
       wrapper.style.top = "12px";
       wrapper.style.left = "12px";
       console.log("[ORB DEBUG] Repositioned to top-left");
-    }
-  },
-
-  // New debug functions for the enhanced features
-  testChatDock: () => {
-    if (window.floatingOrb) {
-      window.floatingOrb.toggleChatDock();
-      console.log("[ORB DEBUG] Chat dock toggled");
     }
   },
 
@@ -1971,271 +1967,10 @@ window.debugOrb = {
     }
   },
 
-  testInputBar: () => {
-    const input = document.querySelector(".orb-input input");
-    if (input) {
-      input.click();
-      console.log("[ORB DEBUG] Input bar clicked - should trigger chat dock");
-    }
-  },
-
-  testStarNotification: (message = "Test star notification") => {
-    if (window.floatingOrb) {
-      window.floatingOrb.showStarNotification(message);
-      console.log("[ORB DEBUG] Star notification created:", message);
-    }
-  },
-
-  testChatBadges: () => {
-    if (window.floatingOrb) {
-      window.floatingOrb.updateBadges({ dms: 3, ai: 1, space: 2 });
-      console.log("[ORB DEBUG] Chat badges updated");
-    }
-  },
-
   clearAll: () => {
     if (window.floatingOrb) {
       window.floatingOrb.clear();
       console.log("[ORB DEBUG] All chat badges cleared");
-    }
-  },
-
-  // New debug functions for enhanced chat features
-  testNewMessage: () => {
-    if (window.floatingOrb) {
-      window.floatingOrb.showNewMessageModal();
-      console.log("[ORB DEBUG] New message modal opened");
-    }
-  },
-
-  testNotification: (message = "Test notification", type = "info") => {
-    if (window.floatingOrb) {
-      window.floatingOrb.showNotification(message, type);
-      console.log("[ORB DEBUG] Notification shown:", message);
-    }
-  },
-
-  testConversationSwitch: (conversationId = "test-user-123") => {
-    if (window.floatingOrb) {
-      window.floatingOrb.switchConversation(conversationId);
-      console.log("[ORB DEBUG] Switched to conversation:", conversationId);
-    }
-  },
-
-  addTestConversation: () => {
-    if (window.floatingOrb) {
-      window.floatingOrb.addConversationToList(
-        "test-user-456",
-        "Test User",
-        "This is a test message"
-      );
-      console.log("[ORB DEBUG] Test conversation added");
-    }
-  },
-
-  testInputClick: () => {
-    const input = document.querySelector(".orb-input input");
-    if (input) {
-      input.click();
-      console.log("[ORB DEBUG] Input clicked - should toggle chat dock");
-    } else {
-      console.log("[ORB DEBUG] Input not found");
-    }
-  },
-
-  testInputFocus: () => {
-    const input = document.querySelector(".orb-input input");
-    if (input) {
-      input.focus();
-      console.log("[ORB DEBUG] Input focused - should open chat dock");
-    } else {
-      console.log("[ORB DEBUG] Input not found");
-    }
-  },
-
-  debugInputVisibility: () => {
-    const inputWrap = document.querySelector(".orb-input-wrap");
-    const slot = document.querySelector("#dock-input-slot");
-    const dockThread = document.querySelector(".dock-thread");
-
-    console.log("[ORB DEBUG] Input visibility check:", {
-      inputWrap: {
-        element: inputWrap,
-        parent: inputWrap?.parentElement,
-        classes: inputWrap?.className,
-        display: inputWrap ? window.getComputedStyle(inputWrap).display : "N/A",
-        visibility: inputWrap
-          ? window.getComputedStyle(inputWrap).visibility
-          : "N/A",
-        height: inputWrap ? window.getComputedStyle(inputWrap).height : "N/A",
-        position: inputWrap
-          ? window.getComputedStyle(inputWrap).position
-          : "N/A",
-      },
-      slot: {
-        element: slot,
-        height: slot ? window.getComputedStyle(slot).height : "N/A",
-        overflow: slot ? window.getComputedStyle(slot).overflow : "N/A",
-        display: slot ? window.getComputedStyle(slot).display : "N/A",
-      },
-      dockThread: {
-        element: dockThread,
-        overflow: dockThread
-          ? window.getComputedStyle(dockThread).overflow
-          : "N/A",
-      },
-    });
-  },
-
-  testChatDockInteractivity: () => {
-    const tabs = document.querySelectorAll(".dock-tab");
-    const conversations = document.querySelectorAll(".conversation-item");
-    const newMessageBtn = document.querySelector(".new-message-btn");
-
-    console.log("[ORB DEBUG] Chat dock interactivity test:", {
-      tabs: {
-        count: tabs.length,
-        elements: Array.from(tabs).map((tab) => ({
-          text: tab.textContent,
-          classes: tab.className,
-          dataset: tab.dataset,
-        })),
-      },
-      conversations: {
-        count: conversations.length,
-        elements: Array.from(conversations).map((conv) => ({
-          text: conv.textContent.trim(),
-          classes: conv.className,
-          dataset: conv.dataset,
-        })),
-      },
-      newMessageBtn: {
-        exists: !!newMessageBtn,
-        classes: newMessageBtn?.className,
-      },
-    });
-
-    // Test clicking tabs
-    if (tabs.length > 0) {
-      console.log("[ORB DEBUG] Testing tab clicks...");
-      tabs.forEach((tab, index) => {
-        setTimeout(() => {
-          tab.click();
-          console.log(
-            `[ORB DEBUG] Clicked tab ${index + 1}: ${tab.textContent}`
-          );
-        }, index * 500);
-      });
-    }
-  },
-
-  testChatDockPosition: () => {
-    const chatDock = document.querySelector(".chat-dock");
-    if (chatDock) {
-      const rect = chatDock.getBoundingClientRect();
-      const viewport = {
-        width: window.innerWidth,
-        height: window.innerHeight,
-      };
-
-      console.log("[ORB DEBUG] Chat dock position:", {
-        element: chatDock,
-        classes: chatDock.className,
-        position: {
-          top: rect.top,
-          left: rect.left,
-          width: rect.width,
-          height: rect.height,
-        },
-        viewport: viewport,
-        isVisible:
-          rect.top >= 0 &&
-          rect.left >= 0 &&
-          rect.bottom <= viewport.height &&
-          rect.right <= viewport.width,
-        computedStyle: {
-          position: window.getComputedStyle(chatDock).position,
-          top: window.getComputedStyle(chatDock).top,
-          left: window.getComputedStyle(chatDock).left,
-          transform: window.getComputedStyle(chatDock).transform,
-        },
-      });
-    } else {
-      console.log("[ORB DEBUG] Chat dock not found");
-    }
-  },
-
-  checkInputStyles: () => {
-    const input = document.querySelector(".orb-input input");
-    const sendBtn = document.querySelector(".orb-input .send-btn");
-    const inputWrap = document.querySelector(".orb-input-wrap");
-    const inputContainer = document.querySelector(".orb-input");
-
-    if (input) {
-      const computedStyles = window.getComputedStyle(input);
-      console.log("[ORB DEBUG] Input computed styles:", {
-        background: computedStyles.background,
-        border: computedStyles.border,
-        color: computedStyles.color,
-        fontSize: computedStyles.fontSize,
-        padding: computedStyles.padding,
-        margin: computedStyles.margin,
-        cursor: computedStyles.cursor,
-        fontFamily: computedStyles.fontFamily,
-      });
-    }
-
-    if (sendBtn) {
-      const btnStyles = window.getComputedStyle(sendBtn);
-      console.log("[ORB DEBUG] Send button styles:", {
-        background: btnStyles.background,
-        border: btnStyles.border,
-        color: btnStyles.color,
-        padding: btnStyles.padding,
-        fontSize: btnStyles.fontSize,
-      });
-    }
-
-    if (inputWrap) {
-      const wrapStyles = window.getComputedStyle(inputWrap);
-      console.log("[ORB DEBUG] Input wrap styles:", {
-        position: wrapStyles.position,
-        bottom: wrapStyles.bottom,
-        left: wrapStyles.left,
-        transform: wrapStyles.transform,
-        width: wrapStyles.width,
-        zIndex: wrapStyles.zIndex,
-      });
-    }
-
-    console.log("[ORB DEBUG] Elements found:", {
-      input: !!input,
-      sendBtn: !!sendBtn,
-      inputWrap: !!inputWrap,
-      inputContainer: !!inputContainer,
-    });
-  },
-
-  testDockInput: () => {
-    const dockInput = document.querySelector("#dock-message-input");
-    const dockSendBtn = document.querySelector(".dock-send-btn");
-
-    if (dockInput && dockSendBtn) {
-      dockInput.value = "Test message from dock input";
-      dockSendBtn.click();
-      console.log("[ORB DEBUG] Dock input test - message sent");
-    } else {
-      console.log("[ORB DEBUG] Dock input elements not found");
-    }
-  },
-
-  focusDockInput: () => {
-    const dockInput = document.querySelector("#dock-message-input");
-    if (dockInput) {
-      dockInput.focus();
-      console.log("[ORB DEBUG] Dock input focused");
-    } else {
-      console.log("[ORB DEBUG] Dock input not found");
     }
   },
 };

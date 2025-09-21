@@ -8,8 +8,6 @@
     />
     <title>inQ - Platform - Your AI IDE Development Hub</title>
     <link rel="stylesheet" href="pages/page_styles/workflow-manager.css" />
-    <link rel="stylesheet" href="pages/page_styles/mobile_styling.css" />
-    <link rel="stylesheet" href="pages/page_styles/mobile_enhancements.css" />
     <link
       href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
       rel="stylesheet"
@@ -19,27 +17,30 @@
       rel="stylesheet"
     />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-   <script type="module" crossorigin src="./assets/main-DvGp3e82.js"></script>
+   <script type="module" crossorigin src="./assets/main-V0HvWF1o.js"></script>
    <link rel="modulepreload" crossorigin href="./assets/modulepreload-polyfill-B5Qt9EMX.js">
-   <link rel="modulepreload" crossorigin href="./assets/preload-helper-DBRurSJI.js">
    <link rel="modulepreload" crossorigin href="./assets/firebase-core-BO8UvLyb.js">
-   <link rel="modulepreload" crossorigin href="./assets/cloud-upload-B4hV8L3F.js">
-   <link rel="modulepreload" crossorigin href="./assets/profile_banner-_l6eNLkH.js">
-   <link rel="stylesheet" crossorigin href="./assets/preload-helper-BhF3-jBv.css">
-   <link rel="stylesheet" crossorigin href="./assets/main-C27kGywS.css">
-   <link rel="stylesheet" crossorigin href="./assets/index-i_-bSXDu.css">
+   <link rel="modulepreload" crossorigin href="./assets/cloud-upload-Bq9wGJN8.js">
+   <link rel="modulepreload" crossorigin href="./assets/profile_banner-BddfvIqO.js">
+   <link rel="stylesheet" crossorigin href="./assets/cloud-upload-CgVkHZIx.css">
+   <link rel="stylesheet" crossorigin href="./assets/profile_banner-BhF3-jBv.css">
+   <link rel="stylesheet" crossorigin href="./assets/main-BUm-LF-k.css">
  </head>
   <body>
   <!-- ProfileHub: dynamic container injected by scripts/ui/profile_banner.js -->
   <div id="profileHubContainer"></div>
-  <!-- 3D Title Header -->
-    <section class="title-header-section">
-      <div class="title-header-container">
-        <div id="title-container" class="title-main-container">
-          <div id="main-title" class="title-3d">
-            <span class="title-line-1">inqu social</span>
-            <span class="title-line-2">[creatives] platform</span>
-          </div>
+<!-- 3D Title Header -->
+<section class="title-header-section">
+<div class="title-header-container">
+    <div id="title-container" class="title-main-container">
+    <div id="main-title" class="title-3d">
+    <span class="title-line-1">inqu social</span>
+    <span class="title-line-2">[creatives] platform</span>
+    </div>
+    <!-- Floating Orb will be injected here by floating-orb.js -->
+    <div id="orb-container" style="position: relative; z-index: 100040;">
+    <!-- The orb system automatically positions itself under the title -->
+    </div>
     </section>
           <p
             id="home-subtitle"
@@ -466,6 +467,14 @@
         }, 2000);
         
         // ProfileHub loads itself via scripts/ui/profile_banner.js
+        
+        // Ensure floating orb integrates smoothly with layout
+        setTimeout(() => {
+          if (window.floatingOrb && window.floatingOrb.updateDockingPosition) {
+            window.floatingOrb.updateDockingPosition();
+            console.log("🎯 Floating orb positioned for optimal layout integration");
+          }
+        }, 1000);
       });
 
       // ProfileHub init handled by its own module

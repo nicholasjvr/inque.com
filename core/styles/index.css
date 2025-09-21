@@ -49,6 +49,569 @@ body {
     z-index: 10040;
 }
 
+/* Chat Dock Integration Styles */
+.chat-dimmer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(4px);
+    z-index: 100030;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.chat-dock-open .chat-dimmer-overlay {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Chat dock positioning - improved centering and responsiveness */
+.chat-dock {
+    position: fixed !important;
+    width: min(520px, 90vw);
+    height: min(520px, 80vh);
+    background: rgba(12, 18, 24, 0.95);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 16px;
+    backdrop-filter: blur(12px);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+    z-index: 100060 !important;
+    transform: scale(0.9) translateY(20px);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+align-self: start;
+    /* JavaScript handles positioning dynamically - left/top set via JS */
+    left: auto !important;
+    top: auto !important;
+}
+
+.chat-dock.open {
+    transform: scale(1) translateY(0) !important;
+    opacity: 1;
+    visibility: visible;
+    /* JavaScript handles left/top positioning dynamically */
+}
+
+/* Chat dock tabs */
+.dock-tabs {
+    display: flex;
+    background: rgba(0, 0, 0, 0.2);
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+    padding: 0;
+    margin: 0;
+}
+
+.dock-tab {
+    flex: 1;
+    padding: 12px 16px;
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-bottom: 2px solid transparent;
+}
+
+.dock-tab:hover {
+    background: rgba(0, 240, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.dock-tab.active {
+    color: var(--primary-neon);
+    border-bottom-color: var(--primary-neon);
+    background: rgba(0, 240, 255, 0.08);
+}
+
+/* Chat dock body */
+.dock-body {
+    flex: 1;
+    display: flex;
+    min-height: 0;
+}
+
+.dock-list {
+    width: 200px;
+    border-right: 1px solid rgba(0, 240, 255, 0.1);
+    background: rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+}
+
+.dock-list-header {
+    padding: 12px;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+.new-message-btn {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0, 240, 255, 0.1);
+    border: 1px solid rgba(0, 240, 255, 0.2);
+    border-radius: 8px;
+    color: var(--primary-neon);
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.new-message-btn:hover {
+    background: rgba(0, 240, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+.dock-conversations {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.conversation-item {
+    padding: 12px;
+    margin-bottom: 4px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.conversation-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.conversation-item.active {
+    background: rgba(0, 240, 255, 0.1);
+    border-left: 2px solid var(--primary-neon);
+}
+
+.conversation-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: rgba(0, 240, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+.conversation-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.conversation-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 2px;
+}
+
+.conversation-preview {
+    font-size: 11px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.conversation-time {
+    font-size: 10px;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* Chat thread */
+.dock-thread {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.thread-header {
+    padding: 16px;
+    border-bottom: 1px solid rgba(0, 240, 255, 0.1);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.thread-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.thread-status {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.thread-messages {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dock-msg {
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 80%;
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.dock-msg.user,
+.dock-msg.me {
+    background: rgba(0, 240, 255, 0.1);
+    color: var(--text-primary);
+    align-self: flex-end;
+    border: 1px solid rgba(0, 240, 255, 0.2);
+}
+
+.dock-msg.bot,
+.dock-msg.ai {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-secondary);
+    align-self: flex-start;
+}
+
+.dock-msg.system {
+    background: rgba(255, 107, 53, 0.1);
+    color: var(--accent-neon);
+    align-self: center;
+    text-align: center;
+    font-size: 11px;
+}
+
+/* Input slot in dock */
+#dock-input-slot {
+    padding: 12px 16px;
+    border-top: 1px solid rgba(0, 240, 255, 0.1);
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .chat-dock {
+        width: 95vw;
+        height: 85vh;
+        border-radius: 12px;
+        /* JavaScript handles mobile positioning */
+    }
+
+    .dock-list {
+        width: 160px;
+    }
+
+    .dock-msg {
+        max-width: 90%;
+        font-size: 14px;
+    }
+
+    /* Enhanced mobile input bar */
+    .orb-input-wrap {
+        bottom: 10px !important;
+        width: 95vw !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+    }
+
+    .orb-input {
+        padding: 10px 12px !important;
+        border-radius: 12px !important;
+    }
+
+    .orb-input input[type="text"] {
+        font-size: 16px !important;
+        /* Prevents zoom on iOS */
+    }
+
+    /* Mobile orb positioning */
+    .floating-orb-wrapper {
+        margin: 16px auto 20px auto !important;
+    }
+
+    /* Mobile chat dock tabs */
+    .dock-tab {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+
+    /* Mobile conversation list */
+    .conversation-item {
+        padding: 10px;
+        gap: 8px;
+    }
+
+    .conversation-avatar {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+
+    .conversation-name {
+        font-size: 12px;
+    }
+
+    .conversation-preview {
+        font-size: 10px;
+    }
+}
+
+/* Tablet optimizations */
+@media (max-width: 1024px) and (min-width: 769px) {
+    .chat-dock {
+        width: 480px;
+        height: 500px;
+        /* JavaScript handles tablet positioning */
+    }
+
+    .orb-input-wrap {
+        width: 400px !important;
+    }
+}
+
+/* Enhanced touch interactions */
+@media (hover: none) and (pointer: coarse) {
+    .orb-nav-item {
+        min-height: 48px;
+        min-width: 48px;
+    }
+
+    .dock-tab {
+        min-height: 44px;
+    }
+
+    .new-message-btn {
+        min-height: 44px;
+    }
+
+    .conversation-item {
+        min-height: 48px;
+    }
+}
+
+/* Notification styles */
+.orb-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: white;
+    font-size: 14px;
+    z-index: 100060;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.orb-notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.orb-notification-success {
+    background: rgba(76, 175, 80, 0.9);
+    border: 1px solid #4caf50;
+}
+
+.orb-notification-warning {
+    background: rgba(255, 193, 7, 0.9);
+    border: 1px solid #ffc107;
+    color: #000;
+}
+
+.orb-notification-error {
+    background: rgba(244, 67, 54, 0.9);
+    border: 1px solid #f44336;
+}
+
+/* Enhanced animations and transitions */
+@keyframes orb-entrance {
+    0% {
+        transform: translate(-50%, -50%) scale(0.8);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+}
+
+@keyframes dock-slide-in {
+    0% {
+        transform: scale(0.8) translateY(30px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes input-focus-glow {
+    0% {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .45), 0 0 20px rgba(0, 240, 255, .1);
+    }
+
+    50% {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .45), 0 0 30px rgba(0, 240, 255, .3);
+    }
+
+    100% {
+        box-shadow: 0 10px 24px rgba(0, 0, 0, .45), 0 0 20px rgba(0, 240, 255, .1);
+    }
+}
+
+@keyframes message-appear {
+    0% {
+        transform: translateY(10px);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes typing-dots {
+
+    0%,
+    20% {
+        opacity: 0;
+    }
+
+    50% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
+
+/* Apply entrance animation to orb */
+.floating-orb-wrapper {
+    animation: orb-entrance 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Apply entrance animation to chat dock */
+.chat-dock.open {
+    animation: dock-slide-in 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Enhanced input focus animation */
+.orb-input input[type="text"]:focus+.send-btn {
+    animation: input-focus-glow 2s ease-in-out infinite;
+}
+
+/* Message appearance animation */
+.dock-msg {
+    animation: message-appear 0.3s ease-out;
+}
+
+/* Typing indicator animation */
+.typing-indicator {
+    position: relative;
+}
+
+.typing-indicator::after {
+    content: '...';
+    position: absolute;
+    right: 8px;
+    animation: typing-dots 1.5s infinite;
+}
+
+/* Smooth hover transitions for all interactive elements */
+.orb-nav-item,
+.dock-tab,
+.conversation-item,
+.new-message-btn,
+.orb-input,
+.send-btn {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced focus states */
+.orb-input input[type="text"]:focus {
+    outline: none;
+    animation: input-focus-glow 2s ease-in-out infinite;
+}
+
+/* Smooth scrolling for message threads */
+.thread-messages {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced notification animations */
+.orb-notification {
+    animation: slideInRight 0.3s ease-out;
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+/* Performance optimizations */
+.floating-orb-wrapper,
+.chat-dock,
+.orb-input-wrap,
+.dock-msg {
+    will-change: transform, opacity;
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+
+    .floating-orb-wrapper,
+    .chat-dock,
+    .dock-msg,
+    .orb-notification {
+        animation: none;
+        transition: opacity 0.2s ease;
+    }
+
+    .orb-nav-item,
+    .dock-tab,
+    .conversation-item,
+    .new-message-btn,
+    .orb-input,
+    .send-btn {
+        transition: opacity 0.2s ease;
+    }
+}
+
 .profile-btn {
     display: inline-flex;
     align-items: center;
