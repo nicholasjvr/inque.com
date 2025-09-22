@@ -270,4 +270,4 @@ ${i}
 `:"")+t}async optimizeCSS(n){let t=n;return t=t.replace(/\/\*[\s\S]*?\*\//g,""),t=t.replace(/\s+/g," "),t=t.replace(/; /g,";"),t=t.replace(/: /g,":"),t=t.replace(/{ /g,"{"),t=t.replace(/ }/g,"}"),t=t.replace(/[;\s]+}/g,"}"),t.trim()}inlineCSSIntoHTML(n,t,s){let i=n;for(const o of s)i=i.replace(new RegExp(`<link[^>]+href=["'][^"']*${o.name}[^"']*["'][^>]*>`,"gi"),"");if(i=i.replace(/@import\s+["'][^"']+\.css["'];?\s*/gi,""),t.trim()){const o=`<style>
 ${t}
 </style>`;i=i.replace("</head>",`${o}
-</head>`)}return i}}import.meta.url===`file://${process.argv[1]}`&&(console.log("[CSS ANALYZER] CSS Analyzer ready for use"),console.log("[CSS ANALYZER] Use this agent to analyze CSS files and optimize styling for widget uploads"));export{be as C};
+</head>`)}return i}}typeof process<"u"&&import.meta.url===`file://${process.argv[1]}`&&(console.log("[CSS ANALYZER] CSS Analyzer ready for use"),console.log("[CSS ANALYZER] Use this agent to analyze CSS files and optimize styling for widget uploads"));export{be as C};

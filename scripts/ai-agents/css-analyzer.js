@@ -686,8 +686,11 @@ class CSSAnalyzer {
 
 export default CSSAnalyzer;
 
-// Run CSS analyzer if called directly
-if (import.meta.url === `file://${process.argv[1]}`) {
+// Run CSS analyzer if called directly (Node.js only)
+if (
+  typeof process !== "undefined" &&
+  import.meta.url === `file://${process.argv[1]}`
+) {
   console.log("[CSS ANALYZER] CSS Analyzer ready for use");
   console.log(
     "[CSS ANALYZER] Use this agent to analyze CSS files and optimize styling for widget uploads"

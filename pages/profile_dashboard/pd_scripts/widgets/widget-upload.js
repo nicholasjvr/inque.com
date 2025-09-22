@@ -8,10 +8,9 @@ import CSSAnalyzer from "../../../../scripts/ai-agents/css-analyzer.js";
 class WidgetUploadManager {
   constructor() {
     this.uploadingSlots = new Set(); // Track active uploads per slot
-    this.cssAnalyzer = new CSSAnalyzer(); // CSS analysis and processing
-    this.log(
-      "Widget Upload Manager initialized with Cloud Functions and CSS Analyzer"
-    );
+    this.cssAnalyzer = null; // CSS analysis - only for premium users
+    this.isPremium = false; // Track premium status
+    this.log("Widget Upload Manager initialized with Cloud Functions");
   }
 
   log(message, data = null) {
@@ -26,13 +25,37 @@ class WidgetUploadManager {
     try {
       this.log("Initializing widget upload system");
 
-      // Initialize without connection test
+      // Check if user is premium for CSS analysis
+      await this.checkPremiumStatus();
+
       this.log("Widget upload system initialized");
       this.setupEventListeners();
       return true;
     } catch (error) {
       this.error("Failed to initialize widget upload system", error);
       return false;
+    }
+  }
+
+  async checkPremiumStatus() {
+    try {
+      // Check if user has premium features enabled
+      // This could check localStorage, user profile, or API
+      const userProfile = window.userProfile || {};
+      this.isPremium = userProfile.isPremium || userProfile.level >= 3 || false;
+
+      if (this.isPremium) {
+        this.log("Premium user detected - CSS analysis enabled");
+        this.cssAnalyzer = new CSSAnalyzer();
+      } else {
+        this.log("Standard user - CSS analysis disabled (premium feature)");
+      }
+    } catch (error) {
+      this.log(
+        "Could not determine premium status - defaulting to standard",
+        error
+      );
+      this.isPremium = false;
     }
   }
 
@@ -124,8 +147,13 @@ class WidgetUploadManager {
       this.log("Files selected", { count: files.length });
       this.updateFileList(fileInput, files);
 
-      // Analyze CSS dependencies and issues
-      await this.analyzeWidgetFiles(files, fileInput);
+      // Analyze CSS dependencies and issues (premium feature only)
+      if (this.isPremium && this.cssAnalyzer) {
+        await this.analyzeWidgetFiles(files, fileInput);
+      } else {
+        this.log("Skipping CSS analysis - premium feature");
+        this.showPremiumNotice(fileInput);
+      }
 
       // Show preview of selected files
       widgetPreviewManager.handleFiles(files);
@@ -193,18 +221,40 @@ class WidgetUploadManager {
       if (!analysisIndicator) {
         analysisIndicator = document.createElement("div");
         analysisIndicator.className = "css-analysis-indicator";
-        analysisIndicator.innerHTML = `
-          <div class="analysis-status" id="analysisStatus">
-            <span class="analysis-icon">🔍</span>
-            <span class="analysis-text">Analyzing CSS...</span>
-          </div>
-          <div class="analysis-results" id="analysisResults" style="display: none;">
-            <div class="css-issues" id="cssIssues"></div>
-            <div class="css-recommendations" id="cssRecommendations"></div>
-          </div>
-        `;
+
+        if (this.isPremium) {
+          analysisIndicator.innerHTML = `
+            <div class="analysis-status" id="analysisStatus">
+              <span class="analysis-icon">🔍</span>
+              <span class="analysis-text">Analyzing CSS...</span>
+            </div>
+            <div class="analysis-results" id="analysisResults" style="display: none;">
+              <div class="css-issues" id="cssIssues"></div>
+              <div class="css-recommendations" id="cssRecommendations"></div>
+            </div>
+          `;
+        } else {
+          analysisIndicator.innerHTML = `
+            <div class="premium-notice">
+              <span class="premium-icon">⭐</span>
+              <span class="premium-text">CSS Analysis - Premium Feature</span>
+              <button class="upgrade-btn" onclick="this.showUpgradeModal()">Upgrade</button>
+            </div>
+          `;
+        }
         uploadArea.appendChild(analysisIndicator);
       }
+    }
+  }
+
+  showPremiumNotice(fileInput) {
+    const uploadArea = fileInput.closest(".widget-upload-area");
+    const cssFiles = Array.from(fileInput.files).filter((f) =>
+      f.name.match(/\.css$/i)
+    );
+
+    if (cssFiles.length > 0) {
+      this.addCSSAnalysisIndicator(uploadArea, fileInput.files);
     }
   }
 
@@ -276,26 +326,36 @@ class WidgetUploadManager {
         fileCount: fileInput.files.length,
       });
 
-      // Process CSS files for optimization
+      // Process CSS files for optimization (premium feature only)
       let filesToUpload = fileInput.files;
-      const cssProcessingResult = await this.processCSSForUpload(filesToUpload);
+      let cssProcessingResult = {
+        processedFiles: filesToUpload,
+        issues: [],
+        recommendations: [],
+      };
 
-      // Show CSS processing feedback
-      if (cssProcessingResult.issues.length > 0) {
-        const highPriorityIssues = cssProcessingResult.issues.filter(
-          (i) => i.severity === "high"
-        ).length;
-        if (highPriorityIssues > 0) {
-          this.showToast(
-            `CSS processing found ${highPriorityIssues} issues. Consider reviewing before upload.`,
-            "warning"
-          );
+      if (this.isPremium && this.cssAnalyzer) {
+        cssProcessingResult = await this.processCSSForUpload(filesToUpload);
+
+        // Show CSS processing feedback
+        if (cssProcessingResult.issues.length > 0) {
+          const highPriorityIssues = cssProcessingResult.issues.filter(
+            (i) => i.severity === "high"
+          ).length;
+          if (highPriorityIssues > 0) {
+            this.showToast(
+              `CSS processing found ${highPriorityIssues} issues. Consider reviewing before upload.`,
+              "warning"
+            );
+          }
         }
-      }
 
-      // Use processed files for upload
-      if (cssProcessingResult.processedFiles.length > 0) {
-        filesToUpload = cssProcessingResult.processedFiles;
+        // Use processed files for upload
+        if (cssProcessingResult.processedFiles.length > 0) {
+          filesToUpload = cssProcessingResult.processedFiles;
+        }
+      } else {
+        this.log("Skipping CSS processing - premium feature");
       }
 
       // Use Cloud Functions for upload

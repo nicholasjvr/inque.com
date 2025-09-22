@@ -139,6 +139,12 @@ class WidgetStudioManager {
     }
   }
 
+  // Check if user has premium features
+  isPremiumUser() {
+    const userProfile = this.userProfile || {};
+    return userProfile.isPremium || userProfile.level >= 3 || false;
+  }
+
   async testCloudUploadConnection() {
     try {
       this.log("Testing cloud upload connection");
