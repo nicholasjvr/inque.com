@@ -129,6 +129,7 @@ class ProfileHubManager {
       customizeToggle: document.getElementById("hubCustomizeToggle"),
       authToggle: document.getElementById("hubAuthToggle"),
       hubToggle: document.getElementById("hubToggleBtn"),
+      // Drawer toggle (floating button shown when hub is hidden)
       drawerToggle: document.getElementById("profileHubDrawerToggle"),
 
       // Chatbot
@@ -168,6 +169,27 @@ class ProfileHubManager {
       }
     });
 
+    // Basic ARIA wiring
+    try {
+      if (this.dom.hub) {
+        this.dom.hub.setAttribute("role", "dialog");
+        this.dom.hub.setAttribute("aria-live", "polite");
+        this.dom.hub.setAttribute("aria-label", "Profile hub");
+      }
+      if (this.dom.hubToggle) {
+        this.dom.hubToggle.setAttribute("aria-controls", "hubExpandedContent");
+        this.dom.hubToggle.setAttribute("aria-expanded", "false");
+        this.dom.hubToggle.setAttribute("aria-label", "Toggle profile hub");
+      }
+      if (this.dom.expandedContent) {
+        this.dom.expandedContent.setAttribute("role", "region");
+        this.dom.expandedContent.setAttribute("aria-label", "Profile hub menu");
+        this.dom.expandedContent.setAttribute("aria-hidden", "true");
+      }
+    } catch (e) {
+      console.warn("[PROFILE HUB] Failed to set ARIA attributes", e);
+    }
+
     console.log(
       "[PROFILE HUB] DOM references initialized successfully - Enhanced sliding modal system ready"
     );
@@ -204,12 +226,11 @@ class ProfileHubManager {
     if (this.dom.hubToggle) {
       this.addEventListener(this.dom.hubToggle, "click", () => {
         console.log("[PROFILE HUB] Hub toggle button clicked"); // Debug log [[memory:4664284]]
-        this.toggleHub();
+        this.safeToggleHub();
       });
     } else {
       console.warn("[PROFILE HUB] Hub toggle button not found!");
     }
-
 
     // Control Buttons
     if (this.dom.chatbotToggle) {
@@ -226,8 +247,7 @@ class ProfileHubManager {
         console.log(
           "[PROFILE HUB] Gear quicklink clicked → navigating to Explore"
         ); // debug [[memory:4664284]]
-        console.log(`[PROFILE HUB] Navigating to: pages/explore.html`); // Debug log [[memory:4664284]]
-        window.location.href = "pages/explore.html";
+        this.navigateTo("pages/explore.html");
       });
     } else {
       console.warn("[PROFILE HUB] Customize toggle button not found!");
@@ -252,6 +272,14 @@ class ProfileHubManager {
       this.closeAllPanels();
     });
 
+    // Drawer toggle button
+    if (this.dom.drawerToggle) {
+      this.addEventListener(this.dom.drawerToggle, "click", () => {
+        console.log("[PROFILE HUB] Drawer toggle button clicked"); // [[memory:4664284]]
+        this.safeToggleDrawer();
+      });
+    }
+
     // Keyboard Shortcuts
     this.addEventListener(document, "keydown", (e) => {
       this.handleKeyboardShortcuts(e);
@@ -274,7 +302,7 @@ class ProfileHubManager {
     if (adminUsersBtn) {
       this.addEventListener(adminUsersBtn, "click", () => {
         console.log("[PROFILE HUB][ADMIN] Opening Users page");
-        window.location.href = "pages/users.html";
+        this.navigateTo("pages/users.html");
       });
     }
     if (adminRulesBtn) {
@@ -360,8 +388,9 @@ class ProfileHubManager {
 
       // Navigate after brief delay for visual feedback
       setTimeout(() => {
-        console.log(`[PROFILE HUB] Navigating to: ${href}`); // Debug log [[memory:4664284]]
-        window.location.href = href;
+        const target = this.resolveAppPath(href);
+        console.log(`[PROFILE HUB] Navigating to: ${target}`); // Debug log [[memory:4664284]]
+        this.navigateTo(target);
       }, 200);
     }
 
@@ -493,6 +522,16 @@ class ProfileHubManager {
   }
 
   /**
+   * Debounced/guarded hub toggle to avoid rapid reflows on mobile
+   */
+  safeToggleHub() {
+    if (this._hubToggleBusy) return;
+    this._hubToggleBusy = true;
+    this.toggleHub();
+    setTimeout(() => (this._hubToggleBusy = false), 250);
+  }
+
+  /**
    * Toggle drawer visibility with smooth animation
    */
   toggleDrawer() {
@@ -505,14 +544,24 @@ class ProfileHubManager {
     if (isHidden) {
       // Show the ProfileHub
       this.dom.hub.classList.remove("drawer-hidden");
-      this.dom.drawerToggle.style.display = "none";
+      if (this.dom.drawerToggle) this.dom.drawerToggle.style.display = "none";
       console.log("[PROFILE HUB] ProfileHub drawer shown"); // Debug log [[memory:4664284]]
     } else {
       // Hide the ProfileHub
       this.dom.hub.classList.add("drawer-hidden");
-      this.dom.drawerToggle.style.display = "flex";
+      if (this.dom.drawerToggle) this.dom.drawerToggle.style.display = "flex";
       console.log("[PROFILE HUB] ProfileHub drawer hidden"); // Debug log [[memory:4664284]]
     }
+  }
+
+  /**
+   * Debounced/guarded drawer toggle
+   */
+  safeToggleDrawer() {
+    if (this._drawerToggleBusy) return;
+    this._drawerToggleBusy = true;
+    this.toggleDrawer();
+    setTimeout(() => (this._drawerToggleBusy = false), 250);
   }
 
   /**
@@ -640,6 +689,10 @@ class ProfileHubManager {
     this.dom.hub.setAttribute("data-state", ui.hubState);
     this.dom.hub.setAttribute("data-theme", ui.theme);
     this.dom.hub.setAttribute("data-position", ui.position);
+    this.dom.hub.setAttribute(
+      "aria-expanded",
+      ui.hubState !== "minimized" ? "true" : "false"
+    );
 
     // Update CSS custom properties for theming
     this.dom.hub.style.setProperty("--hub-scale", ui.scale);
@@ -651,12 +704,14 @@ class ProfileHubManager {
         this.dom.expandedContent.style.display = "block";
         this.dom.expandedContent.style.opacity = "1";
         this.dom.expandedContent.style.visibility = "visible";
+        this.dom.expandedContent.setAttribute("aria-hidden", "false");
         console.log("[PROFILE HUB] Expanded content forced to show"); // Debug log [[memory:4664284]]
       } else {
         this.dom.expandedContent.classList.remove("show");
         this.dom.expandedContent.style.display = "none";
         this.dom.expandedContent.style.opacity = "0";
         this.dom.expandedContent.style.visibility = "hidden";
+        this.dom.expandedContent.setAttribute("aria-hidden", "true");
         console.log("[PROFILE HUB] Expanded content forced to hide"); // Debug log [[memory:4664284]]
       }
     }
@@ -669,6 +724,12 @@ class ProfileHubManager {
           ui.hubState === "chatbot-active" ||
           ui.customizationState === "open"
       );
+      // Scroll lock when overlay is active
+      const overlayActive =
+        ui.hubState === "expanded" ||
+        ui.hubState === "chatbot-active" ||
+        ui.customizationState === "open";
+      document.body.style.overflow = overlayActive ? "hidden" : "";
     }
 
     // Update user info
@@ -739,6 +800,8 @@ class ProfileHubManager {
       "[PROFILE HUB] UI updated with enhanced sliding modal animations"
     );
   }
+
+  // (Mobile helpers moved below the class definition)
 
   /**
    * Update user information display
@@ -1006,6 +1069,21 @@ class ProfileHubManager {
       { command: "/stats", label: "📊 Stats", action: "stats", target: null },
       { command: "/help", label: "❓ Help", action: "help", target: null },
     ];
+  }
+
+  // Resolve app-relative paths to absolute URLs from site root
+  resolveAppPath(path) {
+    if (!path) return "/";
+    if (path.startsWith("http")) return path;
+    const clean = path.replace(/^\.\//, "").replace(/^\/+/, "");
+    return `/${clean}`;
+  }
+
+  // Centralized navigation helper
+  navigateTo(path) {
+    const url = this.resolveAppPath(path);
+    console.log(`[PROFILE HUB] Navigating to: ${url}`); // Debug log [[memory:4664284]]
+    window.location.assign(url);
   }
 
   savePreferences() {
@@ -1434,16 +1512,16 @@ class ChatbotModule {
 
   executeNavigateCommand(target) {
     const routes = {
-      projects: "pages/profile_dashboard/my-projects.html",
-      studio: "pages/profile_dashboard/widget_studio.html",
-      explore: "pages/explore.html",
-      community: "pages/users.html",
+      projects: "/pages/profile_dashboard/my-projects.html",
+      studio: "/pages/profile_dashboard/widget_studio.html",
+      explore: "/pages/explore.html",
+      community: "/pages/users.html",
     };
 
     if (routes[target]) {
       this.addMessage(`Navigating to ${target}...`, "ai");
       setTimeout(() => {
-        window.location.href = routes[target];
+        this.hub.navigateTo(routes[target]);
       }, 1000);
     } else {
       this.addMessage(
@@ -1671,7 +1749,7 @@ class NavigationModule {
     if (window.openWidgetStudio) {
       window.openWidgetStudio();
     } else {
-      window.location.href = "pages/profile_dashboard/widget_studio.html";
+      this.hub.navigateTo("pages/profile_dashboard/widget_studio.html");
     }
 
     this.hub.setState({ ui: { hubState: "minimized" } });
@@ -1708,6 +1786,92 @@ class NavigationModule {
     if (window.socialAuth && window.socialAuth.showToast) {
       window.socialAuth.showToast(message, type);
     }
+  }
+}
+
+// === Mobile helpers and gesture handlers (outside classes) ===
+function setupMobileResponsivePositioning() {
+  try {
+    const container = document.getElementById("profileHubContainer");
+    if (!container) return;
+
+    const apply = () => {
+      if (window.innerWidth <= 768) {
+        container.style.top = "10px";
+        container.style.right = "10px";
+        container.style.left = "auto";
+      } else {
+        container.style.top = "20px";
+        container.style.right = "20px";
+        container.style.left = "auto";
+      }
+    };
+
+    apply();
+    window.addEventListener("resize", apply, { passive: true });
+  } catch (e) {
+    console.warn("[PROFILE HUB] Mobile positioning setup failed", e);
+  }
+}
+
+function setupMobileEventListeners() {
+  try {
+    const hub = document.getElementById("profileHub");
+    const drawerToggle = document.getElementById("profileHubDrawerToggle");
+
+    if (!hub) return;
+
+    let startX = 0;
+    let startY = 0;
+    let swiping = false;
+
+    const onStart = (e) => {
+      if (window.innerWidth > 1024) return; // mobile/tablet only
+      const t = e.touches ? e.touches[0] : e;
+      startX = t.clientX;
+      startY = t.clientY;
+      swiping = true;
+    };
+
+    const onMove = (e) => {
+      if (!swiping) return;
+      const t = e.touches ? e.touches[0] : e;
+      const dx = t.clientX - startX;
+      const dy = t.clientY - startY;
+      const absX = Math.abs(dx);
+      const absY = Math.abs(dy);
+      // Only consider mostly horizontal swipes
+      if (absX > 60 && absX > absY) {
+        swiping = false;
+        if (dx > 0) {
+          // swipe right → hide to drawer
+          const el = document.getElementById("profileHub");
+          if (el) el.classList.add("drawer-hidden");
+          if (drawerToggle) drawerToggle.style.display = "flex";
+        }
+      }
+    };
+
+    const onEnd = () => {
+      swiping = false;
+    };
+
+    hub.addEventListener("touchstart", onStart, { passive: true });
+    hub.addEventListener("touchmove", onMove, { passive: true });
+    hub.addEventListener("touchend", onEnd, { passive: true });
+
+    // Tap drawer toggle to show hub
+    if (drawerToggle) {
+      drawerToggle.addEventListener(
+        "touchstart",
+        () => {
+          if (window.toggleProfileHubDrawer) window.toggleProfileHubDrawer();
+        },
+        { passive: true }
+      );
+    }
+  } catch (e) {
+    console.warn("[PROFILE HUB] Mobile gesture setup failed", e);
   }
 }
 
@@ -1899,19 +2063,19 @@ function createFallbackProfileHub() {
         <div class="hub-navigation">
           <h3 class="nav-section-title">Navigate</h3>
           <div class="nav-links-grid">
-            <a href="pages/profile_dashboard/my-projects.html" class="nav-link" data-color="primary">
+            <a href="/pages/profile_dashboard/my-projects.html" class="nav-link" data-color="primary">
               <span class="nav-icon">📊</span>
               <span class="nav-label">Projects</span>
             </a>
-            <a href="pages/profile_dashboard/widget_studio.html" class="nav-link" data-color="secondary">
+            <a href="/pages/profile_dashboard/widget_studio.html" class="nav-link" data-color="secondary">
               <span class="nav-icon">🎨</span>
               <span class="nav-label">Studio</span>
             </a>
-            <a href="pages/explore.html" class="nav-link" data-color="accent">
+            <a href="/pages/explore.html" class="nav-link" data-color="accent">
               <span class="nav-icon">🔍</span>
               <span class="nav-label">Explore</span>
             </a>
-            <a href="pages/users.html" class="nav-link" data-color="success">
+            <a href="/pages/users.html" class="nav-link" data-color="success">
               <span class="nav-icon">👥</span>
               <span class="nav-label">Community</span>
             </a>
@@ -2051,16 +2215,12 @@ async function initializeProfileHubSystem() {
 
     // Add mobile-responsive positioning
     setupMobileResponsivePositioning();
-
     // Load and inject ProfileHub HTML content
     await loadProfileHubHTML();
-
     // Ensure Auth modal is available on every page
     await loadAuthModalHTML();
-
     // Wait a bit for DOM to be fully ready
     await new Promise((resolve) => setTimeout(resolve, 200));
-
     // Initialize the ProfileHub manager
     profileHubManager = new ProfileHubManager();
     await profileHubManager.init();
@@ -2099,65 +2259,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.log("[PROFILE HUB] DOM ready, initializing ProfileHub...");
   await initializeProfileHubSystem();
 });
-
-// Debug function to check ProfileHub status
-window.debugProfileHub = function () {
-  console.log("=== PROFILE HUB DEBUG ===");
-  console.log(
-    "Container exists:",
-    !!document.getElementById("profileHubContainer")
-  );
-  console.log(
-    "ProfileHub element exists:",
-    !!document.getElementById("profileHub")
-  );
-  console.log("ProfileHub Manager exists:", !!window.profileHubManager);
-  console.log(
-    "Container HTML:",
-    document.getElementById("profileHubContainer")?.innerHTML?.length ||
-      "No container"
-  );
-  console.log(
-    "Container position:",
-    document.getElementById("profileHubContainer")?.style?.position ||
-      "No styles"
-  );
-
-  // Check specific button elements
-  const buttons = {
-    hubToggle: document.getElementById("hubToggleBtn"),
-    chatbotToggle: document.getElementById("hubChatbotToggle"),
-    customizeToggle: document.getElementById("hubCustomizeToggle"),
-    authToggle: document.getElementById("hubAuthToggle"),
-    userAvatar: document.getElementById("hubUserAvatar"),
-  };
-
-  console.log("Button elements found:");
-  Object.entries(buttons).forEach(([name, element]) => {
-    if (element) {
-      console.log(`  ✅ ${name}: Found`, element);
-      console.log(
-        `     - Clickable: ${element.style.pointerEvents !== "none"}`
-      );
-      console.log(`     - Visible: ${element.offsetParent !== null}`);
-    } else {
-      console.log(`  ❌ ${name}: Not found`);
-    }
-  });
-
-  // Try to force initialization
-  if (!document.getElementById("profileHub")) {
-    console.log("ProfileHub not found, attempting to reinitialize...");
-    initializeProfileHubSystem();
-  }
-
-  return {
-    container: !!document.getElementById("profileHubContainer"),
-    profileHub: !!document.getElementById("profileHub"),
-    manager: !!window.profileHubManager,
-    buttons: buttons,
-  };
-};
 
 // Expose functions globally for compatibility
 window.toggleProfileHub = () => profileHubManager?.toggleHub();

@@ -188,9 +188,21 @@ class WidgetStudioManager {
       const fileInput = document.getElementById(`fileInput${i}`);
       const uploadArea = document.getElementById(`uploadArea${i}`);
 
+      this.log(`Looking for elements for slot ${i}`, {
+        fileInput: !!fileInput,
+        uploadArea: !!uploadArea,
+        fileInputElement: fileInput,
+        uploadAreaElement: uploadArea,
+      });
+
       if (fileInput && uploadArea) {
         this.setupFileInput(fileInput, uploadArea, i);
         this.setupDragAndDrop(uploadArea, i);
+      } else {
+        this.error(`Missing elements for slot ${i}`, {
+          fileInput: !!fileInput,
+          uploadArea: !!uploadArea,
+        });
       }
     }
 
@@ -252,26 +264,48 @@ class WidgetStudioManager {
   }
 
   setupFileInput(fileInput, uploadArea, slotNumber) {
+    this.log(`Setting up file input for slot ${slotNumber}`, {
+      fileInput: !!fileInput,
+      uploadArea: !!uploadArea,
+      fileInputId: fileInput?.id,
+      uploadAreaId: uploadArea?.id,
+    });
+
     fileInput.addEventListener("change", (e) => {
       this.log(`Files selected for slot ${slotNumber}`, {
         count: e.target.files.length,
+        files: Array.from(e.target.files).map((f) => f.name),
       });
       this.handleFileSelection(e.target.files, slotNumber);
     });
 
     // Make upload area clickable - prevent double triggers
     uploadArea.addEventListener("click", (e) => {
+      this.log(`Upload area clicked for slot ${slotNumber}`, {
+        target: e.target.tagName,
+        isFileInput: e.target === fileInput,
+      });
       // Only trigger if not clicking on the file input itself
       if (e.target !== fileInput) {
         e.preventDefault();
+        this.log(`Triggering file input click for slot ${slotNumber}`);
         fileInput.click();
       }
     });
 
-    // Prevent file input from triggering when clicking upload area
-    fileInput.addEventListener("click", (e) => {
-      e.stopPropagation();
+    // Add mousedown handler to ensure file input gets focus
+    uploadArea.addEventListener("mousedown", (e) => {
+      if (e.target !== fileInput) {
+        e.preventDefault();
+        fileInput.focus();
+      }
     });
+
+    // Add a test method to verify file input is working
+    this.testFileInput = () => {
+      this.log(`Testing file input for slot ${slotNumber}`);
+      fileInput.click();
+    };
   }
 
   setupDragAndDrop(uploadArea, slotNumber) {
@@ -922,6 +956,20 @@ class WidgetStudioManager {
       }
     }, 5000);
   }
+
+  // Debug method to test file inputs
+  testFileInputs() {
+    this.log("Testing all file inputs");
+    for (let i = 1; i <= 3; i++) {
+      const fileInput = document.getElementById(`fileInput${i}`);
+      if (fileInput) {
+        this.log(`Testing file input ${i}`, { element: fileInput });
+        fileInput.click();
+      } else {
+        this.error(`File input ${i} not found`);
+      }
+    }
+  }
 }
 
 // Initialize Widget Studio when DOM is loaded
@@ -932,7 +980,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     const widgetStudio = new WidgetStudioManager();
     await widgetStudio.init();
 
+    // Expose widget studio to window for debugging
+    window.widgetStudio = widgetStudio;
+
     console.log("[WIDGET STUDIO] Widget Studio page ready");
+    console.log(
+      "[WIDGET STUDIO] Debug: Use window.widgetStudio.testFileInputs() to test file inputs"
+    );
   } catch (error) {
     console.error("[WIDGET STUDIO] Failed to initialize", error);
   }

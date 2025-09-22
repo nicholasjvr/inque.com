@@ -7,750 +7,782 @@ import {
   query,
   orderBy,
   limit,
+  where,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
 import { auth, db, onAuthStateChanged } from "../../core/firebase-core.js";
+// DOM Elements
+const usersContainer = document.getElementById("users-container");
+const userSearch = document.getElementById("userSearch");
+const filterSelect = document.getElementById("filterSelect");
+const sortSelect = document.getElementById("sortSelect");
+const refreshBtn = document.getElementById("refreshBtn");
+const loadMoreBtn = document.getElementById("loadMoreBtn");
+const loadMoreContainer = document.getElementById("loadMoreContainer");
+const emptyState = document.getElementById("emptyState");
+const clearFiltersBtn = document.getElementById("clearFiltersBtn");
 
-document.addEventListener("DOMContentLoaded", () => {
-  console.log("🚀 [USERS PAGE] Initializing Users Explore Page");
+// Chat Modal Elements
+const chatModal = document.getElementById("chatModal");
+const chatWithUserEl = document.getElementById("chat-with-user");
+const closeChatBtn = document.getElementById("closeChat");
+const chatMessagesEl = document.getElementById("chat-messages");
+const chatMessageInput = document.getElementById("chat-message-input");
+const chatSendBtn = document.getElementById("chat-send-btn");
 
-  // DOM Elements
-  const usersContainer = document.getElementById("users-container");
-  const chatModal = document.getElementById("chatModal");
-  const chatWithUserEl = document.getElementById("chat-with-user");
-  const closeChatBtn = document.getElementById("closeChat");
-  const chatMessagesEl = document.getElementById("chat-messages");
-  const chatMessageInput = document.getElementById("chat-message-input");
-  const chatSendBtn = document.getElementById("chat-send-btn");
+// Error Modal Elements
+const errorModal = document.getElementById("errorModal");
+const errorTitle = document.getElementById("errorTitle");
+const errorMessage = document.getElementById("errorMessage");
+const errorRetryBtn = document.getElementById("errorRetryBtn");
+const errorCloseBtn = document.getElementById("errorCloseBtn");
 
-  // Error Modal Elements
-  const errorModal = document.getElementById("errorModal");
-  const errorTitle = document.getElementById("errorTitle");
-  const errorMessage = document.getElementById("errorMessage");
-  const errorRetryBtn = document.getElementById("errorRetryBtn");
-  const errorCloseBtn = document.getElementById("errorCloseBtn");
+// Toast Container
+const toastContainer = document.getElementById("toastContainer");
 
-  // State Management
-  let currentUser = null;
-  let unsubscribeFromChat = null;
-  let currentChatRoomId = null;
-  let isLoading = true;
-  let usersData = [];
-  let filteredUsers = [];
-  let currentFilter = "all";
-  let currentSort = "name";
+// State Management
+let currentUser = null;
+let unsubscribeFromChat = null;
+let currentChatRoomId = null;
+let allUsers = [];
+let filteredUsers = [];
+let displayedUsers = [];
+let currentPage = 0;
+const USERS_PER_PAGE = 12;
 
-  // Initialize the app
-  initializeApp();
+// Main initialization function
+async function initializeUsersPage() {
+  try {
+    console.log("🚀 [USERS] Initializing users page");
 
-  // Initialize mobile menu functionality
-  initializeMobileMenu();
+    // Load users
+    allUsers = await fetchUsers();
 
-  function initializeApp() {
-    console.log(
-      "🔧 [USERS PAGE] Setting up modular components and event listeners"
-    );
+    if (!allUsers.length) {
+      showEmptyState("No users found yet. Check back later!");
+      return;
+    }
 
-    // Initialize modular components
-    initializeSearchAndFilters();
-    initializeUserStats();
-    initializeThemeToggle();
+    // Apply initial filters and sorting
+    applyFiltersAndRender();
 
-    // Set up error modal event listeners
-    errorCloseBtn.addEventListener("click", hideErrorModal);
-    errorRetryBtn.addEventListener("click", () => {
-      hideErrorModal();
-      fetchUsers();
+    // Setup event listeners
+    setupEventListeners();
+
+    console.log("✅ [USERS] Users page initialized successfully");
+  } catch (error) {
+    console.error("❌ [USERS] Error initializing users page:", error);
+    showEmptyState("Failed to load users. Please refresh the page.");
+  }
+}
+
+function applyFiltersAndRender() {
+  const searchTerm = userSearch?.value || "";
+  const filterBy = filterSelect?.value || "all";
+  const sortBy = sortSelect?.value || "name";
+
+  // Filter users
+  filteredUsers = filterUsers(allUsers, searchTerm, filterBy);
+
+  // Sort users
+  filteredUsers = sortUsers(filteredUsers, sortBy);
+
+  // Reset pagination
+  currentPage = 0;
+  displayedUsers = [];
+
+  // Render first page
+  renderUsers();
+}
+
+function renderUsers() {
+  if (!filteredUsers.length) {
+    showEmptyState("No users match your current filters.");
+    return;
+  }
+
+  // Get users for current page
+  const pageUsers = getUsersForPage(filteredUsers, currentPage);
+
+  if (currentPage === 0) {
+    usersContainer.innerHTML = "";
+  }
+
+  // Render users
+  pageUsers.forEach((user) => {
+    const card = createUserCard(user);
+    usersContainer.appendChild(card);
+  });
+
+  displayedUsers = [...displayedUsers, ...pageUsers];
+
+  // Show/hide load more button
+  const hasMoreUsers = displayedUsers.length < filteredUsers.length;
+  loadMoreContainer.style.display = hasMoreUsers ? "flex" : "none";
+
+  // Show/hide empty state
+  emptyState.style.display = filteredUsers.length === 0 ? "flex" : "none";
+}
+
+function createUserCard(userData) {
+  const card = document.createElement("div");
+  card.className = "user-card";
+  card.dataset.uid = userData.id;
+  card.dataset.name = userData.name || "Anonymous User";
+
+  // Add online status indicator
+  const onlineIndicator = userData.isOnline
+    ? '<div class="online-indicator"></div>'
+    : "";
+
+  // Create skills badges
+  const skillsHtml = userData.skills
+    ? userData.skills
+        .slice(0, 4)
+        .map((skill) => `<span class="skill-badge">${skill}</span>`)
+        .join("")
+    : "";
+
+  // Calculate time since last active
+  const timeAgo = getTimeAgo(userData.lastActive);
+
+  card.innerHTML = `
+    <div class="user-card-header">
+      <div class="user-card-pic" style="background-image: url(${
+        userData.photoURL || "assets/imgs/portal_placeholder.gif"
+      })"></div>
+      ${onlineIndicator}
+    </div>
+
+    <div class="user-card-content">
+      <h3 class="user-card-name">${userData.name || "Anonymous User"}</h3>
+      <p class="user-card-bio">${userData.bio || "Creative developer exploring the digital universe! 🚀"}</p>
+
+      <div class="user-card-stats">
+        <div class="stat">
+          <span class="stat-icon">📊</span>
+          <span class="stat-value">${userData.projectCount || 0}</span>
+          <span class="stat-label">Projects</span>
+        </div>
+        <div class="stat">
+          <span class="stat-icon">🕐</span>
+          <span class="stat-value">${timeAgo}</span>
+          <span class="stat-label">Active</span>
+        </div>
+      </div>
+
+      <div class="user-card-skills">
+        ${skillsHtml}
+      </div>
+    </div>
+
+    <div class="user-card-actions">
+      <button class="chat-btn">
+        <span class="btn-icon">💬</span>
+        <span class="btn-text">Chat</span>
+      </button>
+      <a href="/?user=${userData.id}" class="view-profile-btn">
+        <span class="btn-icon">👤</span>
+        <span class="btn-text">Profile</span>
+      </a>
+      <button class="follow-btn">
+        <span class="btn-icon">➕</span>
+        <span class="btn-text">Follow</span>
+      </button>
+    </div>
+  `;
+
+  // Add event listeners
+  const chatBtn = card.querySelector(".chat-btn");
+  const followBtn = card.querySelector(".follow-btn");
+
+  chatBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleChatClick(userData);
+  });
+
+  followBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    handleFollowClick(userData);
+  });
+
+  return card;
+}
+
+function showEmptyState(message) {
+  usersContainer.innerHTML = "";
+  loadMoreContainer.style.display = "none";
+  emptyState.style.display = "flex";
+
+  const emptyMessage = emptyState.querySelector("p");
+  if (emptyMessage) {
+    emptyMessage.textContent = message;
+  }
+}
+
+function setupEventListeners() {
+  // Search input
+  if (userSearch) {
+    let searchTimeout;
+    userSearch.addEventListener("input", (e) => {
+      clearTimeout(searchTimeout);
+      searchTimeout = setTimeout(() => {
+        applyFiltersAndRender();
+      }, 300);
     });
+  }
 
-    // Set up chat modal event listeners
+  // Filter and sort selects
+  if (filterSelect) {
+    filterSelect.addEventListener("change", applyFiltersAndRender);
+  }
+
+  if (sortSelect) {
+    sortSelect.addEventListener("change", applyFiltersAndRender);
+  }
+
+  // Refresh button
+  if (refreshBtn) {
+    refreshBtn.addEventListener("click", async () => {
+      refreshBtn.disabled = true;
+      refreshBtn.innerHTML =
+        '<span>🔄</span><span class="btn-text">Loading...</span>';
+
+      try {
+        allUsers = await fetchUsers();
+        applyFiltersAndRender();
+        showToast("Users refreshed!", "success");
+      } catch (error) {
+        showToast("Failed to refresh users", "error");
+      } finally {
+        refreshBtn.disabled = false;
+        refreshBtn.innerHTML =
+          '<span>🔄</span><span class="btn-text">Refresh</span>';
+      }
+    });
+  }
+
+  // Load more button
+  if (loadMoreBtn) {
+    loadMoreBtn.addEventListener("click", () => {
+      currentPage++;
+      renderUsers();
+
+      // Smooth scroll to show new content
+      if (displayedUsers.length > USERS_PER_PAGE) {
+        usersContainer.lastElementChild.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }
+    });
+  }
+
+  // Clear filters button
+  if (clearFiltersBtn) {
+    clearFiltersBtn.addEventListener("click", () => {
+      if (userSearch) userSearch.value = "";
+      if (filterSelect) filterSelect.value = "all";
+      if (sortSelect) sortSelect.value = "name";
+      applyFiltersAndRender();
+    });
+  }
+
+  // Set up modal event listeners
+  if (closeChatBtn) {
     closeChatBtn.addEventListener("click", closeChat);
+  }
+
+  if (chatSendBtn) {
     chatSendBtn.addEventListener("click", sendMessage);
+  }
+
+  if (chatMessageInput) {
     chatMessageInput.addEventListener("keypress", (e) => {
       if (e.key === "Enter") {
         sendMessage();
       }
     });
+  }
 
-    // Listen for authentication state changes
-    onAuthStateChanged(auth, (user) => {
-      currentUser = user;
-      if (user) {
-        console.log("✅ [USERS PAGE] User authenticated:", user.uid);
-        fetchUsers();
-      } else {
-        console.log("❌ [USERS PAGE] No user authenticated");
-        showEmptyState("Please log in to view users");
-      }
+  if (errorCloseBtn) {
+    errorCloseBtn.addEventListener("click", hideErrorModal);
+  }
+
+  if (errorRetryBtn) {
+    errorRetryBtn.addEventListener("click", () => {
+      hideErrorModal();
+      initializeUsersPage();
     });
   }
+}
 
-  // === ERROR HANDLING ===
-  function showErrorModal(title, message, retryFunction = null) {
-    errorTitle.textContent = title;
-    errorMessage.textContent = message;
-    errorModal.classList.add("show");
+// Filter and sort functions
+function filterUsers(users, searchTerm, filterBy) {
+  let filtered = [...users];
 
-    // Store retry function if provided
-    if (retryFunction) {
-      errorRetryBtn.onclick = () => {
-        hideErrorModal();
-        retryFunction();
-      };
-    }
+  // Search filter
+  if (searchTerm) {
+    const term = searchTerm.toLowerCase();
+    filtered = filtered.filter(
+      (user) =>
+        user.name?.toLowerCase().includes(term) ||
+        user.email?.toLowerCase().includes(term) ||
+        user.bio?.toLowerCase().includes(term) ||
+        user.skills?.some((skill) => skill.toLowerCase().includes(term))
+    );
   }
 
-  function hideErrorModal() {
-    errorModal.classList.remove("show");
-  }
-
-  function logError(error, context = "Unknown") {
-    console.error(`Error in ${context}:`, error);
-
-    // Determine error type and show appropriate message
-    let title = "Error";
-    let message = "An unexpected error occurred.";
-
-    if (error.code === "permission-denied") {
-      title = "Access Denied";
-      message =
-        "You don't have permission to access this feature. Please log in.";
-    } else if (error.code === "unavailable") {
-      title = "Connection Error";
-      message =
-        "Unable to connect to the server. Please check your internet connection.";
-    } else if (error.code === "not-found") {
-      title = "Not Found";
-      message = "The requested resource was not found.";
-    } else if (error.message.includes("recaptcha")) {
-      title = "Security Check Failed";
-      message = "The security verification failed. Please try again.";
-    }
-
-    showErrorModal(title, message);
-  }
-
-  // === LOADING STATES ===
-  function showLoading() {
-    isLoading = true;
-    usersContainer.innerHTML = `
-      <div class="users-loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading Users...</div>
-      </div>
-    `;
-  }
-
-  function showEmptyState(message) {
-    isLoading = false;
-    usersContainer.innerHTML = `
-      <div class="users-empty">
-        <h3>No Users Found</h3>
-        <p>${message}</p>
-      </div>
-    `;
-  }
-
-
-  function initializeUserStats() {
-    console.log("📊 [USERS PAGE] Initializing user stats component");
-
-    const header = document.querySelector(".page-header");
-    const statsBar = document.createElement("div");
-    statsBar.className = "user-stats-bar";
-    statsBar.innerHTML = `
-      <div class="stat-item">
-        <span class="stat-number" id="total-users">0</span>
-        <span class="stat-label">Total Users</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="online-users">0</span>
-        <span class="stat-label">Online Now</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-number" id="active-today">0</span>
-        <span class="stat-label">Active Today</span>
-      </div>
-    `;
-
-    header.appendChild(statsBar);
-  }
-
-  function initializeThemeToggle() {
-    console.log("🎨 [USERS PAGE] Initializing theme toggle component");
-
-    const header = document.querySelector(".page-header");
-    const themeToggle = document.createElement("button");
-    themeToggle.className = "theme-toggle-btn";
-    themeToggle.innerHTML = "🌙";
-    themeToggle.title = "Toggle Dark/Light Theme";
-
-    themeToggle.addEventListener("click", toggleTheme);
-    header.appendChild(themeToggle);
-  }
-
-  function initializeMobileMenu() {
-    console.log("📱 [USERS PAGE] Initializing mobile menu functionality");
-
-    // Create mobile menu toggle button
-    const createMobileMenuToggle = () => {
-      if (window.innerWidth <= 480) {
-        const header = document.querySelector(".page-header");
-        const headerActions = document.querySelector(".header-actions");
-
-        if (
-          header &&
-          headerActions &&
-          !document.querySelector(".mobile-menu-toggle")
-        ) {
-          const mobileToggle = document.createElement("button");
-          mobileToggle.className = "mobile-menu-toggle";
-          mobileToggle.innerHTML = "☰";
-          mobileToggle.setAttribute("aria-label", "Toggle navigation menu");
-
-          header.appendChild(mobileToggle);
-
-          mobileToggle.addEventListener("click", () => {
-            console.log("📱 [USERS PAGE] Mobile menu toggled");
-            headerActions.classList.toggle("show");
-
-            // Update button icon
-            mobileToggle.innerHTML = headerActions.classList.contains("show")
-              ? "✕"
-              : "☰";
-          });
-
-          // Close menu when clicking outside
-          document.addEventListener("click", (e) => {
-            if (
-              !header.contains(e.target) &&
-              headerActions.classList.contains("show")
-            ) {
-              headerActions.classList.remove("show");
-              mobileToggle.innerHTML = "☰";
-            }
-          });
-        }
-      }
-    };
-
-    // Initialize mobile menu on load
-    createMobileMenuToggle();
-
-    // Re-initialize on resize
-    window.addEventListener("resize", () => {
-      const mobileToggle = document.querySelector(".mobile-menu-toggle");
-      if (mobileToggle && window.innerWidth > 480) {
-        mobileToggle.remove();
-        document.querySelector(".header-actions").classList.remove("show");
-      } else if (window.innerWidth <= 480) {
-        createMobileMenuToggle();
-      }
-    });
-  }
-
-  function handleSearch(e) {
-    const searchTerm = e.target.value.toLowerCase();
-    console.log("🔍 [USERS PAGE] Searching for:", searchTerm);
-
-    if (searchTerm === "") {
-      filteredUsers = [...usersData];
-    } else {
-      filteredUsers = usersData.filter(
-        (user) =>
-          user.name?.toLowerCase().includes(searchTerm) ||
-          user.email?.toLowerCase().includes(searchTerm) ||
-          user.bio?.toLowerCase().includes(searchTerm)
-      );
-    }
-
-    applyFiltersAndSort();
-    updateUserStats();
-  }
-
-  function clearSearch() {
-    console.log("🧹 [USERS PAGE] Clearing search");
-    document.getElementById("user-search").value = "";
-    filteredUsers = [...usersData];
-    applyFiltersAndSort();
-    updateUserStats();
-  }
-
-  function handleFilter(e) {
-    currentFilter = e.target.value;
-    console.log("🔧 [USERS PAGE] Filter changed to:", currentFilter);
-    applyFiltersAndSort();
-  }
-
-  function handleSort(e) {
-    currentSort = e.target.value;
-    console.log("📊 [USERS PAGE] Sort changed to:", currentSort);
-    applyFiltersAndSort();
-  }
-
-  function applyFiltersAndSort() {
-    let users = [...filteredUsers];
-
-    // Apply filters
-    switch (currentFilter) {
+  // Category filter
+  if (filterBy && filterBy !== "all") {
+    switch (filterBy) {
       case "online":
-        users = users.filter((user) => user.isOnline);
+        filtered = filtered.filter((user) => user.isOnline);
         break;
       case "recent":
-        // Filter users active in last 24 hours
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-        users = users.filter(
+        filtered = filtered.filter(
           (user) => user.lastActive && new Date(user.lastActive) > oneDayAgo
         );
         break;
       case "creators":
-        users = users.filter((user) => user.projectCount > 0);
+        filtered = filtered.filter((user) => user.projectCount > 0);
         break;
     }
-
-    // Apply sorting
-    switch (currentSort) {
-      case "name":
-        users.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-        break;
-      case "recent":
-        users.sort(
-          (a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0)
-        );
-        break;
-      case "projects":
-        users.sort((a, b) => (b.projectCount || 0) - (a.projectCount || 0));
-        break;
-      case "random":
-        users = users.sort(() => Math.random() - 0.5);
-        break;
-    }
-
-    renderUsers(users);
   }
 
-  function updateUserStats() {
-    console.log("📈 [USERS PAGE] Updating user statistics");
+  return filtered;
+}
 
-    const totalUsers = usersData.length;
-    const onlineUsers = usersData.filter((user) => user.isOnline).length;
-    const activeToday = usersData.filter((user) => {
-      if (!user.lastActive) return false;
-      const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      return new Date(user.lastActive) > oneDayAgo;
-    }).length;
+function sortUsers(users, sortBy) {
+  const sorted = [...users];
 
-    // Animate numbers
-    animateNumber("total-users", totalUsers);
-    animateNumber("online-users", onlineUsers);
-    animateNumber("active-today", activeToday);
-  }
-
-  function animateNumber(elementId, targetNumber) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
-
-    const startNumber = parseInt(element.textContent) || 0;
-    const duration = 1000;
-    const startTime = performance.now();
-
-    function updateNumber(currentTime) {
-      const elapsed = currentTime - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      const currentNumber = Math.round(
-        startNumber + (targetNumber - startNumber) * progress
+  switch (sortBy) {
+    case "name":
+      return sorted.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+    case "recent":
+      return sorted.sort(
+        (a, b) => new Date(b.lastActive || 0) - new Date(a.lastActive || 0)
       );
-      element.textContent = currentNumber;
+    case "projects":
+      return sorted.sort(
+        (a, b) => (b.projectCount || 0) - (a.projectCount || 0)
+      );
+    case "random":
+      return sorted.sort(() => Math.random() - 0.5);
+    default:
+      return sorted;
+  }
+}
 
-      if (progress < 1) {
-        requestAnimationFrame(updateNumber);
-      }
-    }
+function getUsersForPage(users, page) {
+  const start = page * USERS_PER_PAGE;
+  const end = start + USERS_PER_PAGE;
+  return users.slice(start, end);
+}
 
-    requestAnimationFrame(updateNumber);
+// Initialize the page
+initializeUsersPage();
+
+// === ERROR HANDLING ===
+function showErrorModal(title, message, retryFunction = null) {
+  errorTitle.textContent = title;
+  errorMessage.textContent = message;
+  errorModal.style.display = "flex";
+
+  // Store retry function if provided
+  if (retryFunction) {
+    errorRetryBtn.onclick = () => {
+      hideErrorModal();
+      retryFunction();
+    };
+  }
+}
+
+function hideErrorModal() {
+  errorModal.style.display = "none";
+}
+
+function logError(error, context = "Unknown") {
+  console.error(`❌ [USERS] Error in ${context}:`, error);
+
+  // Determine error type and show appropriate message
+  let title = "Error";
+  let message = "An unexpected error occurred.";
+
+  if (error.code === "permission-denied") {
+    title = "Access Denied";
+    message =
+      "You don't have permission to access this feature. Please log in.";
+  } else if (error.code === "unavailable") {
+    title = "Connection Error";
+    message =
+      "Unable to connect to the server. Please check your internet connection.";
+  } else if (error.code === "not-found") {
+    title = "Not Found";
+    message = "The requested resource was not found.";
+  } else if (error.message.includes("recaptcha")) {
+    title = "Security Check Failed";
+    message = "The security verification failed. Please try again.";
   }
 
-  function toggleTheme() {
-    console.log("🎨 [USERS PAGE] Toggling theme");
-    const body = document.body;
-    const isDark = body.classList.contains("light-theme");
+  showErrorModal(title, message);
+}
 
-    if (isDark) {
-      body.classList.remove("light-theme");
-      body.classList.add("dark-theme");
-    } else {
-      body.classList.remove("dark-theme");
-      body.classList.add("light-theme");
-    }
-  }
+// === USER FETCHING ===
+async function fetchUsers() {
+  try {
+    console.log("📡 [USERS] Fetching users from database");
 
-  // === USER FETCHING ===
-  const fetchUsers = async () => {
-    if (!usersContainer) return;
+    const usersSnapshot = await getDocs(collection(db, "users"));
+    const users = [];
 
-    console.log("📡 [USERS PAGE] Fetching users from database");
-    showLoading();
+    usersSnapshot.forEach((doc) => {
+      if (currentUser && doc.id === currentUser.uid) return; // Don't show current user
+      const userData = { id: doc.id, ...doc.data() };
 
-    try {
-      const usersSnapshot = await getDocs(collection(db, "users"));
-      const users = [];
+      // Add mock data for enhanced features
+      userData.isOnline = Math.random() > 0.7; // 30% chance of being online
+      userData.projectCount = Math.floor(Math.random() * 10); // 0-9 projects
+      userData.lastActive = new Date(
+        Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
+      ); // Last 7 days
+      userData.bio =
+        userData.bio || "Creative developer exploring the digital universe! 🚀";
+      userData.skills = userData.skills || [
+        "JavaScript",
+        "React",
+        "Design",
+        "Innovation",
+      ];
 
-      usersSnapshot.forEach((doc) => {
-        if (currentUser && doc.id === currentUser.uid) return; // Don't show current user
-        const userData = { id: doc.id, ...doc.data() };
-
-        // Add mock data for enhanced features
-        userData.isOnline = Math.random() > 0.7; // 30% chance of being online
-        userData.projectCount = Math.floor(Math.random() * 10); // 0-9 projects
-        userData.lastActive = new Date(
-          Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000
-        ); // Last 7 days
-        userData.bio =
-          userData.bio ||
-          "Creative developer exploring the digital universe! 🚀";
-        userData.skills = userData.skills || [
-          "JavaScript",
-          "React",
-          "Design",
-          "Innovation",
-        ];
-
-        users.push(userData);
-      });
-
-      if (users.length === 0) {
-        showEmptyState("No other users found. Be the first to join!");
-        return;
-      }
-
-      // Store users data and initialize filtering
-      usersData = users;
-      filteredUsers = [...users];
-
-      console.log(`✅ [USERS PAGE] Loaded ${users.length} users`);
-      renderUsers(users);
-      updateUserStats();
-    } catch (error) {
-      console.error("❌ [USERS PAGE] Error fetching users:", error);
-      logError(error, "fetchUsers");
-      showEmptyState("Failed to load users. Please try again.");
-    }
-  };
-
-  function renderUsers(users) {
-    isLoading = false;
-    usersContainer.innerHTML = "";
-
-    users.forEach((userData) => {
-      const card = createUserCard(userData);
-      usersContainer.appendChild(card);
+      users.push(userData);
     });
-  }
 
-  function createUserCard(userData) {
-    console.log(
-      "🎨 [USERS PAGE] Creating enhanced user card for:",
-      userData.name
+    console.log(`✅ [USERS] Loaded ${users.length} users`);
+    return users;
+  } catch (error) {
+    console.error("❌ [USERS] Error fetching users:", error);
+    logError(error, "fetchUsers");
+    throw error;
+  }
+}
+
+// === USER STATS ===
+function updateUserStats() {
+  console.log("📈 [USERS] Updating user statistics");
+
+  const totalUsers = allUsers.length;
+  const onlineUsers = allUsers.filter((user) => user.isOnline).length;
+  const activeToday = allUsers.filter((user) => {
+    if (!user.lastActive) return false;
+    const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+    return new Date(user.lastActive) > oneDayAgo;
+  }).length;
+
+  // Animate numbers
+  animateNumber("total-users", totalUsers);
+  animateNumber("online-users", onlineUsers);
+  animateNumber("active-today", activeToday);
+}
+
+function animateNumber(elementId, targetNumber) {
+  const element = document.getElementById(elementId);
+  if (!element) return;
+
+  const startNumber = parseInt(element.textContent) || 0;
+  const duration = 1000;
+  const startTime = performance.now();
+
+  function updateNumber(currentTime) {
+    const elapsed = currentTime - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+
+    const currentNumber = Math.round(
+      startNumber + (targetNumber - startNumber) * progress
     );
+    element.textContent = currentNumber;
 
-    const card = document.createElement("div");
-    card.className = "user-card";
-    card.dataset.uid = userData.id;
-    card.dataset.name = userData.name;
+    if (progress < 1) {
+      requestAnimationFrame(updateNumber);
+    }
+  }
 
-    // Add online status indicator
-    const onlineIndicator = userData.isOnline
-      ? '<div class="online-indicator"></div>'
-      : "";
+  requestAnimationFrame(updateNumber);
+}
 
-    // Create skills badges
-    const skillsHtml = userData.skills
-      ? userData.skills
-          .slice(0, 3)
-          .map((skill) => `<span class="skill-badge">${skill}</span>`)
-          .join("")
-      : "";
+// === TOAST NOTIFICATIONS ===
+function showToast(message, type = "info") {
+  const toast = document.createElement("div");
+  toast.className = `toast-notification ${type}`;
+  toast.textContent = message;
 
-    // Calculate time since last active
-    const timeAgo = getTimeAgo(userData.lastActive);
+  if (toastContainer) {
+    toastContainer.appendChild(toast);
+  } else {
+    document.body.appendChild(toast);
+  }
 
-    card.innerHTML = `
-      <div class="user-card-header">
-        <div class="user-card-pic" style="background-image: url(${
-          userData.photoURL || "assets/imgs/portal_placeholder.gif"
-        })"></div>
-        ${onlineIndicator}
-      </div>
-      
-      <div class="user-card-content">
-        <h3 class="user-card-name">${userData.name || "Anonymous User"}</h3>
-        <p class="user-card-bio">${userData.bio || "Creative developer exploring the digital universe! 🚀"}</p>
-        
-        <div class="user-card-stats">
-          <div class="stat">
-            <span class="stat-icon">📊</span>
-            <span class="stat-value">${userData.projectCount || 0}</span>
-            <span class="stat-label">Projects</span>
-          </div>
-          <div class="stat">
-            <span class="stat-icon">🕐</span>
-            <span class="stat-value">${timeAgo}</span>
-          </div>
-        </div>
-        
-        <div class="user-card-skills">
-          ${skillsHtml}
-        </div>
-      </div>
-      
-      <div class="user-card-hover">
-        <button class="chat-btn">
-          <span class="btn-icon">💬</span>
-          <span class="btn-text">Chat</span>
-        </button>
-        <a href="/?user=${userData.id}" class="view-profile-btn">
-          <span class="btn-icon">👤</span>
-          <span class="btn-text">View Profile</span>
-        </a>
-        <button class="follow-btn">
-          <span class="btn-icon">➕</span>
-          <span class="btn-text">Follow</span>
-        </button>
-      </div>
-    `;
+  // Add fade-in animation
+  toast.classList.add("fade-in");
 
-    // Add event listeners
-    const chatBtn = card.querySelector(".chat-btn");
-    const followBtn = card.querySelector(".follow-btn");
-
-    chatBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      handleChatClick(userData);
-    });
-
-    followBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      handleFollowClick(userData);
-    });
-
-    // Add click handler for view profile button
-    const viewProfileBtn = card.querySelector(".view-profile-btn");
-    viewProfileBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      handleViewProfileClick(userData);
-    });
-
-    // Add click animation
-    card.addEventListener("click", () => {
-      card.style.transform = "scale(0.98)";
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    if (toast.parentNode) {
+      toast.style.opacity = "0";
+      toast.style.transform = "translateX(100%)";
       setTimeout(() => {
-        card.style.transform = "";
-      }, 150);
-    });
-
-    return card;
-  }
-
-  function getTimeAgo(date) {
-    if (!date) return "Unknown";
-
-    const now = new Date();
-    const diffInMs = now - new Date(date);
-    const diffInHours = diffInMs / (1000 * 60 * 60);
-    const diffInDays = diffInHours / 24;
-
-    if (diffInHours < 1) return "Just now";
-    if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
-    if (diffInDays < 7) return `${Math.floor(diffInDays)}d ago`;
-    return `${Math.floor(diffInDays / 7)}w ago`;
-  }
-
-  function handleViewProfileClick(userData) {
-    console.log(
-      "👤 [USERS PAGE] View Profile button clicked for:",
-      userData.name,
-      "(" + userData.id + ")"
-    );
-
-    // Construct the profile URL
-    const profileUrl = `/?user=${userData.id}`;
-    console.log("🔗 [USERS PAGE] Navigating to profile URL:", profileUrl);
-
-    // Navigate to the user's profile with their widget timeline
-    window.location.href = profileUrl;
-  }
-
-  function handleFollowClick(userData) {
-    console.log("➕ [USERS PAGE] Follow button clicked for:", userData.name);
-
-    if (!currentUser) {
-      showErrorModal(
-        "Login Required",
-        "Please log in to follow other users.",
-        () => {
-          window.location.href = "/";
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
         }
-      );
-      return;
-    }
-
-    // Add follow functionality here
-    // For now, just show a success message
-    showNotification(`Now following ${userData.name}! 🎉`, "success");
-  }
-
-  function showNotification(message, type = "info") {
-    console.log("🔔 [USERS PAGE] Showing notification:", message);
-
-    const notification = document.createElement("div");
-    notification.className = `notification notification-${type}`;
-    notification.textContent = message;
-
-    document.body.appendChild(notification);
-
-    // Animate in
-    setTimeout(() => {
-      notification.classList.add("show");
-    }, 100);
-
-    // Remove after 3 seconds
-    setTimeout(() => {
-      notification.classList.remove("show");
-      setTimeout(() => {
-        document.body.removeChild(notification);
       }, 300);
-    }, 3000);
-  }
-
-  function handleChatClick(userData) {
-    if (!currentUser) {
-      showErrorModal(
-        "Login Required",
-        "Please log in to start a chat with other users.",
-        () => {
-          // Redirect to login or show login modal
-          window.location.href = "/";
-        }
-      );
-      return;
     }
+  }, 4000);
+}
 
-    openChat(userData.id, userData.name);
-  }
+// === UTILITY FUNCTIONS ===
+function getTimeAgo(date) {
+  if (!date) return "Unknown";
 
-  // === CHAT FUNCTIONALITY ===
-  function openChat(otherUserId, otherUserName) {
-    try {
-      chatWithUserEl.textContent = `Chat with ${otherUserName}`;
+  const now = new Date();
+  const diffInMs = now - new Date(date);
+  const diffInHours = diffInMs / (1000 * 60 * 60);
+  const diffInDays = diffInHours / 24;
 
-      // Create a consistent chat room ID
-      const uids = [currentUser.uid, otherUserId].sort();
-      currentChatRoomId = `chat_${uids[0]}_${uids[1]}`;
+  if (diffInHours < 1) return "Just now";
+  if (diffInHours < 24) return `${Math.floor(diffInHours)}h ago`;
+  if (diffInDays < 7) return `${Math.floor(diffInDays)}d ago`;
+  return `${Math.floor(diffInDays / 7)}w ago`;
+}
 
-      chatMessagesEl.innerHTML = ""; // Clear previous messages
-      chatModal.style.display = "flex";
-
-      // Listen for new messages
-      const messagesRef = collection(
-        db,
-        "chats",
-        currentChatRoomId,
-        "messages"
-      );
-      const q = query(messagesRef, orderBy("timestamp", "asc"), limit(50));
-
-      unsubscribeFromChat = onSnapshot(
-        q,
-        (snapshot) => {
-          snapshot.docChanges().forEach((change) => {
-            if (change.type === "added") {
-              const msgData = change.doc.data();
-              addMessageToChat(msgData);
-            }
-          });
-          // Scroll to the bottom
-          chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
-        },
-        (error) => {
-          logError(error, "chatListener");
-        }
-      );
-    } catch (error) {
-      logError(error, "openChat");
-    }
-  }
-
-  function addMessageToChat(msgData) {
-    const messageEl = document.createElement("div");
-    messageEl.className = "message";
-    messageEl.classList.add(
-      msgData.senderId === currentUser.uid ? "sent" : "received"
+// === EVENT HANDLERS ===
+function handleChatClick(userData) {
+  if (!currentUser) {
+    showErrorModal(
+      "Login Required",
+      "Please log in to start a chat with other users.",
+      () => {
+        window.location.href = "/";
+      }
     );
-    messageEl.textContent = msgData.text;
-    chatMessagesEl.appendChild(messageEl);
+    return;
   }
 
-  async function sendMessage() {
-    const messageText = chatMessageInput.value.trim();
-    if (messageText === "" || !currentChatRoomId || !currentUser) return;
+  openChat(userData.id, userData.name || "Anonymous User");
+}
 
-    try {
-      // Disable send button while sending
-      chatSendBtn.disabled = true;
-      chatSendBtn.textContent = "Sending...";
+function handleFollowClick(userData) {
+  console.log("➕ [USERS] Follow button clicked for:", userData.name);
 
-      const messagesRef = collection(
-        db,
-        "chats",
-        currentChatRoomId,
-        "messages"
-      );
-      await addDoc(messagesRef, {
-        text: messageText,
-        senderId: currentUser.uid,
-        timestamp: serverTimestamp(),
-      });
+  if (!currentUser) {
+    showErrorModal(
+      "Login Required",
+      "Please log in to follow other users.",
+      () => {
+        window.location.href = "/";
+      }
+    );
+    return;
+  }
 
-      chatMessageInput.value = "";
-    } catch (error) {
-      logError(error, "sendMessage");
-      showErrorModal(
-        "Send Failed",
-        "Failed to send message. Please try again."
-      );
-    } finally {
-      // Re-enable send button
-      chatSendBtn.disabled = false;
-      chatSendBtn.textContent = "Send";
+  // Add follow functionality here
+  showToast(`Now following ${userData.name || "this user"}! 🎉`, "success");
+}
+
+// === CHAT FUNCTIONALITY ===
+function openChat(otherUserId, otherUserName) {
+  try {
+    chatWithUserEl.textContent = `Chat with ${otherUserName}`;
+
+    // Create a consistent chat room ID
+    const uids = [currentUser.uid, otherUserId].sort();
+    currentChatRoomId = `chat_${uids[0]}_${uids[1]}`;
+
+    chatMessagesEl.innerHTML = ""; // Clear previous messages
+    chatModal.style.display = "flex";
+
+    // Listen for new messages
+    const messagesRef = collection(db, "chats", currentChatRoomId, "messages");
+    const q = query(messagesRef, orderBy("timestamp", "asc"), limit(50));
+
+    unsubscribeFromChat = onSnapshot(
+      q,
+      (snapshot) => {
+        snapshot.docChanges().forEach((change) => {
+          if (change.type === "added") {
+            const msgData = change.doc.data();
+            addMessageToChat(msgData);
+          }
+        });
+        // Scroll to the bottom
+        chatMessagesEl.scrollTop = chatMessagesEl.scrollHeight;
+      },
+      (error) => {
+        logError(error, "chatListener");
+      }
+    );
+  } catch (error) {
+    logError(error, "openChat");
+  }
+}
+
+function addMessageToChat(msgData) {
+  const messageEl = document.createElement("div");
+  messageEl.className = "message";
+  messageEl.classList.add(
+    msgData.senderId === currentUser.uid ? "sent" : "received"
+  );
+  messageEl.textContent = msgData.text;
+  chatMessagesEl.appendChild(messageEl);
+}
+
+async function sendMessage() {
+  const messageText = chatMessageInput.value.trim();
+  if (messageText === "" || !currentChatRoomId || !currentUser) return;
+
+  try {
+    // Disable send button while sending
+    chatSendBtn.disabled = true;
+    chatSendBtn.textContent = "Sending...";
+
+    const messagesRef = collection(db, "chats", currentChatRoomId, "messages");
+    await addDoc(messagesRef, {
+      text: messageText,
+      senderId: currentUser.uid,
+      timestamp: serverTimestamp(),
+    });
+
+    chatMessageInput.value = "";
+  } catch (error) {
+    logError(error, "sendMessage");
+    showErrorModal("Send Failed", "Failed to send message. Please try again.");
+  } finally {
+    // Re-enable send button
+    chatSendBtn.disabled = false;
+    chatSendBtn.textContent = "Send";
+  }
+}
+
+function closeChat() {
+  chatModal.style.display = "none";
+  if (unsubscribeFromChat) {
+    unsubscribeFromChat();
+    unsubscribeFromChat = null;
+  }
+  currentChatRoomId = null;
+  chatMessageInput.value = "";
+}
+
+// === AUTHENTICATION ===
+onAuthStateChanged(auth, async (user) => {
+  console.log("🔐 [USERS] Auth state changed", { userId: user?.uid });
+  currentUser = user;
+
+  if (user) {
+    if (allUsers.length > 0) {
+      // Re-apply filters to update UI
+      applyFiltersAndRender();
+      updateUserStats();
     }
-  }
-
-  function closeChat() {
-    chatModal.style.display = "none";
+  } else {
+    // Clear user-specific data
+    currentChatRoomId = null;
     if (unsubscribeFromChat) {
       unsubscribeFromChat();
       unsubscribeFromChat = null;
     }
-    currentChatRoomId = null;
-    chatMessageInput.value = "";
+  }
+});
+
+// === ENHANCED FEATURES ===
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🚀 [USERS] Initializing enhanced features");
+
+  // Initialize enhanced features
+  initializeEnhancedFeatures();
+});
+
+// Enhanced features for better UX
+function initializeEnhancedFeatures() {
+  // Add smooth scrolling for better navigation
+  document.documentElement.style.scrollBehavior = "smooth";
+
+  // Initialize keyboard shortcuts
+  document.addEventListener("keydown", handleKeyboardShortcuts);
+
+  // Add focus management for accessibility
+  initializeFocusManagement();
+
+  // Initialize intersection observer for animations
+  initializeScrollAnimations();
+}
+
+function handleKeyboardShortcuts(e) {
+  // Ctrl/Cmd + K to focus search
+  if ((e.ctrlKey || e.metaKey) && e.key === "k") {
+    e.preventDefault();
+    if (userSearch) {
+      userSearch.focus();
+      userSearch.select();
+    }
   }
 
-  // === GLOBAL ERROR HANDLER ===
-  window.addEventListener("error", (event) => {
-    logError(event.error, "Global Error");
-  });
+  // Escape to clear search
+  if (e.key === "Escape" && document.activeElement === userSearch) {
+    userSearch.value = "";
+    applyFiltersAndRender();
+  }
+}
 
-  window.addEventListener("unhandledrejection", (event) => {
-    logError(event.reason, "Unhandled Promise Rejection");
-  });
-
-  // === RECAPTCHA ERROR HANDLER ===
-  window.addEventListener("message", (event) => {
-    if (event.data && event.data.type === "recaptcha-error") {
-      showErrorModal(
-        "Security Check Failed",
-        "The security verification failed. Please refresh the page and try again."
-      );
+function initializeFocusManagement() {
+  // Ensure focus is visible for keyboard navigation
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Tab") {
+      document.body.classList.add("keyboard-navigation");
     }
   });
+
+  document.addEventListener("mousedown", () => {
+    document.body.classList.remove("keyboard-navigation");
+  });
+}
+
+function initializeScrollAnimations() {
+  // Add fade-in animations for cards as they enter viewport
+  const observerOptions = {
+    threshold: 0.1,
+    rootMargin: "0px 0px -50px 0px",
+  };
+
+  const animationObserver = new IntersectionObserver((entries) => {
+    entries.forEach((entry) => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add("fade-in");
+        animationObserver.unobserve(entry.target);
+      }
+    });
+  }, observerOptions);
+
+  // Observe all user cards for animation
+  document.querySelectorAll(".user-card").forEach((card) => {
+    animationObserver.observe(card);
+  });
+}
+
+// === GLOBAL ERROR HANDLER ===
+window.addEventListener("error", (event) => {
+  logError(event.error, "Global Error");
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  logError(event.reason, "Unhandled Promise Rejection");
+});
+
+// === RECAPTCHA ERROR HANDLER ===
+window.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "recaptcha-error") {
+    showErrorModal(
+      "Security Check Failed",
+      "The security verification failed. Please refresh the page and try again."
+    );
+  }
 });

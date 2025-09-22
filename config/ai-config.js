@@ -3,13 +3,20 @@
 
 // Debug log to show when AI config is loaded
 console.log("[DEBUG] AI Configuration module loaded");
-console.log(
-  "[DEBUG] Environment check - GOOGLE_AI_API_KEY present:",
-  !!process.env.GOOGLE_AI_API_KEY
-);
+
+// For browser environment, we'll use a different approach for API key
+// Check if we're in a browser environment
+const isBrowser = typeof window !== "undefined";
+const apiKey = isBrowser
+  ? window.GOOGLE_AI_API_KEY || localStorage.getItem("GOOGLE_AI_API_KEY")
+  : typeof process !== "undefined"
+    ? process.env.GOOGLE_AI_API_KEY
+    : null;
+
+console.log("[DEBUG] Environment check - GOOGLE_AI_API_KEY present:", !!apiKey);
 
 export const AI_CONFIG = {
-  GOOGLE_AI_API_KEY: process.env.GOOGLE_AI_API_KEY,
+  GOOGLE_AI_API_KEY: apiKey,
   MODEL: "gemini-pro",
 
   // Chatbot behavior settings

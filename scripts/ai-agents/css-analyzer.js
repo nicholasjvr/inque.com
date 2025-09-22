@@ -7,8 +7,6 @@
 
 import { AI_CONFIG } from "../../config/ai-config.js";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import fs from "fs";
-import path from "path";
 
 class CSSAnalyzer {
   constructor() {

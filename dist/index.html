@@ -19,13 +19,14 @@
       rel="stylesheet"
     />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-   <script type="module" crossorigin src="./assets/main-BHehMAgB.js"></script>
-   <link rel="modulepreload" crossorigin href="./assets/auth-DH_qk2Bl.js">
-   <link rel="modulepreload" crossorigin href="./assets/profile-dashboard-manager-B7HCCIut.js">
-   <link rel="modulepreload" crossorigin href="./assets/cloud-upload-BHtgTKg3.js">
-   <link rel="modulepreload" crossorigin href="./assets/profile_banner-CjLez_F2.js">
-   <link rel="stylesheet" crossorigin href="./assets/profile-dashboard-manager-DVP_l35_.css">
-   <link rel="stylesheet" crossorigin href="./assets/main-CmmkTASc.css">
+   <script type="module" crossorigin src="./assets/main-DNOXW2c_.js"></script>
+   <link rel="modulepreload" crossorigin href="./assets/auth-Dy9B-T86.js">
+   <link rel="modulepreload" crossorigin href="./assets/profile-dashboard-manager-BsrhhKt_.js">
+   <link rel="modulepreload" crossorigin href="./assets/cloud-upload-D8EMqPwn.js">
+   <link rel="modulepreload" crossorigin href="./assets/profile_banner-HbanVse1.js">
+   <link rel="stylesheet" crossorigin href="./assets/profile-dashboard-manager-J6aOG64b.css">
+   <link rel="stylesheet" crossorigin href="./assets/main-c-GEmUjU.css">
+   <link rel="stylesheet" crossorigin href="./assets/profile_banner-D2Z9x-hQ.css">
  </head>
   <body>
     <!-- 3D Title Header -->
@@ -432,7 +433,7 @@
 </main>
 
 <!-- Authentication Modal -->
-<div id="authModal" class="modal" style="display: none">
+<div id="authModal" class="modal">
   <div class="modal-content neo-card" style="max-width: 400px">
     <div
       class="modal-header"
@@ -643,6 +644,24 @@
 
         // Initialize guest authentication buttons
         initializeGuestAuthButtons();
+        
+        // Initialize modal event listeners
+        initializeModalEventListeners();
+        
+        // Test if our system is working
+        console.log("🔐 Testing guest button system...");
+        setTimeout(() => {
+          const testBtn = document.getElementById("guest-login-btn");
+          if (testBtn) {
+            console.log("🔐 Test: Guest login button exists and is clickable");
+            console.log("🔐 Test: About to click button programmatically");
+            // Test click programmatically
+            testBtn.click();
+            console.log("🔐 Test: Button click completed");
+          } else {
+            console.error("🔐 Test: Guest login button not found!");
+          }
+        }, 2000);
       });
 
       // Initialize guest authentication buttons
@@ -652,26 +671,112 @@
         const guestLoginBtn = document.getElementById("guest-login-btn");
         const guestSignupBtn = document.getElementById("guest-signup-btn");
         
+        console.log("🔐 Guest login button found:", guestLoginBtn);
+        console.log("🔐 Guest signup button found:", guestSignupBtn);
+        
         if (guestLoginBtn) {
           guestLoginBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            console.log("🔐 Guest login button clicked");
+            e.stopPropagation();
+            console.log("🔐 Guest login button clicked - OUR SYSTEM");
             openAuthModal("login");
           });
+        } else {
+          console.error("🔐 Guest login button not found!");
         }
         
         if (guestSignupBtn) {
           guestSignupBtn.addEventListener("click", (e) => {
             e.preventDefault();
-            console.log("🔐 Guest signup button clicked");
+            e.stopPropagation();
+            console.log("🔐 Guest signup button clicked - OUR SYSTEM");
             openAuthModal("signup");
           });
+        } else {
+          console.error("🔐 Guest signup button not found!");
         }
       }
 
-      // Global function to open auth modal
-      window.openAuthModal = (mode = "login") => {
+      // Initialize modal event listeners
+      function initializeModalEventListeners() {
+        console.log("🔐 Initializing modal event listeners");
+        
+        // Close button
+        const closeBtn = document.getElementById("authCloseBtn");
+        if (closeBtn) {
+          closeBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔐 Close button clicked");
+            window.closeAuthModal();
+          });
+        }
+        
+        // Form switching links
+        const showSignUp = document.getElementById("showSignUp");
+        const showLogin = document.getElementById("showLogin");
+        const showLoginFromForgot = document.getElementById("showLoginFromForgot");
+        const forgotPasswordLink = document.getElementById("forgotPasswordLink");
+        
+        if (showSignUp) {
+          showSignUp.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔐 Switch to signup form");
+            openAuthModal("signup");
+          });
+        }
+        
+        if (showLogin) {
+          showLogin.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔐 Switch to login form");
+            openAuthModal("login");
+          });
+        }
+        
+        if (showLoginFromForgot) {
+          showLoginFromForgot.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔐 Switch from forgot to login form");
+            openAuthModal("login");
+          });
+        }
+        
+        if (forgotPasswordLink) {
+          forgotPasswordLink.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("🔐 Switch to forgot password form");
+            openAuthModal("forgot");
+          });
+        }
+        
+        // Close modal when clicking outside
+        const authModal = document.getElementById("authModal");
+        if (authModal) {
+          authModal.addEventListener("click", (e) => {
+            if (e.target === authModal) {
+              console.log("🔐 Modal background clicked - closing");
+              window.closeAuthModal();
+            }
+          });
+        }
+        
+        // Close modal on escape key
+        document.addEventListener("keydown", (e) => {
+          if (e.key === "Escape") {
+            const authModal = document.getElementById("authModal");
+            if (authModal && authModal.classList.contains("show")) {
+              console.log("🔐 Escape key pressed - closing modal");
+              window.closeAuthModal();
+            }
+          }
+        });
+      }
+
+      // Store our original function before Profile Hub overrides it
+      const originalOpenAuthModal = (mode = "login") => {
+        console.log("🔐 ===== OPEN AUTH MODAL CALLED =====");
         console.log("🔐 Opening auth modal in mode:", mode);
+        console.log("🔐 Call stack:", new Error().stack);
         
         const authModal = document.getElementById("authModal");
         const loginForm = document.getElementById("loginForm");
@@ -684,14 +789,23 @@
           return;
         }
         
+        // Check if modal is already open to prevent duplicate calls
+        if (authModal.classList.contains("show")) {
+          console.log("🔐 Modal already open, ignoring duplicate call");
+          return;
+        }
+        
+        console.log("🔐 Auth modal found:", authModal);
+        console.log("🔐 Modal classes before:", authModal.className);
+        console.log("🔐 Modal computed style before:", window.getComputedStyle(authModal).display);
+        
         // Show the modal with animation
-        authModal.style.display = "flex";
+        authModal.classList.add("show");
         document.body.style.overflow = "hidden";
         
-        // Trigger animation after a brief delay
-        setTimeout(() => {
-          authModal.classList.add("show");
-        }, 10);
+        console.log("🔐 Modal classes after:", authModal.className);
+        console.log("🔐 Modal computed style after:", window.getComputedStyle(authModal).display);
+        console.log("🔐 Modal has show class:", authModal.classList.contains("show"));
         
         // Set the correct form based on mode
         if (mode === "signup") {
@@ -712,6 +826,16 @@
         }
         
         console.log("🔐 Auth modal opened successfully");
+      };
+
+      // Function to close auth modal
+      window.closeAuthModal = () => {
+        const authModal = document.getElementById("authModal");
+        if (authModal) {
+          authModal.classList.remove("show");
+          document.body.style.overflow = "";
+          console.log("🔐 Auth modal closed");
+        }
       };
 
       // ProfileHub init handled by its own module
@@ -786,6 +910,13 @@
           }
         }, 50);
       }
+
+      // Override Profile Hub's openAuthModal function after it loads
+      setTimeout(() => {
+        console.log("🔐 Overriding Profile Hub's openAuthModal function");
+        window.openAuthModal = originalOpenAuthModal;
+        console.log("🔐 Our openAuthModal function is now active");
+      }, 3000);
     </script>
     <!-- Prevent gesture and double-tap zoom on mobile (iOS/Safari) -->
     <script>

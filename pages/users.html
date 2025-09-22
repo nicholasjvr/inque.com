@@ -3,39 +3,161 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Find Users</title>
-    <link rel="stylesheet" href="../core/styles.css" />
-    <link rel="stylesheet" href="page_styles/users.css" />
+    <title>Find Users - inQ Platform</title>
+    <meta
+      name="description"
+      content="Connect with amazing developers and creators in the inQ community"
+    />
+
+    <!-- Fonts -->
     <link
-      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Inter:wght@400;600;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap"
       rel="stylesheet"
     />
     <link
-      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;700&display=swap"
       rel="stylesheet"
     />
+
+    <!-- Styles -->
+    <link rel="stylesheet" href="pages/page_styles/users.css" />
+    <link
+      rel="stylesheet"
+      href="pages/page_modals/modal_styles/profile_banner.css"
+    />
+
+    <!-- Favicon -->
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👥</text></svg>"
+    />
+
+    <!-- reCAPTCHA -->
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
-    <link
-      rel="stylesheet"
-      href="../pages/page_modals/modal_styles/profile_banner.css"
-    />
-    <div id="profileHubContainer"></div>
   </head>
   <body>
-    <main id="users-container">
-      <!-- Loading State -->
-      <div class="users-loading">
-        <div class="loading-spinner"></div>
-        <div class="loading-text">Loading Users...</div>
+    <!-- Profile Hub Container -->
+    <div id="profileHubContainer"></div>
+
+    <!-- Header -->
+    <header class="users-header">
+      <div class="header-content">
+        <div class="header-title">
+          <span class="title-icon">👥</span>
+          <h1>FIND USERS</h1>
+        </div>
+        <div class="header-actions">
+          <button
+            class="action-btn refresh-btn"
+            id="refreshBtn"
+            title="Refresh users"
+          >
+            <span>🔄</span>
+            <span class="btn-text">Refresh</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="users-main">
+      <!-- Search and Filter Section -->
+      <section class="users-controls">
+        <div class="search-container">
+          <input
+            type="text"
+            id="userSearch"
+            class="search-input"
+            placeholder="Search users by name, bio, or skills..."
+            autocomplete="off"
+          />
+          <div class="search-icon">🔍</div>
+        </div>
+
+        <div class="filter-container">
+          <div class="filter-group">
+            <label for="filterSelect">Filter by:</label>
+            <select id="filterSelect" class="filter-select">
+              <option value="all">All Users</option>
+              <option value="online">Online Now</option>
+              <option value="recent">Active Today</option>
+              <option value="creators">Project Creators</option>
+            </select>
+          </div>
+
+          <div class="filter-group">
+            <label for="sortSelect">Sort by:</label>
+            <select id="sortSelect" class="filter-select">
+              <option value="name">Name (A-Z)</option>
+              <option value="recent">Most Recent</option>
+              <option value="projects">Most Projects</option>
+              <option value="random">Random</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- Stats Bar -->
+      <section class="users-stats-bar">
+        <div class="stat-item">
+          <span class="stat-number" id="total-users">0</span>
+          <span class="stat-label">Total Users</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="online-users">0</span>
+          <span class="stat-label">Online Now</span>
+        </div>
+        <div class="stat-item">
+          <span class="stat-number" id="active-today">0</span>
+          <span class="stat-label">Active Today</span>
+        </div>
+      </section>
+
+      <!-- Users Grid -->
+      <section class="users-grid-container">
+        <div id="users-container" class="users-grid">
+          <!-- Loading state will be replaced by JavaScript -->
+          <div class="users-loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text">Discovering amazing creators...</div>
+            <div class="loading-subtitle">This may take a moment</div>
+          </div>
+        </div>
+
+        <!-- Empty state -->
+        <div class="empty-state" id="emptyState" style="display: none">
+          <div class="empty-icon">👥</div>
+          <h3>No users found</h3>
+          <p>
+            It looks like there are no users matching your criteria. Try
+            adjusting your filters or check back later!
+          </p>
+          <button class="empty-action-btn" id="clearFiltersBtn">
+            Clear Filters
+          </button>
+        </div>
+      </section>
+
+      <!-- Load More Button -->
+      <div
+        class="load-more-container"
+        id="loadMoreContainer"
+        style="display: none"
+      >
+        <button class="load-more-btn" id="loadMoreBtn">
+          <span class="btn-icon">⬇️</span>
+          <span>Load More Users</span>
+        </button>
       </div>
     </main>
 
     <!-- Chat Modal -->
-    <div id="chatModal" class="modal" style="display: none">
+    <div id="chatModal" class="chat-modal" style="display: none">
       <div class="modal-content">
         <div class="modal-header">
           <h2 id="chat-with-user">Chat with...</h2>
-          <span class="close-button" id="closeChat">&times;</span>
+          <button class="close-button" id="closeChat">&times;</button>
         </div>
         <div class="modal-body" id="chat-messages">
           <!-- Messages will be loaded here -->
@@ -52,7 +174,7 @@
     </div>
 
     <!-- Error Modal -->
-    <div id="errorModal" class="error-modal">
+    <div id="errorModal" class="error-modal" style="display: none">
       <div class="error-modal-content">
         <div class="error-icon">⚠️</div>
         <h3 class="error-title" id="errorTitle">Error</h3>
@@ -66,6 +188,10 @@
       </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
+    <!-- Scripts -->
     <script type="module" src="page_scripts/users.js"></script>
     <script type="module" src="../scripts/auth/auth.js"></script>
     <script
