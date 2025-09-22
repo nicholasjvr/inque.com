@@ -1797,13 +1797,17 @@ function setupMobileResponsivePositioning() {
 
     const apply = () => {
       if (window.innerWidth <= 768) {
-        container.style.top = "10px";
-        container.style.right = "10px";
+        // Position above site title on mobile
+        container.style.top = "20px";
+        container.style.right = "20px";
         container.style.left = "auto";
+        container.style.bottom = "auto";
+        console.log("[PROFILE HUB] Mobile positioning: Above site title"); // Debug log [[memory:4664284]]
       } else {
         container.style.top = "20px";
         container.style.right = "20px";
         container.style.left = "auto";
+        container.style.bottom = "auto";
       }
     };
 
@@ -1887,6 +1891,7 @@ async function loadProfileHubHTML() {
     const possiblePaths = [
       "pages/page_modals/profile_banner.html",
       "./pages/page_modals/profile_banner.html",
+      "../page_modals/profile_banner.html",
       "/pages/page_modals/profile_banner.html",
     ];
 
@@ -1902,6 +1907,9 @@ async function loadProfileHubHTML() {
           console.log(`[PROFILE HUB] Successfully loaded HTML from: ${path}`);
           break;
         } else {
+          console.warn(
+            `[PROFILE HUB] Failed to load from ${path}: ${response.status} ${response.statusText}`
+          );
           lastError = new Error(
             `Failed to load ProfileHub HTML from ${path}: ${response.status}`
           );
@@ -1953,6 +1961,7 @@ async function loadAuthModalHTML() {
     const possiblePaths = [
       "pages/page_modals/user_auth.html",
       "./pages/page_modals/user_auth.html",
+      "../page_modals/user_auth.html",
       "/pages/page_modals/user_auth.html",
     ];
 
@@ -2622,6 +2631,71 @@ window.testProfileHubButtons = () => {
       console.warn(`[PROFILE HUB DEBUG] ${name} button not found`);
     }
   });
+};
+
+// Debug function to test mobile layout positioning
+window.testMobileLayout = () => {
+  console.log("[PROFILE HUB DEBUG] Testing mobile layout positioning...");
+
+  const isMobile = window.innerWidth <= 768;
+  const isSmallMobile = window.innerWidth <= 480;
+
+  console.log(`[PROFILE HUB DEBUG] Screen width: ${window.innerWidth}px`);
+  console.log(`[PROFILE HUB DEBUG] Is mobile: ${isMobile}`);
+  console.log(`[PROFILE HUB DEBUG] Is small mobile: ${isSmallMobile}`);
+
+  const profileHub = document.getElementById("profileHub");
+  const drawerToggle = document.getElementById("profileHubDrawerToggle");
+  const titleContainer = document.getElementById("title-container");
+
+  if (profileHub) {
+    const rect = profileHub.getBoundingClientRect();
+    console.log(`[PROFILE HUB DEBUG] ProfileHub position:`, {
+      top: rect.top,
+      right: window.innerWidth - rect.right,
+      left: rect.left,
+      bottom: window.innerHeight - rect.bottom,
+      width: rect.width,
+      height: rect.height,
+    });
+  }
+
+  if (drawerToggle) {
+    const rect = drawerToggle.getBoundingClientRect();
+    console.log(`[PROFILE HUB DEBUG] Drawer toggle position:`, {
+      top: rect.top,
+      right: window.innerWidth - rect.right,
+      left: rect.left,
+      bottom: window.innerHeight - rect.bottom,
+      visible: window.getComputedStyle(drawerToggle).display !== "none",
+    });
+  }
+
+  if (titleContainer) {
+    const rect = titleContainer.getBoundingClientRect();
+    console.log(`[PROFILE HUB DEBUG] Title container position:`, {
+      top: rect.top,
+      marginTop: window.getComputedStyle(titleContainer).marginTop,
+    });
+  }
+
+  // Test drawer functionality
+  if (profileHub && drawerToggle) {
+    console.log("[PROFILE HUB DEBUG] Testing drawer functionality...");
+    const isHidden = profileHub.classList.contains("drawer-hidden");
+    console.log(`[PROFILE HUB DEBUG] ProfileHub is hidden: ${isHidden}`);
+    console.log(
+      `[PROFILE HUB DEBUG] Drawer toggle is visible: ${window.getComputedStyle(drawerToggle).display !== "none"}`
+    );
+  }
+
+  return {
+    isMobile,
+    isSmallMobile,
+    profileHub: !!profileHub,
+    drawerToggle: !!drawerToggle,
+    titleContainer: !!titleContainer,
+  };
 };
 
 // Debug function specifically for dropdown testing

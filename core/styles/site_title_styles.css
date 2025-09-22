@@ -35,8 +35,6 @@
         0 0 10px rgba(0, 240, 255, 0.5),
         0 0 20px rgba(0, 240, 255, 0.3),
         0 0 30px rgba(0, 240, 255, 0.2);
-    transform: translateZ(20px);
-    animation: titleGlow 3s ease-in-out infinite alternate;
 }
 
 .title-line-2 {
@@ -47,8 +45,6 @@
         0 0 20px rgba(180, 0, 255, 0.3),
         0 0 30px rgba(180, 0, 255, 0.2);
     transform: translateZ(10px);
-    animation: titleGlowSecondary 3s ease-in-out infinite alternate;
-    animation-delay: 1.5s;
 }
 
 /* Enhanced 3D effect */

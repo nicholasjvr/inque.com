@@ -1,6 +1,4 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
-  getFirestore,
   collection,
   getDocs,
   doc,
@@ -13,24 +11,7 @@ import {
   limit,
   where,
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyBIZcD-L5jD84hEYLxWOwHTE2iTY6EJ0zI",
-  authDomain: "inque-31cb5.firebaseapp.com",
-  projectId: "inque-31cb5",
-  storageBucket: "inque-31cb5.firebasestorage.app",
-  messagingSenderId: "338722493567",
-  appId: "1:338722493567:web:4c46ecdfe92ddf2a5d5b4a",
-  measurementId: "G-KQT58LWVSK",
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
-const auth = getAuth();
+import { auth, db, onAuthStateChanged } from "../../core/firebase-core.js";
 
 // DOM Elements
 const listDiv = document.getElementById("exploreWidgetList");
@@ -55,6 +36,7 @@ const WIDGETS_PER_PAGE = 12;
 async function fetchAllWidgets() {
   try {
     console.log("[EXPLORE] Fetching widgets from database");
+    console.log("[EXPLORE] Firebase db instance:", !!db);
     const widgetsSnapshot = await getDocs(collection(db, "widgets"));
     const widgets = [];
 
@@ -350,7 +332,9 @@ function showToast(message, type = "info") {
 // Main initialization function
 async function initializeExplorePage() {
   try {
-    console.log("[EXPLORE] Initializing explore page");
+    console.log(
+      "[EXPLORE] Initializing explore page with Firebase integration"
+    );
 
     // Load widgets
     allWidgets = await fetchAllWidgets();
@@ -559,12 +543,29 @@ function setupEventListeners() {
   }
 }
 
-// Initialize the page
-initializeExplorePage();
+// Initialize the page with error handling
+initializeExplorePage().catch((error) => {
+  console.error("[EXPLORE] Failed to initialize explore page:", error);
+  // Show error message to user
+  const listDiv = document.getElementById("exploreWidgetList");
+  if (listDiv) {
+    listDiv.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <h3>Failed to load widgets</h3>
+        <p>There was an error loading the explore page. Please refresh the page to try again.</p>
+        <button class="empty-action-btn" onclick="window.location.reload()">Refresh Page</button>
+      </div>
+    `;
+  }
+});
 
 // Initialize authentication and social features
 onAuthStateChanged(auth, async (user) => {
-  console.log("[EXPLORE] Auth state changed", { userId: user?.uid });
+  console.log("[EXPLORE] Firebase auth state changed", {
+    userId: user?.uid,
+    isAuthenticated: !!user,
+  });
   currentUser = user;
 
   if (user) {

@@ -1,5 +1,8 @@
 // Import the Firebase functions we need using the latest SDK version
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
+import {
+  initializeApp,
+  getApp,
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-analytics.js";
 import {
   getFirestore,
@@ -52,7 +55,19 @@ if (isLocalhost) {
 }
 
 DEBUG.log("Initializing Firebase app");
-const app = initializeApp(firebaseConfig);
+let app;
+try {
+  app = initializeApp(firebaseConfig);
+  DEBUG.log("Firebase app initialized successfully");
+} catch (error) {
+  if (error.code === "app/duplicate-app") {
+    DEBUG.log("Firebase app already exists, getting existing app");
+    app = getApp();
+  } else {
+    DEBUG.error("Failed to initialize Firebase app:", error);
+    throw error;
+  }
+}
 const analytics = getAnalytics(app);
 const db = getFirestore(app);
 const auth = getAuth(app);

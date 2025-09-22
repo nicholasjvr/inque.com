@@ -46,19 +46,23 @@
     transform: translateX(0);
     opacity: 1;
 
-    /* Mobile responsiveness */
+    /* Mobile responsiveness - Position above site title */
     @media (max-width: 768px) {
-        top: auto;
-        bottom: 10px;
-        right: 10px;
+        top: 20px;
+        right: 20px;
+        left: auto;
+        bottom: auto;
         transform: scale(0.9);
-        transform-origin: bottom right;
+        transform-origin: top right;
+        /* Ensure it's above the site title */
+        z-index: 100090;
     }
 
     @media (max-width: 480px) {
+        top: 15px;
+        right: 15px;
         transform: scale(0.8);
-        bottom: 5px;
-        right: 5px;
+        transform-origin: top right;
     }
 
     /* Custom Properties for theming */
@@ -80,11 +84,12 @@
     --hub-scale: 1;
 }
 
-/* Drawer hidden state */
+/* Drawer hidden state - slides out to the right */
 .profile-hub.drawer-hidden {
-    transform: translateX(120%);
+    transform: translateX(120%) scale(var(--hub-scale));
     opacity: 0;
     pointer-events: none;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Drawer toggle button when hub is hidden */
@@ -1262,21 +1267,55 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 /* ===== RESPONSIVE DESIGN ===== */
 @media (max-width: 768px) {
     .profile-hub {
-        /* Keep ProfileHub visible on mobile with responsive positioning */
+        /* Position above site title on mobile */
         display: block;
         transform: scale(0.9);
         transform-origin: top right;
+        top: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 100090;
     }
 
     .profile-hub-drawer-toggle {
-        /* Keep drawer toggle visible on mobile */
+        /* Position drawer toggle above site title on mobile */
         display: block !important;
+        top: 20px !important;
+        right: 20px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 100100;
+        /* Ensure it's visible when hub is hidden */
+        opacity: 1;
+        transform: scale(0.9);
+        transition: all 0.3s ease;
+    }
+
+    /* When hub is hidden, show drawer toggle prominently */
+    .profile-hub.drawer-hidden+.profile-hub-drawer-toggle {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: scale(1) !important;
     }
 
     .mobile-menu-toggle {
         display: block !important;
     }
 
+    /* Add spacing for site title when profile banner is above it */
+    .title-main-container {
+        margin-top: 80px;
+        /* Account for profile banner height */
+        padding-top: 20px;
+        /* Additional breathing room */
+    }
+
+    /* Ensure profile banner doesn't interfere with other elements */
+    .profile-hub {
+        /* Add subtle shadow to separate from content below */
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
 
     .hub-expanded-content {
         min-width: 260px;
@@ -1351,10 +1390,35 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
 
 @media (max-width: 480px) {
     .profile-hub {
-        /* Keep ProfileHub visible on small mobile screens with smaller scale */
+        /* Position above site title on small mobile screens */
         display: block;
         transform: scale(0.8);
         transform-origin: top right;
+        top: 15px !important;
+        right: 15px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 100090;
+    }
+
+    .profile-hub-drawer-toggle {
+        /* Position drawer toggle above site title on small mobile */
+        top: 15px !important;
+        right: 15px !important;
+        left: auto !important;
+        bottom: auto !important;
+        z-index: 100100;
+        /* Ensure it's visible when hub is hidden */
+        opacity: 1;
+        transform: scale(0.8);
+        transition: all 0.3s ease;
+    }
+
+    /* When hub is hidden, show drawer toggle prominently on small mobile */
+    .profile-hub.drawer-hidden+.profile-hub-drawer-toggle {
+        display: flex !important;
+        opacity: 1 !important;
+        transform: scale(0.9) !important;
     }
 
     .mobile-menu-toggle {
@@ -1362,6 +1426,18 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
         left: 10px;
         font-size: 1.2rem;
         padding: 10px;
+    }
+
+    /* Add spacing for site title on small mobile */
+    .title-main-container {
+        margin-top: 70px;
+        /* Slightly less margin for small screens */
+        padding-top: 15px;
+    }
+
+    /* Ensure profile banner has proper spacing on small mobile */
+    .profile-hub {
+        box-shadow: 0 3px 15px rgba(0, 0, 0, 0.1);
     }
 
     /* Extra small mobile customization panel adjustments */

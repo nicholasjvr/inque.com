@@ -40,6 +40,8 @@ class FloatingOrbManager {
     this.chatDock = null;
     this.activeTab = "dms";
     this.chatBadges = { dms: 0, ai: 0, space: 0 };
+    this.activeIndex = 0;
+    this.navItems = [];
 
     ORB_DEBUG.log("Floating Orb Manager initialized", this.options);
   }
@@ -72,6 +74,11 @@ class FloatingOrbManager {
 
       // Add Saturn ring effect
       this.createSaturnRing();
+      // On small screens, reduce orb glow dominance
+      if (window.innerWidth <= 480 && this.orb) {
+        this.orb.style.boxShadow =
+          "0 0 24px rgba(0,229,255,0.55), 0 0 48px rgba(0,229,255,0.35), 0 0 72px rgba(0,229,255,0.18), inset 0 0 28px rgba(255,255,255,0.12), inset 0 0 52px rgba(0,229,255,0.18), inset 0 0 70px rgba(0,229,255,0.08)";
+      }
     } catch (error) {
       ORB_DEBUG.error("Failed to initialize floating orb", error);
     }
@@ -320,11 +327,11 @@ class FloatingOrbManager {
           id: "nav-chat",
           icon: "💬",
           title: "Chatbot",
-          onClick: () => this.toggleChatDock(),
+          onClick: () => this.toggleChatDrawer(),
           badge: 0, // Will be updated dynamically
         },
       ];
-
+      this.navItems = items;
       this.navContainer.innerHTML = "";
 
       const angleStep = 360 / items.length;
@@ -333,6 +340,8 @@ class FloatingOrbManager {
         btn.type = "button";
         btn.className = "orb-nav-item";
         btn.setAttribute("title", item.title);
+        btn.setAttribute("aria-label", item.title);
+        btn.setAttribute("role", "button");
         btn.style.setProperty("--angle", `${idx * angleStep}deg`);
         btn.innerText = item.icon;
 
@@ -373,8 +382,24 @@ class FloatingOrbManager {
       });
 
       ORB_DEBUG.log("Orb navigation constructed", { count: items.length });
+      // Initialize active preview
+      this.updateActiveFromRotation();
     } catch (err) {
       ORB_DEBUG.warn("Failed to build orb navigation", err);
+    }
+  }
+
+  createSaturnRing() {
+    try {
+      if (!this.scrollLine) {
+        this.scrollLine = document.createElement("div");
+        this.scrollLine.className = "orb-scroll-line";
+        if (this.stage) this.stage.appendChild(this.scrollLine);
+      }
+      this.scrollLine.style.opacity = "0.3";
+      ORB_DEBUG.log("Saturn ring created/verified");
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to create Saturn ring", err);
     }
   }
 
@@ -406,8 +431,10 @@ class FloatingOrbManager {
           (this.scrollState.currentRotation * Math.PI) / 180;
 
         const rect = this.navContainer.getBoundingClientRect();
-        const radius = (rect.width || 180) / 2.3; // a touch tighter
-        const tilt = 0.3; // slightly flatter ring
+        const radius =
+          (rect.width || 180) / (window.innerWidth <= 480 ? 2.6 : 2.3);
+        // Reduce tilt and radius on small screens to lift icons and shrink footprint
+        const tilt = window.innerWidth <= 480 ? 0.2 : 0.3;
 
         items.forEach((el, idx) => {
           const baseAngle = (TWO_PI * idx) / items.length;
@@ -472,7 +499,8 @@ class FloatingOrbManager {
               `${this.scrollState.currentRotation}deg`
             );
           }
-
+          // Keep active preview in sync
+          this.updateActiveFromRotation();
           requestAnimationFrame(updateScrollAnimation);
         }
       };
@@ -574,6 +602,8 @@ class FloatingOrbManager {
         "Scroll system initialized with lock points:",
         this.scrollState.lockPoints
       );
+      // expose animator for other methods
+      this._animateScroll = updateScrollAnimation;
     } catch (err) {
       ORB_DEBUG.warn("Failed to setup scroll system", err);
     }
@@ -617,10 +647,85 @@ class FloatingOrbManager {
         }, 200);
       }
 
+      // Optional vibration on supported devices
+      try {
+        if (typeof navigator !== "undefined" && navigator.vibrate) {
+          navigator.vibrate(30);
+        }
+      } catch {}
+
+      // Update active item + preview
+      this.updateActiveFromRotation();
+      if (this._animateScroll) requestAnimationFrame(this._animateScroll);
+
       ORB_DEBUG.log("Snapped to lock point:", nearestLockPoint);
     } catch (err) {
       ORB_DEBUG.warn("Failed to snap to lock point", err);
     }
+  }
+
+  // === Center-capture navigation additions ===
+  updateActiveFromRotation() {
+    if (!this.navItems || this.navItems.length === 0) return;
+    const step = 360 / this.navItems.length;
+    let rot = this.scrollState?.targetRotation ?? 0;
+    rot = ((rot % 360) + 360) % 360; // normalize 0..360
+    const k = Math.round(rot / step) % this.navItems.length;
+    const activeIdx = (this.navItems.length - k) % this.navItems.length;
+    if (activeIdx !== this.activeIndex) {
+      this.activeIndex = activeIdx;
+      this.updateCenterPreview();
+    } else {
+      // Still keep preview synced on same index (e.g., first init)
+      this.updateCenterPreview();
+    }
+  }
+
+  setActiveIndex(idx, snap = true) {
+    if (!this.navItems || this.navItems.length === 0) return;
+    const n = this.navItems.length;
+    const clamped = ((idx % n) + n) % n;
+    this.activeIndex = clamped;
+    const step = 360 / n;
+    const base = -clamped * step; // desired rotation putting this index at front (angle ~ 0)
+    const current = this.scrollState?.targetRotation ?? 0;
+    const m = Math.round((current - base) / 360);
+    const target = base + m * 360;
+    this.scrollState.targetRotation = target;
+    if (snap) {
+      if (this._animateScroll) requestAnimationFrame(this._animateScroll);
+      this.updateCenterPreview();
+    }
+  }
+
+  navigateActive() {
+    if (!this.navItems || this.navItems.length === 0) return;
+    const item = this.navItems[this.activeIndex];
+    if (!item) return;
+    ORB_DEBUG.log("Navigating active orb item", {
+      index: this.activeIndex,
+      title: item.title,
+    });
+    // Optional mobile haptic
+    try {
+      if (typeof navigator !== "undefined" && navigator.vibrate) {
+        navigator.vibrate(30);
+      }
+    } catch {}
+    item.onClick?.();
+  }
+
+  updateCenterPreview() {
+    try {
+      const preview = document.querySelector(".orb-center-preview");
+      const label = document.querySelector(".orb-center-label");
+      const item = this.navItems?.[this.activeIndex];
+      if (item) {
+        if (preview) preview.textContent = item.icon;
+        if (label) label.textContent = item.title;
+        if (this.orb) this.orb.setAttribute("aria-label", item.title);
+      }
+    } catch {}
   }
 
   async tryInitThreeJS() {
@@ -761,21 +866,32 @@ class FloatingOrbManager {
     this.orb.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      ORB_DEBUG.log("Orb clicked - attempting to toggle chat drawer");
-      this.toggleChatDrawer();
+      ORB_DEBUG.log("Orb clicked - navigateActive");
+      this.navigateActive();
     });
 
     this.orb.addEventListener("keydown", (e) => {
-      if (e.key === "Enter" || e.key === " ") {
+      const key = e.key;
+      if (key === "ArrowLeft") {
         e.preventDefault();
-        this.toggleChatDrawer();
+        this.setActiveIndex(this.activeIndex - 1, true);
+      } else if (key === "ArrowRight") {
+        e.preventDefault();
+        this.setActiveIndex(this.activeIndex + 1, true);
+      } else if (key === " ") {
+        e.preventDefault();
+        this.snapToNearestLockPoint();
+      } else if (key === "Enter") {
+        e.preventDefault();
+        this.navigateActive();
       }
     });
 
     // Add tab index for accessibility
     this.orb.setAttribute("tabindex", "0");
     this.orb.setAttribute("role", "button");
-    this.orb.setAttribute("aria-label", "Chat Center");
+    // Will be updated to active item title dynamically
+    this.orb.setAttribute("aria-label", "Navigation orb");
 
     ORB_DEBUG.log("Event listeners set up");
   }
