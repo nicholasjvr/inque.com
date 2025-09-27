@@ -46,6 +46,7 @@ class CloudUploadManager {
       this.log("Starting widget upload via Cloud Functions", {
         fileCount: files.length,
         slot: slot,
+        isZipUpload: widgetData.isZipUpload,
       });
 
       // Check authentication
@@ -53,7 +54,18 @@ class CloudUploadManager {
         throw new Error("User must be authenticated to upload files");
       }
 
-      // Convert files to base64
+      // Check if this is a zip upload
+      if (widgetData.isZipUpload && files.length === 1) {
+        const zipFile = files[0];
+        if (
+          zipFile.name.toLowerCase().endsWith(".zip") ||
+          zipFile.type === "application/zip"
+        ) {
+          return await this.uploadWidgetBundle(zipFile, slot, widgetData);
+        }
+      }
+
+      // Legacy individual file upload
       const filePromises = Array.from(files).map((file) =>
         this.fileToBase64(file)
       );
@@ -77,6 +89,58 @@ class CloudUploadManager {
     } catch (error) {
       this.error("Widget upload failed", error);
       throw new Error(`Upload failed: ${error.message}`);
+    }
+  }
+
+  // Upload widget bundle (ZIP file) with progress tracking
+  async uploadWidgetBundle(
+    zipFile,
+    slot,
+    widgetData = {},
+    progressCallback = null
+  ) {
+    try {
+      this.log("Starting widget bundle upload via Cloud Functions", {
+        fileName: zipFile.name,
+        size: zipFile.size,
+        slot: slot,
+      });
+
+      // Check authentication
+      if (!auth.currentUser) {
+        throw new Error("User must be authenticated to upload bundle");
+      }
+
+      // Convert zip file to base64
+      if (progressCallback) {
+        progressCallback(10, "Converting file...");
+      }
+      const base64Zip = await this.fileToBase64(zipFile);
+
+      if (progressCallback) {
+        progressCallback(30, "Uploading to server...");
+      }
+      this.log("ZIP file converted to base64");
+
+      // Call Cloud Function
+      const uploadWidgetBundle = httpsCallable(
+        this.functions,
+        "uploadWidgetBundle"
+      );
+      const result = await uploadWidgetBundle({
+        zipFile: base64Zip,
+        slot: slot,
+        widgetData: widgetData,
+      });
+
+      if (progressCallback) {
+        progressCallback(100, "Upload complete!");
+      }
+      this.log("Widget bundle upload successful", result.data);
+      return result.data;
+    } catch (error) {
+      this.error("Widget bundle upload failed", error);
+      throw new Error(`Bundle upload failed: ${error.message}`);
     }
   }
 

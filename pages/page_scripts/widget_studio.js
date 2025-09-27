@@ -338,25 +338,35 @@ class WidgetStudioManager {
   handleFileSelection(files, slotNumber) {
     if (!files || files.length === 0) return;
 
-    // Store selected files for this slot
-    this.selectedFiles.set(slotNumber, Array.from(files));
+    // Validate that it's a zip file
+    const file = files[0]; // Since we're now accepting single zip files
+    if (
+      !file.name.toLowerCase().endsWith(".zip") &&
+      file.type !== "application/zip"
+    ) {
+      this.showToast("Please select a valid ZIP file", "error");
+      return;
+    }
 
-    // Update UI to show selected files
-    this.updateFileDisplay(slotNumber, files);
+    // Store selected zip file for this slot
+    this.selectedFiles.set(slotNumber, [file]);
 
-    // Update file input display (for debugging/visual feedback)
-    this.updateFileInputDisplay(slotNumber, files);
+    // Update UI to show selected zip file
+    this.updateZipFileDisplay(slotNumber, file);
 
     // Update slot status
-    this.updateSlotStatus(slotNumber, "Files Selected");
+    this.updateSlotStatus(slotNumber, "ZIP Selected");
 
     // Enable preview and upload buttons
     this.updateSlotButtons(slotNumber, true);
 
-    this.log(`Files processed for slot ${slotNumber}`, { count: files.length });
+    this.log(`ZIP file selected for slot ${slotNumber}`, {
+      fileName: file.name,
+      size: file.size,
+    });
   }
 
-  updateFileDisplay(slotNumber, files) {
+  updateZipFileDisplay(slotNumber, zipFile) {
     const selectedFilesDiv = document.getElementById(
       `selectedFiles${slotNumber}`
     );
@@ -374,11 +384,20 @@ class WidgetStudioManager {
     // Clear existing file list
     filesListDiv.innerHTML = "";
 
-    // Add each file to the list
-    files.forEach((file) => {
-      const fileItem = this.createFileItem(file);
-      filesListDiv.appendChild(fileItem);
-    });
+    // Create zip file item
+    const zipFileItem = this.createZipFileItem(zipFile);
+    filesListDiv.appendChild(zipFileItem);
+  }
+
+  updateFileDisplay(slotNumber, files) {
+    // Legacy method for backward compatibility - now delegates to zip method
+    if (
+      files.length === 1 &&
+      (files[0].name.toLowerCase().endsWith(".zip") ||
+        files[0].type === "application/zip")
+    ) {
+      this.updateZipFileDisplay(slotNumber, files[0]);
+    }
   }
 
   updateFileInputDisplay(slotNumber, files) {
@@ -413,6 +432,33 @@ class WidgetStudioManager {
       fileCount: files.length,
       fileNames: fileNames,
     });
+  }
+
+  createZipFileItem(zipFile) {
+    const zipFileItem = document.createElement("div");
+    zipFileItem.className = "zip-file-item";
+
+    const fileSize = this.formatFileSize(zipFile.size);
+
+    zipFileItem.innerHTML = `
+      <div class="zip-file-info">
+        <span class="zip-file-icon">📦</span>
+        <div class="zip-file-details">
+          <span class="zip-file-name" title="${zipFile.name}">${zipFile.name}</span>
+          <span class="zip-file-size">${fileSize}</span>
+          <span class="zip-file-type">ZIP Archive</span>
+        </div>
+      </div>
+      <button class="remove-zip-file" title="Remove zip file">×</button>
+    `;
+
+    // Add remove functionality
+    const removeBtn = zipFileItem.querySelector(".remove-zip-file");
+    removeBtn.addEventListener("click", () => {
+      this.removeZipFile(zipFile, zipFileItem);
+    });
+
+    return zipFileItem;
   }
 
   createFileItem(file) {
@@ -464,6 +510,17 @@ class WidgetStudioManager {
     const sizes = ["Bytes", "KB", "MB", "GB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + " " + sizes[i];
+  }
+
+  removeZipFile(zipFile, zipFileItem) {
+    zipFileItem.remove();
+
+    // Update the selected files for this slot
+    const slotNumber = this.getSlotNumberFromFileItem(zipFileItem);
+    if (slotNumber) {
+      this.selectedFiles.delete(slotNumber);
+      this.clearSlotFiles(slotNumber);
+    }
   }
 
   removeFile(file, fileItem) {
@@ -549,19 +606,26 @@ class WidgetStudioManager {
     try {
       const files = this.selectedFiles.get(slotNumber);
       if (!files || files.length === 0) {
-        this.showToast("No files selected for preview", "warning");
+        this.showToast("No zip file selected for preview", "warning");
         return;
       }
 
-      this.log(`Showing preview for slot ${slotNumber}`, {
-        fileCount: files.length,
+      const zipFile = files[0];
+      if (!zipFile.name.toLowerCase().endsWith(".zip")) {
+        this.showToast("Please select a zip file to preview", "warning");
+        return;
+      }
+
+      this.log(`Showing preview for zip file in slot ${slotNumber}`, {
+        fileName: zipFile.name,
+        size: zipFile.size,
       });
 
       // Show preview modal
       this.showPreviewModal();
 
-      // Generate preview content
-      const previewContent = await this.generatePreviewContent(files);
+      // Generate preview content for zip file
+      const previewContent = await this.generateZipPreviewContent(zipFile);
 
       // Update modal content
       const previewModalBody = document.getElementById("previewModalBody");
@@ -576,6 +640,63 @@ class WidgetStudioManager {
     } catch (error) {
       this.error("Failed to show preview", error);
       this.showToast("Failed to generate preview", "error");
+    }
+  }
+
+  async generateZipPreviewContent(zipFile) {
+    try {
+      // For now, show zip file info and indicate it will be processed
+      const fileSize = this.formatFileSize(zipFile.size);
+
+      let content = `
+        <div class="zip-preview-content">
+          <div class="zip-info">
+            <div class="zip-icon">📦</div>
+            <h3>ZIP File Preview</h3>
+            <div class="zip-details">
+              <p><strong>Filename:</strong> ${zipFile.name}</p>
+              <p><strong>Size:</strong> ${fileSize}</p>
+              <p><strong>Type:</strong> ZIP Archive</p>
+            </div>
+          </div>
+
+          <div class="zip-processing-info">
+            <h4>📋 Processing Information</h4>
+            <p>This ZIP file will be processed when uploaded:</p>
+            <ul>
+              <li>✅ Extract all files and validate structure</li>
+              <li>🔍 Look for manifest.json (recommended)</li>
+              <li>🎯 Find HTML entry point (index.html)</li>
+              <li>🎨 Analyze CSS dependencies</li>
+              <li>⚡ Optimize assets for performance</li>
+              <li>🚀 Generate preview and full-view URLs</li>
+            </ul>
+          </div>
+
+          <div class="zip-manifest-hint">
+            <h4>💡 Pro Tip: Add manifest.json</h4>
+            <p>For better processing results, include a manifest.json file in your zip:</p>
+            <div class="manifest-example">
+              <pre><code>{
+  "name": "My Awesome Widget",
+  "version": "1.0.0",
+  "entry": "index.html",
+  "description": "A cool interactive widget"
+}</code></pre>
+            </div>
+          </div>
+        </div>
+      `;
+
+      return content;
+    } catch (error) {
+      this.error("Failed to generate zip preview content", error);
+      return `
+        <div class="preview-error">
+          <span class="error-icon">❌</span>
+          <p>Failed to preview ZIP file: ${error.message}</p>
+        </div>
+      `;
     }
   }
 
@@ -653,7 +774,13 @@ class WidgetStudioManager {
     try {
       const files = this.selectedFiles.get(slotNumber);
       if (!files || files.length === 0) {
-        this.showToast("No files selected for upload", "warning");
+        this.showToast("No zip file selected for upload", "warning");
+        return;
+      }
+
+      const zipFile = files[0];
+      if (!zipFile.name.toLowerCase().endsWith(".zip")) {
+        this.showToast("Please select a zip file to upload", "warning");
         return;
       }
 
@@ -662,13 +789,14 @@ class WidgetStudioManager {
         return;
       }
 
-      this.log(`Starting upload for slot ${slotNumber}`, {
-        fileCount: files.length,
+      this.log(`Starting zip upload for slot ${slotNumber}`, {
+        fileName: zipFile.name,
+        size: zipFile.size,
       });
 
       // Mark slot as uploading
       this.uploadingSlots.add(slotNumber);
-      this.updateSlotStatus(slotNumber, "Uploading...");
+      this.updateSlotStatus(slotNumber, "Processing ZIP...");
       this.updateSlotButtons(slotNumber, false);
 
       // Show progress
@@ -682,22 +810,25 @@ class WidgetStudioManager {
         document.getElementById(`description${slotNumber}`)?.value || "";
       const tags = document.getElementById(`tags${slotNumber}`)?.value || "";
 
-      // Upload via Cloud Functions
-      const result = await cloudUploadManager.uploadWidgetFiles(
-        files,
+      // Upload zip file via Cloud Functions with progress tracking
+      const result = await cloudUploadManager.uploadWidgetBundle(
+        zipFile,
         slotNumber,
         {
           title,
           description,
           tags,
           slot: slotNumber,
+        },
+        (progress, message) => {
+          this.updateUploadProgress(slotNumber, progress, message);
         }
       );
 
       this.log(`Upload result for slot ${slotNumber}`, result);
 
       if (result.success) {
-        this.log(`Upload successful for slot ${slotNumber}`, result);
+        this.log(`Zip upload successful for slot ${slotNumber}`, result);
         this.showToast(
           `Widget uploaded successfully to slot ${slotNumber}!`,
           "success"
@@ -712,23 +843,26 @@ class WidgetStudioManager {
           title,
           description,
           tags,
-          files: files.map((f) => ({
-            name: f.name,
-            size: f.size,
-            type: f.type,
-          })),
+          files: [
+            {
+              name: zipFile.name,
+              size: zipFile.size,
+              type: zipFile.type,
+            },
+          ],
           uploadedAt: new Date(),
           slot: slotNumber,
+          isZipUpload: true,
         });
 
         // Update stats
         this.updateStudioStats();
       } else {
-        this.error(`Upload failed for slot ${slotNumber}`, result);
+        this.error(`Zip upload failed for slot ${slotNumber}`, result);
         throw new Error(result.message || "Upload failed");
       }
     } catch (error) {
-      this.error(`Upload failed for slot ${slotNumber}`, error);
+      this.error(`Zip upload failed for slot ${slotNumber}`, error);
       this.showToast(`Upload failed: ${error.message}`, "error");
 
       // Reset slot status
@@ -740,6 +874,18 @@ class WidgetStudioManager {
 
       // Remove from uploading set
       this.uploadingSlots.delete(slotNumber);
+    }
+  }
+
+  updateUploadProgress(slotNumber, progress, message) {
+    const progressDiv = document.getElementById(`progress${slotNumber}`);
+    const progressFill = document.getElementById(`progressFill${slotNumber}`);
+    const progressText = document.getElementById(`progressText${slotNumber}`);
+
+    if (progressDiv && progressFill && progressText) {
+      progressDiv.style.display = "block";
+      progressFill.style.width = `${progress}%`;
+      progressText.textContent = message || `${Math.round(progress)}%`;
     }
   }
 

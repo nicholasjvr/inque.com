@@ -31,8 +31,10 @@ import profileDashboardManager from "../profile-dashboard-manager.js";
 export class WidgetDisplay {
   constructor() {
     this.currentUser = null;
-    this.userWidgets = []; // Array of widget IDs
-    this.widgetData = {}; // Cache for widget metadata
+    this.userWidgets = []; // Array of widget IDs (legacy)
+    this.widgetData = {}; // Cache for widget metadata (legacy)
+    this.userWidgetBundles = []; // Array of widget bundle IDs (new)
+    this.widgetBundleData = {}; // Cache for widget bundle metadata (new)
     this.userQuips = []; // Array of quip IDs
     this.quipData = {}; // Cache for quip metadata
     this.debugMode = true;
@@ -67,20 +69,26 @@ export class WidgetDisplay {
   }
 
   /**
-   * Load user's widget data from Firestore
+   * Load user's widget data from Firestore (supports both old and new formats)
    */
   async loadUserWidgets() {
     try {
       const userDoc = await getDoc(doc(db, "users", this.currentUser.uid));
       if (userDoc.exists()) {
         const userData = userDoc.data();
+
+        // Load both old widgets and new widget bundles
         this.userWidgets = userData.widgets || [];
-        this.log("Loaded user widgets", {
+        this.userWidgetBundles = userData.widgetBundles || [];
+
+        this.log("Loaded user widgets and bundles", {
           widgetCount: this.userWidgets.length,
+          bundleCount: this.userWidgetBundles.length,
         });
 
-        // Load widget metadata for all user widgets
+        // Load metadata for both types
         await this.loadWidgetMetadata();
+        await this.loadWidgetBundleMetadata();
       }
     } catch (error) {
       this.error("Error loading user widgets", error);
@@ -103,6 +111,25 @@ export class WidgetDisplay {
       });
     } catch (error) {
       this.error("Error loading widget metadata", error);
+    }
+  }
+
+  /**
+   * Load metadata for all user widget bundles
+   */
+  async loadWidgetBundleMetadata() {
+    try {
+      for (const bundleId of this.userWidgetBundles) {
+        const bundleDoc = await getDoc(doc(db, "widgetBundles", bundleId));
+        if (bundleDoc.exists()) {
+          this.widgetBundleData[bundleId] = bundleDoc.data();
+        }
+      }
+      this.log("Loaded widget bundle metadata", {
+        bundleCount: Object.keys(this.widgetBundleData).length,
+      });
+    } catch (error) {
+      this.error("Error loading widget bundle metadata", error);
     }
   }
 
@@ -192,7 +219,7 @@ export class WidgetDisplay {
   }
 
   /**
-   * Setup widget slots in the UI
+   * Setup widget slots in the UI (supports both legacy widgets and new bundles)
    */
   setupWidgetSlots() {
     // Find widget slot containers
@@ -240,10 +267,22 @@ export class WidgetDisplay {
   }
 
   /**
-   * Render a specific widget slot
+   * Render a specific widget slot (supports both legacy widgets and new bundles)
    */
   async renderWidgetSlot(container, slotNumber) {
-    // Find widget for this slot
+    // First check for new widget bundles
+    const bundleForSlot = Object.values(this.widgetBundleData).find(
+      (bundle) =>
+        bundle.slot === parseInt(slotNumber) && bundle.status === "ready"
+    );
+
+    if (bundleForSlot && bundleForSlot.entrypoints?.previewUrl) {
+      // Widget bundle exists - show enhanced iframe
+      this.showWidgetBundleIframe(container, bundleForSlot);
+      return;
+    }
+
+    // Fallback to legacy widgets
     const widgetForSlot = Object.values(this.widgetData).find(
       (widget) => widget.slot === parseInt(slotNumber)
     );
@@ -253,13 +292,68 @@ export class WidgetDisplay {
       widgetForSlot.files &&
       this.findHtmlFile(widgetForSlot.files)
     ) {
-      // Widget exists - show iframe
+      // Legacy widget exists - show iframe
       const htmlFile = this.findHtmlFile(widgetForSlot.files);
       this.showWidgetIframe(container, htmlFile.downloadURL, widgetForSlot);
     } else {
-      // No widget - show upload interface
+      // No widget or bundle - show upload interface
       this.showUploadInterface(container, slotNumber);
     }
+  }
+
+  /**
+   * Show widget bundle in enhanced iframe
+   */
+  showWidgetBundleIframe(container, bundleData) {
+    const manifest = bundleData.manifest || {};
+    const entrypoints = bundleData.entrypoints || {};
+
+    container.innerHTML = `
+      <div class="widget-bundle-container">
+        <div class="widget-bundle-header">
+          <h3>${manifest.name || bundleData.title || "Untitled Widget"}</h3>
+          <div class="widget-bundle-badges">
+            <span class="bundle-badge" style="background: rgba(0,240,255,0.2); color: #00f0ff; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">BUNDLE</span>
+            ${manifest.version ? `<span class="version-badge" style="background: rgba(255,255,255,0.1); color: #fff; padding: 4px 8px; border-radius: 12px; font-size: 0.8rem;">v${manifest.version}</span>` : ""}
+          </div>
+          <div class="widget-bundle-actions">
+            <button class="btn btn-secondary edit-bundle-btn" data-bundle-id="${bundleData.id || bundleData.bundleId}">
+              <span class="material-icons">edit</span>
+              Edit
+            </button>
+            <button class="btn btn-secondary preview-bundle-btn" data-bundle-id="${bundleData.id || bundleData.bundleId}">
+              <span class="material-icons">open_in_new</span>
+              Full View
+            </button>
+            <button class="btn btn-danger delete-bundle-btn" data-bundle-id="${bundleData.id || bundleData.bundleId}">
+              <span class="material-icons">delete</span>
+              Delete
+            </button>
+          </div>
+        </div>
+        <div class="widget-bundle-frame-container">
+          <iframe
+            src="${entrypoints.previewUrl}"
+            class="widget-bundle-iframe"
+            frameborder="0"
+            sandbox="allow-scripts allow-same-origin allow-forms"
+            title="Widget Bundle: ${manifest.name || "Preview"}"
+            style="width: 100%; height: 300px; border-radius: 12px; border: 2px solid #00f0ff; background: #0a0a0a;"
+          ></iframe>
+        </div>
+        <div class="widget-bundle-info">
+          <p><strong>Description:</strong> ${manifest.description || bundleData.description || "No description"}</p>
+          <div class="widget-bundle-stats">
+            <span class="stat">📁 ${bundleData.fileCount || 0} files</span>
+            <span class="stat">💾 ${(bundleData.totalSize / 1024 / 1024).toFixed(1)} MB</span>
+            <span class="stat">📅 ${new Date(bundleData.createdAt?.toDate() || bundleData.createdAt).toLocaleDateString()}</span>
+          </div>
+          ${manifest.entry ? `<p><strong>Entry Point:</strong> ${manifest.entry}</p>` : ""}
+        </div>
+      </div>
+    `;
+
+    this.setupWidgetBundleActionHandlers(container);
   }
 
   /**
@@ -530,6 +624,40 @@ export class WidgetDisplay {
       await window.widgetUploadManager.handleUploadButtonClick(button);
     } else {
       this.error("Upload button not found for slot", { slotNumber });
+    }
+  }
+
+  /**
+   * Setup widget bundle action handlers
+   */
+  setupWidgetBundleActionHandlers(container) {
+    // Edit bundle
+    const editBtn = container.querySelector(".edit-bundle-btn");
+    if (editBtn) {
+      editBtn.addEventListener("click", (e) => {
+        const bundleId = e.target.closest(".edit-bundle-btn").dataset.bundleId;
+        this.editWidgetBundle(bundleId);
+      });
+    }
+
+    // Preview bundle
+    const previewBtn = container.querySelector(".preview-bundle-btn");
+    if (previewBtn) {
+      previewBtn.addEventListener("click", (e) => {
+        const bundleId = e.target.closest(".preview-bundle-btn").dataset
+          .bundleId;
+        this.previewWidgetBundle(bundleId);
+      });
+    }
+
+    // Delete bundle
+    const deleteBtn = container.querySelector(".delete-bundle-btn");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", (e) => {
+        const bundleId =
+          e.target.closest(".delete-bundle-btn").dataset.bundleId;
+        this.deleteWidgetBundle(bundleId);
+      });
     }
   }
 
@@ -1019,6 +1147,123 @@ export class WidgetDisplay {
     // Navigate to widget studio with slot information
     const createUrl = `pages/widget_studio.html?slot=${slotNumber}&type=quip`;
     window.location.href = createUrl;
+  }
+
+  /**
+   * Edit widget bundle
+   */
+  editWidgetBundle(bundleId) {
+    const bundleData = this.widgetBundleData[bundleId];
+    if (!bundleData) {
+      this.showToast("Widget bundle not found", "error");
+      return;
+    }
+
+    // Navigate to widget studio with bundle data
+    const editUrl = `../widget_studio.html?editBundle=${bundleId}`;
+    window.location.href = editUrl;
+  }
+
+  /**
+   * Preview widget bundle in modal
+   */
+  previewWidgetBundle(bundleId) {
+    const bundleData = this.widgetBundleData[bundleId];
+    if (!bundleData) {
+      this.showToast("Widget bundle not found", "error");
+      return;
+    }
+
+    const entrypoints = bundleData.entrypoints || {};
+    if (!entrypoints.fullUrl) {
+      this.showToast("Widget bundle preview not available", "error");
+      return;
+    }
+
+    // Create modal if it doesn't exist
+    let modal = document.getElementById("widgetBundlePreviewModal");
+    if (!modal) {
+      modal = document.createElement("div");
+      modal.id = "widgetBundlePreviewModal";
+      modal.className = "modal";
+      modal.innerHTML = `
+        <div class="modal-content" style="max-width: 90vw; max-height: 90vh;">
+          <div class="modal-header">
+            <h3>Widget Bundle Preview</h3>
+            <button class="modal-close">&times;</button>
+          </div>
+          <div class="modal-body">
+            <iframe
+              src="${entrypoints.fullUrl}"
+              style="width: 100%; height: 70vh; border: none; border-radius: 8px;"
+              sandbox="allow-scripts allow-same-origin allow-forms"
+            ></iframe>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(modal);
+    }
+
+    // Update modal content
+    const iframe = modal.querySelector("iframe");
+    iframe.src = entrypoints.fullUrl;
+    modal.querySelector("h3").textContent =
+      `Widget Bundle Preview - ${bundleData.manifest?.name || bundleData.title || "Untitled"}`;
+
+    // Show modal
+    modal.style.display = "flex";
+
+    // Close modal handlers
+    modal.querySelector(".modal-close").onclick = () => {
+      modal.style.display = "none";
+    };
+    modal.onclick = (e) => {
+      if (e.target === modal) {
+        modal.style.display = "none";
+      }
+    };
+  }
+
+  /**
+   * Delete widget bundle
+   */
+  async deleteWidgetBundle(bundleId) {
+    const bundleData = this.widgetBundleData[bundleId];
+    if (!bundleData) {
+      this.showToast("Widget bundle not found", "error");
+      return;
+    }
+
+    const bundleName =
+      bundleData.manifest?.name || bundleData.title || "Untitled Widget";
+    if (!confirm(`Are you sure you want to delete "${bundleName}"?`)) {
+      return;
+    }
+
+    try {
+      // Delete bundle document
+      await deleteDoc(doc(db, "widgetBundles", bundleId));
+
+      // Remove bundle ID from user's profile
+      await updateDoc(doc(db, "users", this.currentUser.uid), {
+        widgetBundles: arrayRemove(bundleId),
+      });
+
+      // Remove from local data
+      delete this.widgetBundleData[bundleId];
+      this.userWidgetBundles = this.userWidgetBundles.filter(
+        (id) => id !== bundleId
+      );
+
+      this.showToast("Widget bundle deleted successfully", "success");
+      this.log("Widget bundle deleted", { bundleId });
+
+      // Refresh the display
+      this.setupWidgetSlots();
+    } catch (error) {
+      this.error("Failed to delete widget bundle", error);
+      this.showToast("Failed to delete widget bundle", "error");
+    }
   }
 
   /**

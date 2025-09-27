@@ -11,6 +11,10 @@ const { Buffer } = require("buffer");
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const { randomUUID } = require("crypto");
+const JSZip = require("jszip");
+const sharp = require("sharp");
+const path = require("path");
+const fs = require("fs");
 
 // Initialize Firebase Admin
 admin.initializeApp();
@@ -520,11 +524,16 @@ exports.reuploadWidgetFiles = functions
       try {
         if (widgetData.uploadId) {
           const bucket = storage.bucket();
-          await bucket.deleteFiles({ prefix: `uploads/${widgetData.uploadId}/` });
+          await bucket.deleteFiles({
+            prefix: `uploads/${widgetData.uploadId}/`,
+          });
           console.log("[REUPLOAD WIDGET] Old files deleted");
         }
       } catch (cleanupError) {
-        console.warn("[REUPLOAD WIDGET] Cleanup failed (non-fatal)", cleanupError);
+        console.warn(
+          "[REUPLOAD WIDGET] Cleanup failed (non-fatal)",
+          cleanupError
+        );
       }
 
       await widgetRef.update({
@@ -547,6 +556,403 @@ exports.reuploadWidgetFiles = functions
       throw new functions.https.HttpsError(
         "internal",
         "Reupload failed: " + error.message
+      );
+    }
+  });
+
+// ===== ZIP UPLOAD PIPELINE FUNCTIONS =====
+
+// Helper function to validate manifest.json
+function validateManifest(manifestContent) {
+  try {
+    const manifest = JSON.parse(manifestContent);
+
+    // Required fields
+    if (!manifest.name || typeof manifest.name !== "string") {
+      throw new Error("Manifest must have a valid name");
+    }
+
+    if (!manifest.entry || typeof manifest.entry !== "string") {
+      throw new Error("Manifest must specify an entry point (entry field)");
+    }
+
+    // Optional but recommended fields
+    const validManifest = {
+      name: manifest.name,
+      version: manifest.version || "1.0.0",
+      entry: manifest.entry,
+      description: manifest.description || "",
+      preview: manifest.preview || { width: 600, height: 400 },
+      files: manifest.files || [],
+      permissions: manifest.permissions || { externalFetch: false },
+    };
+
+    return validManifest;
+  } catch (error) {
+    throw new Error(`Invalid manifest.json: ${error.message}`);
+  }
+}
+
+// Helper function to extract zip file
+async function extractZip(zipBuffer) {
+  console.log("[ZIP PIPELINE] Starting zip extraction");
+
+  const zip = await JSZip.loadAsync(zipBuffer);
+  const extractedFiles = [];
+
+  // Extract all files from zip
+  for (const [filePath, file] of Object.entries(zip.files)) {
+    // Skip directories
+    if (file.dir) continue;
+
+    // Skip hidden files and dangerous paths
+    if (
+      filePath.startsWith(".") ||
+      filePath.includes("../") ||
+      filePath.startsWith("/")
+    ) {
+      console.warn(
+        `[ZIP PIPELINE] Skipping potentially dangerous file: ${filePath}`
+      );
+      continue;
+    }
+
+    // Validate file type
+    const ext = path.extname(filePath).toLowerCase();
+    if (
+      !allowedExtensions.includes(ext) &&
+      !allowedExtensions.includes("." + filePath.split(".").pop())
+    ) {
+      console.warn(
+        `[ZIP PIPELINE] Skipping unsupported file type: ${filePath}`
+      );
+      continue;
+    }
+
+    try {
+      const content = await file.async("nodebuffer");
+      extractedFiles.push({
+        path: filePath,
+        content: content,
+        size: content.length,
+        type: getContentType(filePath),
+      });
+
+      console.log(
+        `[ZIP PIPELINE] Extracted file: ${filePath} (${content.length} bytes)`
+      );
+    } catch (error) {
+      console.error(`[ZIP PIPELINE] Failed to extract ${filePath}:`, error);
+      throw new Error(`Failed to extract ${filePath}: ${error.message}`);
+    }
+  }
+
+  console.log(
+    `[ZIP PIPELINE] Successfully extracted ${extractedFiles.length} files`
+  );
+  return extractedFiles;
+}
+
+// Helper function to get content type from file path
+function getContentType(filePath) {
+  const ext = path.extname(filePath).toLowerCase();
+  const typeMap = {
+    ".html": "text/html",
+    ".htm": "text/html",
+    ".css": "text/css",
+    ".js": "application/javascript",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".webp": "image/webp",
+    ".txt": "text/plain",
+    ".md": "text/markdown",
+  };
+
+  return typeMap[ext] || "application/octet-stream";
+}
+
+// Helper function to process images for preview
+async function processImageForPreview(imageBuffer, fileName) {
+  try {
+    console.log(`[ZIP PIPELINE] Processing image for preview: ${fileName}`);
+
+    // Resize image to max 800px width/height for preview
+    const processedBuffer = await sharp(imageBuffer)
+      .resize(800, 800, {
+        fit: "inside",
+        withoutEnlargement: true,
+      })
+      .jpeg({ quality: 80 })
+      .toBuffer();
+
+    console.log(
+      `[ZIP PIPELINE] Image processed: ${fileName} (${imageBuffer.length} -> ${processedBuffer.length} bytes)`
+    );
+    return processedBuffer;
+  } catch (error) {
+    console.error(`[ZIP PIPELINE] Failed to process image ${fileName}:`, error);
+    return imageBuffer; // Return original if processing fails
+  }
+}
+
+// Main zip processing function
+async function processZipUpload(zipBuffer, bundleId, userId, widgetData) {
+  console.log(`[ZIP PIPELINE] Starting zip processing for bundle: ${bundleId}`);
+
+  try {
+    // Step 1: Extract zip
+    const extractedFiles = await extractZip(zipBuffer);
+    if (extractedFiles.length === 0) {
+      throw new Error("No valid files found in zip archive");
+    }
+
+    // Step 2: Look for manifest.json
+    let manifest = null;
+    const manifestFile = extractedFiles.find(
+      (f) => f.path.toLowerCase() === "manifest.json"
+    );
+    if (manifestFile) {
+      try {
+        const manifestContent = manifestFile.content.toString("utf8");
+        manifest = validateManifest(manifestContent);
+        console.log(`[ZIP PIPELINE] Valid manifest found: ${manifest.name}`);
+      } catch (error) {
+        console.warn(
+          `[ZIP PIPELINE] Manifest validation failed: ${error.message}`
+        );
+        // Continue without manifest
+      }
+    }
+
+    // Step 3: Find entry point
+    let entryFile = null;
+    if (manifest && manifest.entry) {
+      entryFile = extractedFiles.find(
+        (f) => f.path.toLowerCase() === manifest.entry.toLowerCase()
+      );
+    }
+
+    // Fallback: look for index.html
+    if (!entryFile) {
+      entryFile = extractedFiles.find(
+        (f) =>
+          f.path.toLowerCase() === "index.html" ||
+          f.path.toLowerCase() === "index.htm"
+      );
+    }
+
+    if (!entryFile) {
+      throw new Error(
+        "No entry point found. Please include index.html or specify entry in manifest.json"
+      );
+    }
+
+    console.log(`[ZIP PIPELINE] Using entry point: ${entryFile.path}`);
+
+    // Step 4: Process and upload files
+    const uploadResults = [];
+    const processedFiles = [];
+
+    for (const file of extractedFiles) {
+      let processedContent = file.content;
+
+      // Process images for preview optimization
+      if (file.type.startsWith("image/") && file.type !== "image/svg+xml") {
+        try {
+          processedContent = await processImageForPreview(
+            file.content,
+            file.path
+          );
+        } catch (error) {
+          console.warn(
+            `[ZIP PIPELINE] Image processing failed for ${file.path}, using original`
+          );
+        }
+      }
+
+      // Upload to storage
+      const fileName = path.basename(file.path);
+      const filePath = `widgetBundles/${bundleId}/${file.path}`;
+      const fileRef = storage.bucket().file(filePath);
+
+      const token = randomUUID();
+      await fileRef.save(processedContent, {
+        metadata: {
+          contentType: file.type,
+          metadata: {
+            uploadedBy: userId,
+            bundleId: bundleId,
+            originalPath: file.path,
+            firebaseStorageDownloadTokens: token,
+          },
+        },
+      });
+
+      const bucketName = fileRef.bucket.name;
+      const encodedPath = encodeURIComponent(fileRef.name);
+      const downloadURL = `https://firebasestorage.googleapis.com/v0/b/${bucketName}/o/${encodedPath}?alt=media&token=${token}`;
+
+      uploadResults.push({
+        path: file.path,
+        fileName: fileName,
+        downloadURL: downloadURL,
+        size: processedContent.length,
+        type: file.type,
+        originalSize: file.size,
+      });
+
+      processedFiles.push({
+        path: file.path,
+        content: processedContent,
+        type: file.type,
+      });
+
+      console.log(`[ZIP PIPELINE] Processed and uploaded: ${file.path}`);
+    }
+
+    // Step 5: Generate entry points
+    const entrypoints = {
+      previewUrl: uploadResults.find((f) => f.path === entryFile.path)
+        ?.downloadURL,
+      fullUrl: uploadResults.find((f) => f.path === entryFile.path)
+        ?.downloadURL,
+    };
+
+    if (!entrypoints.previewUrl) {
+      throw new Error("Failed to generate preview URL for entry point");
+    }
+
+    console.log(`[ZIP PIPELINE] Generated entry points:`, entrypoints);
+
+    return {
+      success: true,
+      manifest: manifest,
+      entrypoints: entrypoints,
+      files: uploadResults,
+      fileCount: extractedFiles.length,
+      totalSize: uploadResults.reduce((sum, f) => sum + f.size, 0),
+    };
+  } catch (error) {
+    console.error(
+      `[ZIP PIPELINE] Processing failed for bundle ${bundleId}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+// Cloud Function: Upload Widget Bundle (ZIP)
+exports.uploadWidgetBundle = functions
+  .runWith({
+    ...runtimeOpts,
+    timeoutSeconds: 540, // 9 minutes for large zips
+    memory: "2GB",
+  })
+  .https.onCall(async (data, context) => {
+    console.log("[UPLOAD BUNDLE] Starting widget bundle upload");
+
+    if (!context.auth) {
+      throw new functions.https.HttpsError(
+        "unauthenticated",
+        "User must be authenticated"
+      );
+    }
+
+    const { zipFile, slot, widgetData } = data;
+    const userId = context.auth.uid;
+
+    if (!zipFile || !zipFile.data) {
+      throw new functions.https.HttpsError(
+        "invalid-argument",
+        "ZIP file is required"
+      );
+    }
+
+    try {
+      // Create bundle document
+      const bundleId = `bundle_${Date.now()}_${Math.random()
+        .toString(36)
+        .substr(2, 9)}`;
+
+      const bundleRef = db.collection("widgetBundles").doc(bundleId);
+
+      // Initialize bundle document
+      await bundleRef.set({
+        ownerUid: userId,
+        status: "processing",
+        slot: slot,
+        title: widgetData?.title || "Untitled Widget",
+        description: widgetData?.description || "",
+        tags: widgetData?.tags || "",
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      console.log(`[UPLOAD BUNDLE] Created bundle document: ${bundleId}`);
+
+      // Process the zip file
+      const zipBuffer = Buffer.from(zipFile.data, "base64");
+      const result = await processZipUpload(
+        zipBuffer,
+        bundleId,
+        userId,
+        widgetData
+      );
+
+      // Update bundle with results
+      await bundleRef.update({
+        status: "ready",
+        manifest: result.manifest,
+        entrypoints: result.entrypoints,
+        files: result.files,
+        fileCount: result.fileCount,
+        totalSize: result.totalSize,
+        updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+
+      // Add bundle ID to user's profile
+      await db
+        .collection("users")
+        .doc(userId)
+        .update({
+          widgetBundles: admin.firestore.FieldValue.arrayUnion(bundleId),
+        });
+
+      console.log(`[UPLOAD BUNDLE] Bundle processing completed: ${bundleId}`);
+
+      return {
+        success: true,
+        bundleId: bundleId,
+        entrypoints: result.entrypoints,
+        manifest: result.manifest,
+        message: `Successfully processed ${result.fileCount} files`,
+      };
+    } catch (error) {
+      console.error("[UPLOAD BUNDLE] Function error:", error);
+
+      // Update bundle status to failed
+      if (typeof bundleId !== "undefined") {
+        try {
+          await db.collection("widgetBundles").doc(bundleId).update({
+            status: "failed",
+            error: error.message,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+          });
+        } catch (updateError) {
+          console.error(
+            "[UPLOAD BUNDLE] Failed to update bundle status:",
+            updateError
+          );
+        }
+      }
+
+      throw new functions.https.HttpsError(
+        "internal",
+        "Bundle upload failed: " + error.message
       );
     }
   });
