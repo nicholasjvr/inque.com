@@ -245,7 +245,7 @@ class ProfileHubManager {
     if (this.dom.customizeToggle) {
       this.addEventListener(this.dom.customizeToggle, "click", () => {
         console.log(
-          "[PROFILE HUB] Gear quicklink clicked → navigating to Explore"
+          "[PROFILE HUB] Customize toggle button clicked → navigating to Explore"
         ); // debug [[memory:4664284]]
         this.navigateTo("pages/explore.html");
       });
@@ -294,6 +294,20 @@ class ProfileHubManager {
     // Window Events
     this.addEventListener(window, "resize", () => {
       this.handleResize();
+    });
+
+    // Handle orientation changes on mobile
+    this.addEventListener(window, "orientationchange", () => {
+      setTimeout(() => {
+        this.handleResize();
+        // Re-position any open modals after orientation change
+        if (
+          this.state.ui.hubState !== "minimized" ||
+          this.state.ui.customizationState === "open"
+        ) {
+          this.updateModalPositions(this.state.ui.position);
+        }
+      }, 100);
     });
 
     // Admin controls (if present)
@@ -1103,17 +1117,32 @@ class ProfileHubManager {
       const saved = localStorage.getItem("profilehub-preferences");
       if (saved) {
         const preferences = JSON.parse(saved);
-        this.setState(
-          {
-            user: { preferences },
-            ui: {
-              theme: preferences.theme || "neo-brutalist",
-              position: preferences.position || "top-right",
-              scale: preferences.scale || 1,
+        // Only update position if the method exists
+        if (typeof this.updateModalPositions === "function") {
+          this.setState(
+            {
+              user: { preferences },
+              ui: {
+                theme: preferences.theme || "neo-brutalist",
+                position: preferences.position || "top-right",
+                scale: preferences.scale || 1,
+              },
             },
-          },
-          false
-        );
+            false
+          );
+        } else {
+          this.setState(
+            {
+              user: { preferences },
+              ui: {
+                theme: preferences.theme || "neo-brutalist",
+                position: preferences.position || "top-right",
+                scale: preferences.scale || 1,
+              },
+            },
+            false
+          );
+        }
         console.log("[PROFILE HUB] Preferences applied");
       }
     } catch (error) {
@@ -1153,10 +1182,189 @@ class ProfileHubManager {
   }
 
   /**
-   * Update a specific modal's position
+   * Update modal positions based on hub position with smart collision detection
+   */
+  updateModalPositions(newPosition) {
+    console.log("[PROFILE HUB] Updating modal positions for:", newPosition);
+
+    const { ui } = this.state;
+
+    // Update expanded content position with collision detection
+    if (this.dom.expandedContent) {
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.expandedContent,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.expandedContent, adjustedStyles);
+    }
+
+    // Update chatbot container position with collision detection
+    if (this.dom.chatbotContainer) {
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.chatbotContainer,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.chatbotContainer, adjustedStyles);
+    }
+
+    // Update customization panel position with collision detection
+    if (this.dom.customizationPanel) {
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.customizationPanel,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.customizationPanel, adjustedStyles);
+    }
+  }
+
+  /**
+   * Prevent modal overflow by detecting screen boundaries and adjusting position
+   */
+  preventOverflow(modalElement, baseStyles, position) {
+    if (!modalElement) return baseStyles;
+
+    // Create a temporary element to calculate dimensions
+    const tempDiv = document.createElement("div");
+    Object.assign(tempDiv.style, baseStyles);
+    tempDiv.style.visibility = "hidden";
+    tempDiv.style.position = "fixed";
+    document.body.appendChild(tempDiv);
+
+    const modalRect = tempDiv.getBoundingClientRect();
+    document.body.removeChild(tempDiv);
+
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+
+    let adjustedStyles = { ...baseStyles };
+
+    // Check if modal would overflow horizontally
+    if (modalRect.right > viewportWidth) {
+      if (position.includes("right")) {
+        adjustedStyles.left = "10px";
+        adjustedStyles.right = "auto";
+        adjustedStyles.transformOrigin = "top left";
+      }
+    }
+
+    // Check if modal would overflow vertically
+    if (modalRect.bottom > viewportHeight) {
+      if (position.includes("top")) {
+        adjustedStyles.top = "auto";
+        adjustedStyles.bottom = "10px";
+        adjustedStyles.transformOrigin = position.includes("right")
+          ? "bottom right"
+          : "bottom left";
+      }
+    }
+
+    // Special handling for mobile screens
+    if (viewportWidth <= 768) {
+      adjustedStyles.maxWidth = "95vw";
+      adjustedStyles.maxHeight = "85vh";
+
+      // On mobile, prefer bottom positioning to avoid covering the main content
+      if (position.includes("top")) {
+        adjustedStyles.top = "auto";
+        adjustedStyles.bottom = "10px";
+        adjustedStyles.transformOrigin = position.includes("right")
+          ? "bottom right"
+          : "bottom left";
+      }
+    }
+
+    console.log("[PROFILE HUB] Adjusted modal position to prevent overflow:", {
+      original: position,
+      adjusted: adjustedStyles,
+      modalSize: { width: modalRect.width, height: modalRect.height },
+      viewport: { width: viewportWidth, height: viewportHeight },
+    });
+
+    return adjustedStyles;
+  }
+
+  /**
+   * Get position styles based on position setting with user-friendly spacing
+   */
+  getPositionStyles(position) {
+    const baseStyles = {
+      position: "absolute",
+      zIndex: "100081",
+      maxWidth: "90vw",
+      maxHeight: "80vh",
+    };
+
+    // Get viewport dimensions for responsive positioning
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const hubRect = this.dom.hub?.getBoundingClientRect() || {
+      width: 280,
+      height: 120,
+    };
+
+    switch (position) {
+      case "top-left":
+        return {
+          ...baseStyles,
+          top: `${hubRect.bottom + 10}px`,
+          left: "10px",
+          right: "auto",
+          bottom: "auto",
+          transformOrigin: "top left",
+        };
+      case "top-right":
+        return {
+          ...baseStyles,
+          top: `${hubRect.bottom + 10}px`,
+          right: "10px",
+          left: "auto",
+          bottom: "auto",
+          transformOrigin: "top right",
+        };
+      case "bottom-left":
+        return {
+          ...baseStyles,
+          bottom: `${viewportHeight - hubRect.top + 10}px`,
+          left: "10px",
+          top: "auto",
+          right: "auto",
+          transformOrigin: "bottom left",
+        };
+      case "bottom-right":
+        return {
+          ...baseStyles,
+          bottom: `${viewportHeight - hubRect.top + 10}px`,
+          right: "10px",
+          top: "auto",
+          left: "auto",
+          transformOrigin: "bottom right",
+        };
+      default:
+        return {
+          ...baseStyles,
+          top: `${hubRect.bottom + 10}px`,
+          right: "10px",
+          left: "auto",
+          bottom: "auto",
+          transformOrigin: "top right",
+        };
+    }
+  }
+
+  /**
+   * Update a specific modal's position with smooth transitions
    */
   updateModalPosition(modalElement, positionConfig) {
     if (!modalElement) return;
+
+    // Add smooth transition class for better UX
+    modalElement.classList.add("hub-modal-adjusted");
 
     // Apply position styles
     Object.keys(positionConfig).forEach((property) => {
@@ -1169,6 +1377,12 @@ class ProfileHubManager {
       ""
     );
     modalElement.classList.add(`position-${this.state.ui.position}`);
+
+    console.log("[PROFILE HUB] Modal position updated:", {
+      element: modalElement.id || modalElement.className,
+      position: this.state.ui.position,
+      styles: positionConfig,
+    });
   }
 
   /**
@@ -1179,17 +1393,35 @@ class ProfileHubManager {
 
     // If expanded content is visible, update its position
     if (ui.hubState === "expanded" && this.dom.expandedContent) {
-      this.updateModalPositions(newPosition);
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.expandedContent,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.expandedContent, adjustedStyles);
     }
 
     // If chatbot is active, update its position
     if (ui.hubState === "chatbot-active" && this.dom.chatbotContainer) {
-      this.updateModalPositions(newPosition);
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.chatbotContainer,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.chatbotContainer, adjustedStyles);
     }
 
     // If customization panel is open, update its position
     if (ui.customizationState === "open" && this.dom.customizationPanel) {
-      this.updateModalPositions(newPosition);
+      const positionStyles = this.getPositionStyles(newPosition);
+      const adjustedStyles = this.preventOverflow(
+        this.dom.customizationPanel,
+        positionStyles,
+        newPosition
+      );
+      this.updateModalPosition(this.dom.customizationPanel, adjustedStyles);
     }
   }
 
@@ -1796,18 +2028,65 @@ function setupMobileResponsivePositioning() {
     if (!container) return;
 
     const apply = () => {
-      if (window.innerWidth <= 768) {
-        // Position above site title on mobile
-        container.style.top = "20px";
-        container.style.right = "20px";
-        container.style.left = "auto";
-        container.style.bottom = "auto";
-        console.log("[PROFILE HUB] Mobile positioning: Above site title"); // Debug log [[memory:4664284]]
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+
+      if (viewportWidth <= 768) {
+        // Mobile positioning - prioritize user experience
+        const titleContainer = document.getElementById("title-container");
+        const orbContainer = document.getElementById("orb-container");
+
+        if (titleContainer) {
+          const titleRect = titleContainer.getBoundingClientRect();
+
+          // Position ProfileHub to avoid covering important content
+          if (viewportWidth <= 480) {
+            // Very small screens - position at bottom to avoid covering content
+            container.style.top = "auto";
+            container.style.bottom = "10px";
+            container.style.right = "10px";
+            container.style.left = "auto";
+            console.log("[PROFILE HUB] Very small mobile: Bottom positioning");
+          } else {
+            // Tablet size - position above title but not covering it
+            const titleBottom = titleRect.bottom;
+            const availableSpace = viewportHeight - titleBottom - 20;
+
+            if (availableSpace > 200) {
+              // Enough space above title
+              container.style.top = `${titleBottom + 10}px`;
+              container.style.bottom = "auto";
+              container.style.right = "10px";
+              container.style.left = "auto";
+              console.log("[PROFILE HUB] Tablet: Above title positioning");
+            } else {
+              // Limited space - position at bottom
+              container.style.top = "auto";
+              container.style.bottom = "10px";
+              container.style.right = "10px";
+              container.style.left = "auto";
+              console.log(
+                "[PROFILE HUB] Tablet: Bottom positioning (limited space)"
+              );
+            }
+          }
+        } else {
+          // Fallback positioning
+          container.style.top = "10px";
+          container.style.right = "10px";
+          container.style.left = "auto";
+          container.style.bottom = "auto";
+        }
+
+        container.style.position = "fixed";
       } else {
+        // Desktop positioning
         container.style.top = "20px";
         container.style.right = "20px";
         container.style.left = "auto";
         container.style.bottom = "auto";
+        container.style.position = "fixed";
+        console.log("[PROFILE HUB] Desktop positioning");
       }
     };
 
@@ -1886,6 +2165,26 @@ async function loadProfileHubHTML() {
 
     // Add a small delay to ensure DOM is ready
     await new Promise((resolve) => setTimeout(resolve, 100));
+
+    // Check if ProfileHub is already in the DOM (e.g., included in HTML)
+    const existingProfileHub = document.getElementById("profileHub");
+    if (existingProfileHub) {
+      console.log(
+        "[PROFILE HUB] ProfileHub already exists in DOM, skipping fetch"
+      );
+      return;
+    }
+
+    // Also check if we're on the home page where ProfileHub is included directly
+    if (
+      window.location.pathname === "/" ||
+      window.location.pathname.endsWith("index.html")
+    ) {
+      console.log(
+        "[PROFILE HUB] On home page, ProfileHub should be included directly"
+      );
+      return;
+    }
 
     // Try multiple paths for the HTML file
     const possiblePaths = [
@@ -2205,6 +2504,8 @@ let profileHubManager = null;
 // Enhanced initialization with better error handling
 async function initializeProfileHubSystem() {
   console.log("[PROFILE HUB] Starting ProfileHub system initialization...");
+  console.log("[PROFILE HUB] Current URL:", window.location.href);
+  console.log("[PROFILE HUB] Current pathname:", window.location.pathname);
 
   try {
     // Ensure the container exists with retry mechanism
@@ -2230,6 +2531,16 @@ async function initializeProfileHubSystem() {
     await loadAuthModalHTML();
     // Wait a bit for DOM to be fully ready
     await new Promise((resolve) => setTimeout(resolve, 200));
+
+    // Check if ProfileHub HTML is loaded before initializing manager
+    const profileHubElement = document.getElementById("profileHub");
+    if (!profileHubElement) {
+      console.warn(
+        "[PROFILE HUB] ProfileHub element not found, skipping manager initialization"
+      );
+      return false;
+    }
+
     // Initialize the ProfileHub manager
     profileHubManager = new ProfileHubManager();
     await profileHubManager.init();

@@ -329,6 +329,88 @@ function showToast(message, type = "info") {
   }, 4000);
 }
 
+function openFullscreenDemo(widget, htmlFile) {
+  console.log("[EXPLORE] Opening fullscreen demo for widget:", widget.title);
+
+  // Create fullscreen modal
+  const modal = document.createElement("div");
+  modal.className = "widget-fullscreen-modal active";
+  modal.innerHTML = `
+    <div class="fullscreen-content">
+      <div class="fullscreen-header">
+        <h3 class="fullscreen-title">🎮 ${widget.title || "Widget Demo"}</h3>
+        <button class="fullscreen-close" title="Close fullscreen demo">&times;</button>
+      </div>
+      <div class="fullscreen-body">
+        <iframe 
+          src="${htmlFile.downloadURL}" 
+          class="fullscreen-iframe"
+          sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+          loading="eager"
+          title="Fullscreen widget demo"
+        ></iframe>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  // Add escape key listener
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      closeFullscreenDemo(modal, handleEscape);
+    }
+  };
+
+  // Event listeners
+  const closeBtn = modal.querySelector(".fullscreen-close");
+  closeBtn.addEventListener("click", () =>
+    closeFullscreenDemo(modal, handleEscape)
+  );
+
+  // Close on backdrop click
+  modal.addEventListener("click", (e) => {
+    if (e.target === modal) {
+      closeFullscreenDemo(modal, handleEscape);
+    }
+  });
+
+  // Add keyboard listener
+  document.addEventListener("keydown", handleEscape);
+
+  // Show toast notification
+  showToast(`Opened fullscreen demo: ${widget.title}`, "success");
+
+  // Focus the iframe for better UX
+  setTimeout(() => {
+    const iframe = modal.querySelector(".fullscreen-iframe");
+    if (iframe) {
+      iframe.focus();
+    }
+  }, 100);
+}
+
+function closeFullscreenDemo(modal, escapeHandler) {
+  console.log("[EXPLORE] Closing fullscreen demo");
+
+  // Remove the modal with animation
+  modal.classList.remove("active");
+
+  // Remove escape key listener
+  if (escapeHandler) {
+    document.removeEventListener("keydown", escapeHandler);
+  }
+
+  // Remove modal after animation
+  setTimeout(() => {
+    if (modal.parentNode) {
+      document.body.removeChild(modal);
+    }
+  }, 200);
+
+  showToast("Closed fullscreen demo", "info");
+}
+
 // Main initialization function
 async function initializeExplorePage() {
   try {
@@ -433,12 +515,32 @@ function createWidgetCard(widget) {
     <div class="explore-widget-preview">
       ${
         htmlFile && htmlFile.downloadURL
-          ? `<iframe src="${htmlFile.downloadURL}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>`
+          ? `<iframe src="${htmlFile.downloadURL}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+             <div class="preview-overlay">
+               <button class="fullscreen-demo-btn" 
+                       data-widget-id="${widget.id}"
+                       data-widget-title="${widget.title || "Untitled Widget"}"
+                       data-widget-url="${htmlFile.downloadURL}"
+                       title="Open fullscreen demo">
+                 🖥️ Fullscreen Demo
+               </button>
+             </div>`
           : `<div class="no-preview">📦 No Preview Available</div>`
       }
     </div>
 
     <div class="explore-widget-actions">
+      ${
+        htmlFile && htmlFile.downloadURL
+          ? `<button class="explore-demo-btn"
+                     data-widget-id="${widget.id}"
+                     data-widget-title="${widget.title || "Untitled Widget"}"
+                     data-widget-url="${htmlFile.downloadURL}"
+                     title="Try widget in fullscreen">
+               🎮 Try Demo
+             </button>`
+          : ""
+      }
       <a href="/?user=${widget.userId}" class="explore-profile-link" title="View ${widget.userName || "User"}'s profile">👤 Profile</a>
       ${
         !isOwnWidget
@@ -598,10 +700,36 @@ document.addEventListener("click", (e) => {
     openMessageModal(userId, userName);
   }
 
-  // Handle fullscreen preview (if needed)
+  // Handle fullscreen demo buttons
+  if (
+    e.target.matches(".explore-demo-btn") ||
+    e.target.matches(".fullscreen-demo-btn")
+  ) {
+    e.preventDefault();
+    const widgetId = e.target.dataset.widgetId;
+    const widgetTitle = e.target.dataset.widgetTitle;
+    const widgetUrl = e.target.dataset.widgetUrl;
+
+    if (widgetUrl) {
+      const widget = allWidgets.find((w) => w.id === widgetId) || {
+        id: widgetId,
+        title: widgetTitle,
+      };
+      const htmlFile = { downloadURL: widgetUrl };
+      openFullscreenDemo(widget, htmlFile);
+    }
+  }
+
+  // Handle iframe clicks for fullscreen (optional - click iframe to go fullscreen)
   if (e.target.matches(".explore-widget-preview iframe")) {
     e.preventDefault();
-    // Could implement fullscreen preview here
+    const card = e.target.closest(".explore-widget-card");
+    if (card) {
+      const demoBtn = card.querySelector(".explore-demo-btn");
+      if (demoBtn) {
+        demoBtn.click();
+      }
+    }
   }
 });
 // Enhanced user experience features

@@ -46,7 +46,7 @@
     transform: translateX(0);
     opacity: 1;
 
-    /* Mobile responsiveness - Position above site title */
+    /* Mobile responsiveness - Smart positioning for better UX */
     @media (max-width: 768px) {
         top: 20px;
         right: 20px;
@@ -56,13 +56,75 @@
         transform-origin: top right;
         /* Ensure it's above the site title */
         z-index: 100090;
+
+        /* Better mobile modal positioning */
+        .hub-expanded-content,
+        .hub-chatbot-container,
+        .hub-customization-panel {
+            max-width: 95vw !important;
+            max-height: 85vh !important;
+            margin: 5px !important;
+        }
     }
 
+    /* Very small mobile screens */
     @media (max-width: 480px) {
-        top: 15px;
-        right: 15px;
-        transform: scale(0.8);
+        top: auto;
+        bottom: 10px;
+        right: 10px;
+        left: auto;
+        transform: scale(0.85);
+        transform-origin: bottom right;
+
+        .hub-expanded-content,
+        .hub-chatbot-container,
+        .hub-customization-panel {
+            max-width: 98vw !important;
+            max-height: 80vh !important;
+            bottom: 10px !important;
+            top: auto !important;
+            left: 5px !important;
+            right: 5px !important;
+        }
+    }
+
+    /* Additional mobile spacing */
+    @media (max-width: 480px) {
+
+        .hub-expanded-content,
+        .hub-chatbot-container,
+        .hub-customization-panel {
+            margin: 2px !important;
+            border-radius: 8px !important;
+        }
+
         transform-origin: top right;
+    }
+
+    /* User-friendly modal positioning improvements */
+    .hub-modal-adjusted {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    /* Smooth animations for position changes */
+    .hub-expanded-content,
+    .hub-chatbot-container,
+    .hub-customization-panel {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform, top, left, right, bottom;
+    }
+
+    /* Better spacing from screen edges */
+    .hub-expanded-content {
+        margin: 10px !important;
+    }
+
+    .hub-chatbot-container {
+        margin: 10px !important;
+    }
+
+    .hub-customization-panel {
+        margin: 10px !important;
     }
 
     /* Custom Properties for theming */
@@ -702,7 +764,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 101;
+    z-index: 100110;
     filter: blur(1px);
     transform-origin: right center;
 }
@@ -939,7 +1001,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 102;
+    z-index: 100120;
     overflow-y: auto;
     /* Enhanced visual effects */
     filter: blur(2px);
@@ -959,7 +1021,7 @@
     opacity: 0;
     pointer-events: none;
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-    z-index: 101;
+    z-index: 100110;
     /* Enhanced backdrop with gradient */
     background: linear-gradient(135deg,
             rgba(0, 0, 0, 0.1) 0%,
@@ -1130,7 +1192,7 @@ body:has(.hub-customization-panel.active) .mobile-menu-toggle {
     right: 0;
     bottom: 0;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 99;
+    z-index: 100100;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.3s ease;
