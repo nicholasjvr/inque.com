@@ -292,43 +292,57 @@ class FloatingOrbManager {
 
   buildOrbNavigation() {
     try {
+      const go = (path) => {
+        try {
+          ORB_DEBUG.log("Orb nav: navigating to page", { path });
+          window.location.href = path;
+        } catch (e) {
+          ORB_DEBUG.warn("Orb nav: failed navigation", e);
+        }
+      };
+
       const items = [
         {
           id: "nav-home",
           icon: "🏠",
           title: "Home",
-          onClick: () => this.navigateToSection("home-section"),
+          onClick: () => go("/index.html"),
         },
         {
-          id: "nav-guides",
+          id: "nav-explore",
+          icon: "🔍",
+          title: "Explore",
+          onClick: () => go("/pages/explore.html"),
+        },
+        {
+          id: "nav-projects",
+          icon: "📊",
+          title: "My Projects",
+          onClick: () => go("/pages/profile_dashboard/my-projects.html"),
+        },
+        {
+          id: "nav-inventory",
+          icon: "📦",
+          title: "My Inventory",
+          onClick: () => go("/pages/profile_dashboard/inventory.html"),
+        },
+        {
+          id: "nav-widget-studio",
+          icon: "🎨",
+          title: "Widget Studio",
+          onClick: () => go("/pages/profile_dashboard/widget_studio.html"),
+        },
+        {
+          id: "nav-knowledge",
           icon: "📚",
-          title: "Guides",
-          onClick: () => this.navigateToSection("guides-section"),
+          title: "Knowledge Base",
+          onClick: () => go("/pages/knowledge-base.html"),
         },
         {
           id: "nav-showcase",
           icon: "🏆",
           title: "Showcase",
-          onClick: () => this.navigateToSection("showcase-section"),
-        },
-        {
-          id: "nav-tools",
-          icon: "🛠️",
-          title: "Tools",
-          onClick: () => this.navigateToSection("tools-section"),
-        },
-        {
-          id: "nav-projects",
-          icon: "🚀",
-          title: "Projects",
-          onClick: () => this.navigateToSection("projects-section"),
-        },
-        {
-          id: "nav-chat",
-          icon: "💬",
-          title: "Chatbot",
-          onClick: () => this.toggleChatDrawer(),
-          badge: 0, // Will be updated dynamically
+          onClick: () => go("/pages/users.html"),
         },
       ];
       this.navItems = items;
@@ -384,8 +398,25 @@ class FloatingOrbManager {
       ORB_DEBUG.log("Orb navigation constructed", { count: items.length });
       // Initialize active preview
       this.updateActiveFromRotation();
+      this.updateLockPoints();
     } catch (err) {
       ORB_DEBUG.warn("Failed to build orb navigation", err);
+    }
+  }
+
+  updateLockPoints() {
+    try {
+      const n = this.navItems?.length || 6;
+      const step = 360 / n;
+      this.scrollState.lockPoints = Array.from({ length: n }, (_, i) =>
+        Math.round(i * step)
+      );
+      ORB_DEBUG.log(
+        "Orb scroll lock points rebuilt",
+        this.scrollState.lockPoints
+      );
+    } catch (err) {
+      ORB_DEBUG.warn("Failed to rebuild lock points", err);
     }
   }
 

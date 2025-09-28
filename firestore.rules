@@ -47,8 +47,16 @@ service cloud.firestore {
     // ADDED: Quips collection - users can read all quips, but only write to their own
     match /quips/{quipId} {
       allow read: if true;
-      allow create, update, delete: if request.auth != null && 
+      allow create, update, delete: if request.auth != null &&
         (resource == null || resource.data.userId == request.auth.uid);
+    }
+
+    // Widget Bundles - users can read their own bundles, system controls status updates
+    match /widgetBundles/{bundleId} {
+      allow read: if request.auth != null && resource.data.ownerUid == request.auth.uid;
+      allow create: if request.auth != null && request.resource.data.ownerUid == request.auth.uid;
+      allow update: if false; // Only system can update status and entrypoints
+      allow delete: if request.auth != null && resource.data.ownerUid == request.auth.uid;
     }
 
   }

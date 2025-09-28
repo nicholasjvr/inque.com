@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Widget Studio - Inque</title>
     <link rel="stylesheet" href="/core/styles/index.css" />
+    <link
+      rel="stylesheet"
+      href="/pages/page_modals/modal_styles/profile_banner.css"
+    />
     <link rel="stylesheet" href="pd_styles/widget_studio.css" />
     <script src="https://www.google.com/recaptcha/enterprise.js?render=6Ldt0YYrAAAAAKyNgAPO8Te96_m5innDHsSkppQc"></script>
     <div id="profileHubContainer"></div>
@@ -42,9 +46,12 @@
               Create, preview, and manage your interactive widgets. Each slot
               can hold a complete project with multiple files.
             </p>
-            <button class="onboarding-trigger-btn" id="showOnboardingBtn">
-              <span class="btn-icon">📚</span>
-              Widget Upload Guide
+            <button
+              class="onboarding-trigger-btn"
+              id="showZipUploadOnboardingBtn"
+            >
+              <span class="btn-icon">📦</span>
+              Zip Upload Guide
             </button>
             <div class="studio-stats">
               <div class="stat-item">
@@ -79,15 +86,15 @@
                   type="file"
                   class="file-input"
                   data-slot="1"
-                  multiple
-                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  accept=".zip,application/zip"
                   id="fileInput1"
                 />
                 <div class="upload-placeholder" id="placeholder1">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
+                  <span class="upload-icon">📦</span>
+                  <p>Drop your project ZIP file here or click to upload</p>
                   <span class="upload-hint"
-                    >Supports HTML, CSS, JS, images, and more</span
+                    >Upload a complete project as a ZIP file for the best
+                    experience</span
                   >
                 </div>
               </div>
@@ -175,15 +182,15 @@
                   type="file"
                   class="file-input"
                   data-slot="2"
-                  multiple
-                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  accept=".zip,application/zip"
                   id="fileInput2"
                 />
                 <div class="upload-placeholder" id="placeholder2">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
+                  <span class="upload-icon">📦</span>
+                  <p>Drop your project ZIP file here or click to upload</p>
                   <span class="upload-hint"
-                    >Supports HTML, CSS, JS, images, and more</span
+                    >Upload a complete project as a ZIP file for the best
+                    experience</span
                   >
                 </div>
               </div>
@@ -271,15 +278,15 @@
                   type="file"
                   class="file-input"
                   data-slot="3"
-                  multiple
-                  accept=".html,.js,.css,.png,.jpg,.jpeg,.gif,.svg,.json,.webp,.txt,.md"
+                  accept=".zip,application/zip"
                   id="fileInput3"
                 />
                 <div class="upload-placeholder" id="placeholder3">
-                  <span class="upload-icon">📁</span>
-                  <p>Drop files here or click to upload</p>
+                  <span class="upload-icon">📦</span>
+                  <p>Drop your project ZIP file here or click to upload</p>
                   <span class="upload-hint"
-                    >Supports HTML, CSS, JS, images, and more</span
+                    >Upload a complete project as a ZIP file for the best
+                    experience</span
                   >
                 </div>
               </div>
@@ -383,75 +390,166 @@
       </div>
     </div>
 
-    <!-- Onboarding Modal -->
-    <div class="onboarding-modal" id="onboardingModal" style="display: none">
+    <!-- Zip Upload Onboarding Modal -->
+    <div
+      class="onboarding-modal"
+      id="zipUploadOnboardingModal"
+      style="display: none"
+    >
       <div class="onboarding-modal-content">
         <div class="onboarding-modal-header">
-          <h3>🎨 Widget Studio Guide</h3>
-          <button class="onboarding-modal-close" id="onboardingModalClose">
+          <h3>📦 Zip Upload Guide - Widget Studio</h3>
+          <button
+            class="onboarding-modal-close"
+            id="zipUploadOnboardingModalClose"
+          >
             &times;
           </button>
         </div>
         <div class="onboarding-modal-body">
           <div class="onboarding-step active" data-step="1">
-            <h4>📁 File Structure</h4>
-            <p>Upload your widget files including:</p>
-            <ul>
-              <li><strong>HTML file</strong> (index.html or similar)</li>
-              <li><strong>CSS files</strong> (styles.css, theme.css, etc.)</li>
-              <li>
-                <strong>JavaScript files</strong> (script.js, app.js, etc.)
-              </li>
-              <li><strong>Images & Assets</strong> (png, jpg, svg, etc.)</li>
-            </ul>
+            <h4>📦 Step 1: Create Your Project Zip</h4>
+            <p>Package your entire widget project into a single ZIP file:</p>
+            <div class="zip-instructions">
+              <div class="instruction-item">
+                <span class="step-number">1</span>
+                <div class="step-content">
+                  <strong>Create a folder</strong> for your project (e.g.,
+                  "my-widget/")
+                </div>
+              </div>
+              <div class="instruction-item">
+                <span class="step-number">2</span>
+                <div class="step-content">
+                  <strong>Add your files:</strong>
+                  <ul>
+                    <li>index.html (main entry point)</li>
+                    <li>styles.css, app.css, etc.</li>
+                    <li>script.js, app.js, etc.</li>
+                    <li>assets/ folder with images, fonts</li>
+                    <li>manifest.json (optional but recommended)</li>
+                  </ul>
+                </div>
+              </div>
+              <div class="instruction-item">
+                <span class="step-number">3</span>
+                <div class="step-content">
+                  <strong>Compress to ZIP:</strong> Right-click folder → "Send
+                  to" → "Compressed (zipped) folder"
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="onboarding-step" data-step="2">
-            <h4>🎨 CSS Best Practices</h4>
-            <p>For optimal styling results:</p>
-            <ul>
-              <li>
-                <strong>Link CSS files</strong> in your HTML &lt;head&gt;
-                section
-              </li>
-              <li>
-                <strong>Use relative paths</strong> for CSS file references
-              </li>
-              <li>
-                <strong>Include all dependencies</strong> (fonts, icons, etc.)
-              </li>
-              <li>
-                <strong>Organize stylesheets</strong> (main.css, components.css)
-              </li>
-            </ul>
-            <div class="code-example">
-              <pre><code>&lt;link rel="stylesheet" href="styles.css"&gt;
-&lt;link rel="stylesheet" href="components/button.css"&gt;</code></pre>
+            <h4>📄 Step 2: Add manifest.json (Recommended)</h4>
+            <p>Include a manifest.json file in your zip for better results:</p>
+            <div class="manifest-example">
+              <pre><code>{
+  "name": "My Awesome Widget",
+  "version": "1.0.0",
+  "entry": "index.html",
+  "description": "A cool interactive widget",
+  "preview": {
+    "width": 600,
+    "height": 400
+  },
+  "files": [
+    "index.html",
+    "styles.css",
+    "script.js",
+    "assets/logo.png"
+  ],
+  "permissions": {
+    "externalFetch": false
+  }
+}</code></pre>
+            </div>
+            <div class="manifest-benefits">
+              <h5>✨ Benefits of manifest.json:</h5>
+              <ul>
+                <li>📋 Automatic file validation</li>
+                <li>🎯 Better preview generation</li>
+                <li>🔍 Enhanced CSS analysis</li>
+                <li>⚡ Optimized processing</li>
+              </ul>
             </div>
           </div>
 
           <div class="onboarding-step" data-step="3">
-            <h4>🔍 CSS Analysis</h4>
-            <p>Our AI system will:</p>
-            <ul>
-              <li><strong>Check CSS dependencies</strong> and missing files</li>
-              <li><strong>Detect unused styles</strong> for optimization</li>
-              <li>
-                <strong>Analyze code quality</strong> and suggest improvements
-              </li>
-              <li><strong>Optimize CSS</strong> for better performance</li>
-            </ul>
+            <h4>🔍 Step 3: Upload & Processing</h4>
+            <p>Our system will automatically process your zip:</p>
+            <div class="processing-steps">
+              <div class="process-item">
+                <div class="process-icon">📦</div>
+                <div class="process-content">
+                  <strong>Extract & Validate</strong>
+                  <p>Zip is extracted and files are validated for security</p>
+                </div>
+              </div>
+              <div class="process-item">
+                <div class="process-icon">🔍</div>
+                <div class="process-content">
+                  <strong>Analyze Structure</strong>
+                  <p>HTML entry point detected, CSS dependencies mapped</p>
+                </div>
+              </div>
+              <div class="process-item">
+                <div class="process-icon">🎨</div>
+                <div class="process-content">
+                  <strong>Optimize Assets</strong>
+                  <p>Images optimized, CSS processed for better performance</p>
+                </div>
+              </div>
+              <div class="process-item">
+                <div class="process-icon">🚀</div>
+                <div class="process-content">
+                  <strong>Generate Previews</strong>
+                  <p>Preview and full-view entry points created</p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <div class="onboarding-step" data-step="4">
-            <h4>✅ Ready to Upload!</h4>
-            <p>Your widget will be analyzed and optimized automatically:</p>
-            <ul>
-              <li>✅ CSS files processed and optimized</li>
-              <li>✅ Dependencies resolved and validated</li>
-              <li>✅ Issues identified and suggestions provided</li>
-              <li>✅ Preview available before upload</li>
-            </ul>
+            <h4>✅ Step 4: Preview & Publish</h4>
+            <p>Your widget is ready for the world:</p>
+            <div class="final-benefits">
+              <div class="benefit-grid">
+                <div class="benefit-item">
+                  <span class="benefit-icon">👁️</span>
+                  <div class="benefit-content">
+                    <strong>Live Preview</strong>
+                    <p>Test your widget before publishing</p>
+                  </div>
+                </div>
+                <div class="benefit-item">
+                  <span class="benefit-icon">🚀</span>
+                  <div class="benefit-content">
+                    <strong>One-Click Deploy</strong>
+                    <p>Published to explore page automatically</p>
+                  </div>
+                </div>
+                <div class="benefit-item">
+                  <span class="benefit-icon">📊</span>
+                  <div class="benefit-content">
+                    <strong>Analytics & Stats</strong>
+                    <p>Track views, interactions, and engagement</p>
+                  </div>
+                </div>
+                <div class="benefit-item">
+                  <span class="benefit-icon">🔄</span>
+                  <div class="benefit-content">
+                    <strong>Easy Updates</strong>
+                    <p>Upload new versions anytime</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="getting-started">
+              <h5>🎯 Ready to get started?</h5>
+              <p>Upload your first zip file to see your widget come to life!</p>
+            </div>
           </div>
         </div>
         <div class="onboarding-modal-footer">
@@ -464,15 +562,15 @@
           <div class="onboarding-controls">
             <button
               class="onboarding-btn secondary"
-              id="onboardingPrev"
+              id="zipUploadOnboardingPrev"
               style="display: none"
             >
               Previous
             </button>
-            <button class="onboarding-btn primary" id="onboardingNext">
+            <button class="onboarding-btn primary" id="zipUploadOnboardingNext">
               Next
             </button>
-            <button class="onboarding-btn success" id="onboardingSkip">
+            <button class="onboarding-btn success" id="zipUploadOnboardingSkip">
               Skip Guide
             </button>
           </div>
@@ -492,13 +590,13 @@
     ></script>
     <script type="module" src="../page_scripts/widget_studio.js"></script>
     <script>
-      // Onboarding Modal Functionality
-      class OnboardingManager {
+      // Zip Upload Onboarding Modal Functionality
+      class ZipUploadOnboardingManager {
         constructor() {
           this.currentStep = 1;
           this.totalSteps = 4;
           this.onboardingCompleted =
-            localStorage.getItem("widgetStudioOnboarding") === "completed";
+            localStorage.getItem("zipUploadOnboarding") === "completed";
 
           this.init();
         }
@@ -508,7 +606,7 @@
             // Show onboarding after a short delay
             setTimeout(() => {
               this.showOnboarding();
-            }, 1000);
+            }, 1500);
           }
 
           this.setupEventListeners();
@@ -516,26 +614,28 @@
 
         setupEventListeners() {
           // Trigger button
-          const showBtn = document.getElementById("showOnboardingBtn");
+          const showBtn = document.getElementById("showZipUploadOnboardingBtn");
           if (showBtn) {
             showBtn.addEventListener("click", () => this.showOnboarding());
           }
 
           // Modal close button
-          const closeBtn = document.getElementById("onboardingModalClose");
+          const closeBtn = document.getElementById(
+            "zipUploadOnboardingModalClose"
+          );
           if (closeBtn) {
             closeBtn.addEventListener("click", () => this.hideOnboarding());
           }
 
           // Skip button
-          const skipBtn = document.getElementById("onboardingSkip");
+          const skipBtn = document.getElementById("zipUploadOnboardingSkip");
           if (skipBtn) {
             skipBtn.addEventListener("click", () => this.completeOnboarding());
           }
 
           // Next/Previous buttons
-          const nextBtn = document.getElementById("onboardingNext");
-          const prevBtn = document.getElementById("onboardingPrev");
+          const nextBtn = document.getElementById("zipUploadOnboardingNext");
+          const prevBtn = document.getElementById("zipUploadOnboardingPrev");
 
           if (nextBtn) {
             nextBtn.addEventListener("click", () => this.nextStep());
@@ -546,7 +646,7 @@
           }
 
           // Click outside modal to close
-          const modal = document.getElementById("onboardingModal");
+          const modal = document.getElementById("zipUploadOnboardingModal");
           if (modal) {
             modal.addEventListener("click", (e) => {
               if (e.target === modal) {
@@ -564,7 +664,7 @@
         }
 
         showOnboarding() {
-          const modal = document.getElementById("onboardingModal");
+          const modal = document.getElementById("zipUploadOnboardingModal");
           if (modal) {
             modal.style.display = "flex";
             document.body.style.overflow = "hidden";
@@ -574,7 +674,7 @@
         }
 
         hideOnboarding() {
-          const modal = document.getElementById("onboardingModal");
+          const modal = document.getElementById("zipUploadOnboardingModal");
           if (modal) {
             modal.style.display = "none";
             document.body.style.overflow = "";
@@ -582,14 +682,14 @@
         }
 
         completeOnboarding() {
-          localStorage.setItem("widgetStudioOnboarding", "completed");
+          localStorage.setItem("zipUploadOnboarding", "completed");
           this.hideOnboarding();
 
           // Show welcome message
           const toast = document.createElement("div");
           toast.className = "toast success";
           toast.innerHTML = `
-            <span class="toast-message">Welcome to Widget Studio! 🎨 Your CSS files will be analyzed automatically.</span>
+            <span class="toast-message">Welcome to Zip Upload! 📦 Upload your project as a zip file for the best experience.</span>
             <button class="toast-close">&times;</button>
           `;
           document.getElementById("toastContainer").appendChild(toast);
@@ -638,9 +738,9 @@
           }
 
           // Update buttons
-          const prevBtn = document.getElementById("onboardingPrev");
-          const nextBtn = document.getElementById("onboardingNext");
-          const skipBtn = document.getElementById("onboardingSkip");
+          const prevBtn = document.getElementById("zipUploadOnboardingPrev");
+          const nextBtn = document.getElementById("zipUploadOnboardingNext");
+          const skipBtn = document.getElementById("zipUploadOnboardingSkip");
 
           if (prevBtn) {
             prevBtn.style.display = this.currentStep > 1 ? "block" : "none";
@@ -660,7 +760,7 @@
 
       // Initialize onboarding when DOM is ready
       document.addEventListener("DOMContentLoaded", () => {
-        new OnboardingManager();
+        new ZipUploadOnboardingManager();
       });
     </script>
     <script type="module" src="../../scripts/auth/auth.js"></script>
